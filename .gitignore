@@ -1,0 +1,21 @@
+# Generated Talos machine configs and local talosconfig.
+infra/talos/clusterconfig/
+talosconfig
+
+# Local kubeconfig copies.
+kubeconfig
+*.kubeconfig
+
+# Private key material and local age identities.
+age.key
+age.txt
+keys.txt
+*.agekey
+*.key
+
+# Plaintext secret files should not be committed.
+secrets.yaml
+secrets.yml
+*.secret.yaml
+*.secret.yml
+talenv.yaml
