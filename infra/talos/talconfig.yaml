@@ -1,0 +1,59 @@
+---
+clusterName: student-service-cluster
+talosVersion: v1.12.6
+kubernetesVersion: v1.35.3
+endpoint: https://192.168.122.46:6443
+
+# Keep Talos-managed CNI disabled / Cilium is deployed through Flux.
+cniConfig:
+  name: none
+
+controlPlane:
+  talosImageURL: factory.talos.dev/nocloud-installer/376567988ad370138ad8b2698212367b8edcb69b5fd68c80be1f2ec7d603b4ba
+
+worker:
+  talosImageURL: factory.talos.dev/nocloud-installer/376567988ad370138ad8b2698212367b8edcb69b5fd68c80be1f2ec7d603b4ba
+
+nodes:
+  - hostname: cp01
+    controlPlane: true
+    ipAddress: 192.168.122.46
+    installDisk: /dev/vda
+    nameservers:
+      - 192.168.122.1
+    networkInterfaces:
+      - interface: eth0
+        dhcp: false
+        addresses:
+          - 192.168.122.46/24
+        routes:
+          - network: 0.0.0.0/0
+            gateway: 192.168.122.1
+  - hostname: wn01
+    controlPlane: false
+    ipAddress: 192.168.122.122
+    installDisk: /dev/vda
+    nameservers:
+      - 192.168.122.1
+    networkInterfaces:
+      - interface: eth0
+        dhcp: false
+        addresses:
+          - 192.168.122.122/24
+        routes:
+          - network: 0.0.0.0/0
+            gateway: 192.168.122.1
+  - hostname: wn02
+    controlPlane: false
+    ipAddress: 192.168.122.44
+    installDisk: /dev/vda
+    nameservers:
+      - 192.168.122.1
+    networkInterfaces:
+      - interface: eth0
+        dhcp: false
+        addresses:
+          - 192.168.122.44/24
+        routes:
+          - network: 0.0.0.0/0
+            gateway: 192.168.122.1
