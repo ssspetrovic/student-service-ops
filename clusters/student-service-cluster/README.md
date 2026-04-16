@@ -43,3 +43,23 @@ Verify the secret exists:
 ```bash
 kubectl -n flux-system get secret sops-age
 ```
+
+## Reconciliation
+
+Flux reconciles on its own based on the configured intervals.
+
+Run a manual reconcile after a merge to `main` if you want the cluster to pick up changes immediately.
+
+Commands:
+
+```bash
+flux reconcile source git flux-system -n flux-system
+flux reconcile kustomization flux-system -n flux-system
+flux reconcile kustomization infra -n flux-system
+```
+
+Verification:
+
+```bash
+flux get all -A
+```
