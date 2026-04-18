@@ -1,10 +1,12 @@
 # Cilium
 
-Managed by Flux via HelmRelease after initial bootstrap.
+Managed by Flux from the networking domain layer under
+`infra/networking/cilium/`.
 
 ## Initial Bootstrap
 
-Cilium is installed manually once before Flux becomes healthy, because the nodes need a CNI to become `Ready`.
+Cilium is installed manually once before Flux becomes healthy, because the
+nodes need a CNI to become `Ready`.
 
 ## Prerequisites
 
