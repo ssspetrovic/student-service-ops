@@ -1,16 +1,15 @@
 apiVersion: kustomize.toolkit.fluxcd.io/v1
 kind: Kustomization
 metadata:
-  name: infra
+  name: gateway-api-crds
   namespace: flux-system
 spec:
-  dependsOn:
-    - name: gateway-api-crds
-  interval: 10m
-  path: ./infra/networking/controllers
+  interval: 24h
+  path: ./config/crd/standard
   prune: true
   wait: true
   timeout: 10m
   sourceRef:
     kind: GitRepository
-    name: flux-system
+    name: gateway-api
+    namespace: flux-system

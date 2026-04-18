@@ -18,9 +18,13 @@ spec:
   upgrade:
     crds: CreateReplace
   values:
+    gatewayAPI:
+      enabled: true
+      gatewayClass:
+        create: "true"
     ipam:
       mode: kubernetes
-    kubeProxyReplacement: false
+    kubeProxyReplacement: true
     securityContext:
       capabilities:
         ciliumAgent:
