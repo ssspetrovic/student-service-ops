@@ -18,6 +18,8 @@ spec:
   upgrade:
     crds: CreateReplace
   values:
+    envoyConfig:
+      enabled: true
     gatewayAPI:
       enabled: true
       gatewayClass:
