@@ -8,7 +8,10 @@ Current state:
 - Talos configuration lives under [infra/talos](/home/spetrovic/dev/student-service-ops/infra/talos/README.md)
 - Flux is bootstrapped from `clusters/student-service-cluster`
 - Cilium is deployed as the current CNI
-- Networking design for MetalLB and ingress is documented under [infra/networking](/home/spetrovic/dev/student-service-ops/infra/networking/README.md)
+- Networking design for MetalLB and Cilium Gateway API is documented under [infra/networking](/home/spetrovic/dev/student-service-ops/infra/networking/README.md)
+- MetalLB and Cilium Gateway API manifests live under `infra/networking/` and target a shared private ingress IP on `192.168.122.210`
+- MetalLB configuration CRs are reconciled separately through `metallb-config` so they apply only after MetalLB CRDs exist
+- Gateway API CRDs are sourced from the official `kubernetes-sigs/gateway-api` repository and reconciled before Cilium Gateway API is enabled
 
 Current nodes:
 
@@ -24,7 +27,9 @@ Current nodes:
 - `clusters/` contains Flux bootstrap output and cluster entrypoints
 - `infra/` holds shared cluster infrastructure managed by Flux
 - `infra/networking/` groups cluster networking components such as Cilium,
-  MetalLB, and ingress
+  MetalLB, and Gateway API
+- `infra/networking/controllers/` is the Flux-owned path for networking
+  controllers such as Cilium and MetalLB
 - `apps/` will hold workload manifests managed by Flux
 
 ## Secrets
