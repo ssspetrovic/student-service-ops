@@ -6,7 +6,9 @@ Current state:
 
 - Talos cluster bootstrapped with `1` control plane and `2` workers
 - Talos configuration lives under [infra/talos](/home/spetrovic/dev/student-service-ops/infra/talos/README.md)
-- Flux is the next major bootstrap step
+- Flux is bootstrapped from `clusters/student-service-cluster`
+- Cilium is deployed as the current CNI
+- Networking design for MetalLB and ingress is documented under [infra/networking](/home/spetrovic/dev/student-service-ops/infra/networking/README.md)
 
 Current nodes:
 
@@ -19,8 +21,10 @@ Current nodes:
 ## Repository Scope
 
 - `infra/talos/` contains the Talos cluster definition and bootstrap workflow
-- `clusters/` will contain Flux bootstrap output per cluster
-- `infra/` will hold shared cluster infrastructure managed by Flux
+- `clusters/` contains Flux bootstrap output and cluster entrypoints
+- `infra/` holds shared cluster infrastructure managed by Flux
+- `infra/networking/` groups cluster networking components such as Cilium,
+  MetalLB, and ingress
 - `apps/` will hold workload manifests managed by Flux
 
 ## Secrets
