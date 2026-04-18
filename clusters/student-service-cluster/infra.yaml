@@ -4,8 +4,10 @@ metadata:
   name: infra
   namespace: flux-system
 spec:
+  dependsOn:
+    - name: gateway-api-crds
   interval: 10m
-  path: ./infra
+  path: ./infra/networking/controllers
   prune: true
   wait: true
   timeout: 10m
