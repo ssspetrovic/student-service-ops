@@ -8,18 +8,18 @@ Current state:
 - Talos configuration lives under [infra/talos](/home/spetrovic/dev/student-service-ops/infra/talos/README.md)
 - Flux is bootstrapped from `clusters/student-service-cluster`
 - Cilium is deployed as the current CNI
-- Networking design for MetalLB and Cilium Gateway API is documented under [infra/networking](/home/spetrovic/dev/student-service-ops/infra/networking/README.md)
-- MetalLB and Cilium Gateway API manifests live under `infra/networking/` and target a shared private ingress IP on `192.168.122.210`
-- MetalLB configuration CRs are reconciled separately through `metallb-config` so they apply only after MetalLB CRDs exist
+- Networking design for Cilium L2 and Cilium Gateway API is documented under [infra/networking](/home/spetrovic/dev/student-service-ops/infra/networking/README.md)
+- Cilium L2 and Cilium Gateway API manifests live under `infra/networking/` and target a shared private ingress IP on `192.168.1.240`
 - Gateway API CRDs are sourced from the official `kubernetes-sigs/gateway-api` repository and reconciled before Cilium Gateway API is enabled
+- A disposable test backend and `HTTPRoute` currently verify end-to-end ingress through `ingress.student-service.internal`
 
 Current nodes:
 
-| Node   | Role          | IP                |
-| ------ | ------------- | ----------------- |
-| `cp01` | control plane | `192.168.122.46`  |
-| `wn01` | worker        | `192.168.122.122` |
-| `wn02` | worker        | `192.168.122.44`  |
+| Node   | Role          | IP             |
+| ------ | ------------- | -------------- |
+| `cp01` | control plane | `192.168.1.50` |
+| `wn01` | worker        | `192.168.1.51` |
+| `wn02` | worker        | `192.168.1.52` |
 
 ## Repository Scope
 
@@ -27,9 +27,9 @@ Current nodes:
 - `clusters/` contains Flux bootstrap output and cluster entrypoints
 - `infra/` holds shared cluster infrastructure managed by Flux
 - `infra/networking/` groups cluster networking components such as Cilium,
-  MetalLB, and Gateway API
+  Cilium L2, and Gateway API
 - `infra/networking/controllers/` is the Flux-owned path for networking
-  controllers such as Cilium and MetalLB
+  controllers such as Cilium
 - `apps/` will hold workload manifests managed by Flux
 
 ## Secrets
