@@ -3,20 +3,20 @@
 Components:
 
 - `controllers/`
-- `metallb-config/`
+- `cilium-l2/`
 - `gateway-api/`
 
 Flux paths:
 
 - `infra` -> `./infra/networking/controllers`
-- `metallb-config` -> `./infra/networking/metallb-config`
+- `cilium-l2` -> `./infra/networking/cilium-l2`
 - `gateway-api` -> `./infra/networking/gateway-api`
 
 Current network settings:
 
 - Talos subnet: `192.168.1.0/24`
 - node addresses: `192.168.1.50-192.168.1.52`
-- MetalLB pool: `192.168.1.240-192.168.1.248`
+- Cilium LB pool: `192.168.1.240-192.168.1.248`
 - shared Gateway IP: `192.168.1.240`
 
 DNS bootstrap:
@@ -29,9 +29,10 @@ Verify:
 ```bash
 flux get kustomizations -A
 flux get helmreleases -A
-kubectl -n metallb-system get pods
-kubectl -n metallb-system get ipaddresspools.metallb.io
-kubectl -n metallb-system get l2advertisements.metallb.io
+kubectl get ciliumloadbalancerippools
+kubectl get ciliuml2announcementpolicies
 kubectl -n gateway-system get gateway
 kubectl -n gateway-system get svc
+kubectl -n test-ingress get httproute
+curl http://ingress.student-service.internal
 ```

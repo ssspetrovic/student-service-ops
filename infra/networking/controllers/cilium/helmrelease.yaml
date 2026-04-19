@@ -26,6 +26,8 @@ spec:
         create: "true"
     ipam:
       mode: kubernetes
+    l2announcements:
+      enabled: true
     kubeProxyReplacement: true
     securityContext:
       capabilities:
