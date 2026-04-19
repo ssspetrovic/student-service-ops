@@ -1,14 +1,13 @@
 apiVersion: kustomize.toolkit.fluxcd.io/v1
 kind: Kustomization
 metadata:
-  name: gateway-api
+  name: cilium-l2
   namespace: flux-system
 spec:
   dependsOn:
     - name: infra
-    - name: cilium-l2
   interval: 10m
-  path: ./infra/networking/gateway-api
+  path: ./infra/networking/cilium-l2
   prune: true
   wait: true
   timeout: 10m
