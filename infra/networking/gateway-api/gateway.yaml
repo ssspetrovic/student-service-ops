@@ -8,7 +8,7 @@ spec:
   infrastructure:
     annotations:
       metallb.io/address-pool: private-ingress-pool
-      metallb.io/loadBalancerIPs: 192.168.122.210
+      metallb.io/loadBalancerIPs: 192.168.1.240
   listeners:
     - name: http
       protocol: HTTP

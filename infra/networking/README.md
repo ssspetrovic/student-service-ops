@@ -14,15 +14,15 @@ Flux paths:
 
 Current network settings:
 
-- Talos subnet: `192.168.122.0/24`
-- libvirt DHCP on `desktop-ts`: `192.168.122.2-192.168.122.99`
-- MetalLB pool: `192.168.122.210-192.168.122.219`
-- shared Gateway IP: `192.168.122.210`
+- Talos subnet: `192.168.1.0/24`
+- node addresses: `192.168.1.50-192.168.1.52`
+- MetalLB pool: `192.168.1.240-192.168.1.248`
+- shared Gateway IP: `192.168.1.240`
 
 DNS bootstrap:
 
 - `/etc/hosts` on the client machine:
-  `192.168.122.210 ingress.student-service.internal`
+  `192.168.1.240 ingress.student-service.internal`
 
 Verify:
 

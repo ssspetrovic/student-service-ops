@@ -9,7 +9,7 @@ Current settings:
 - gateway class: `cilium`
 - listener: HTTP on port `80`
 - bootstrap hostname: `ingress.student-service.internal`
-- intended load balancer IP: `192.168.122.210`
+- intended load balancer IP: `192.168.1.240`
 - route attachment: all namespaces
 
 Verify:

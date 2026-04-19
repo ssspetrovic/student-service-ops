@@ -5,7 +5,7 @@ Managed by Flux from `infra/networking/metallb-config/`.
 Current settings:
 
 - `IPAddressPool`: `private-ingress-pool`
-- address range: `192.168.122.210-192.168.122.219`
+- address range: `192.168.1.240-192.168.1.248`
 - `L2Advertisement`: `private-ingress`
 
 Verify:
