@@ -7,3 +7,4 @@ resources:
   - infra.yaml
   - metallb-config.yaml
   - gateway-api.yaml
+  - ../../apps/test-ingress
