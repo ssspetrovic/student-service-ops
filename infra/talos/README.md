@@ -11,17 +11,17 @@ Current bootstrap topology:
 
 | Node   | Role          | IP                | Interface | Disk       |
 | ------ | ------------- | ----------------- | --------- | ---------- |
-| `cp01` | control plane | `192.168.122.46`  | `eth0`    | `/dev/vda` |
-| `wn01` | worker        | `192.168.122.122` | `eth0`    | `/dev/vda` |
-| `wn02` | worker        | `192.168.122.44`  | `eth0`    | `/dev/vda` |
+| `cp01` | control plane | `192.168.1.50` | `eth0` | `/dev/vda` |
+| `wn01` | worker        | `192.168.1.51` | `eth0` | `/dev/vda` |
+| `wn02` | worker        | `192.168.1.52` | `eth0` | `/dev/vda` |
 
 Shared network settings:
 
 | Setting                | Value                         |
 | ---------------------- | ----------------------------- |
-| Control plane endpoint | `https://192.168.122.46:6443` |
-| Gateway                | `192.168.122.1`               |
-| Subnet                 | `192.168.122.0/24`            |
+| Control plane endpoint | `https://192.168.1.50:6443` |
+| Node addressing        | DHCP reservations on LAN     |
+| Subnet                 | `192.168.1.0/24`             |
 
 ## Current Talos Configuration Choices
 
@@ -39,9 +39,9 @@ Current installer image source of truth:
 Verify the active interface name from Talos maintenance mode before keeping static network settings:
 
 ```bash
-talosctl get links --insecure --nodes 192.168.122.46
-talosctl get links --insecure --nodes 192.168.122.122
-talosctl get links --insecure --nodes 192.168.122.44
+talosctl get links --insecure --nodes 192.168.1.50
+talosctl get links --insecure --nodes 192.168.1.51
+talosctl get links --insecure --nodes 192.168.1.52
 ```
 
 For the current nodes, the active interface is `eth0`.
@@ -51,9 +51,9 @@ For the current nodes, the active interface is `eth0`.
 Verify the install disk before keeping `installDisk` in `talconfig.yaml`:
 
 ```bash
-talosctl get disks --insecure --nodes 192.168.122.46
-talosctl get disks --insecure --nodes 192.168.122.122
-talosctl get disks --insecure --nodes 192.168.122.44
+talosctl get disks --insecure --nodes 192.168.1.50
+talosctl get disks --insecure --nodes 192.168.1.51
+talosctl get disks --insecure --nodes 192.168.1.52
 ```
 
 For the current nodes, the install disk is `/dev/vda`.
@@ -121,7 +121,7 @@ export TALOSCONFIG=$(realpath ./clusterconfig/talosconfig)
 Run from `infra/talos/`:
 
 ```bash
-talosctl apply-config --insecure --nodes 192.168.122.46 --file clusterconfig/student-service-cluster-cp01.yaml
+talosctl apply-config --insecure --nodes 192.168.1.50 --file clusterconfig/student-service-cluster-cp01.yaml
 ```
 
 The node will install Talos to `/dev/vda` and reboot.
@@ -131,8 +131,8 @@ The node will install Talos to `/dev/vda` and reboot.
 Wait for the node to come back, then run:
 
 ```bash
-talosctl --nodes 192.168.122.46 get machinestatus
-talosctl bootstrap --nodes 192.168.122.46
+talosctl --nodes 192.168.1.50 get machinestatus
+talosctl bootstrap --nodes 192.168.1.50
 ```
 
 Bootstrap is run once for the initial control plane.
@@ -142,8 +142,8 @@ Bootstrap is run once for the initial control plane.
 Run from `infra/talos/`:
 
 ```bash
-talosctl apply-config --insecure --nodes 192.168.122.122 --file clusterconfig/student-service-cluster-wn01.yaml
-talosctl apply-config --insecure --nodes 192.168.122.44 --file clusterconfig/student-service-cluster-wn02.yaml
+talosctl apply-config --insecure --nodes 192.168.1.51 --file clusterconfig/student-service-cluster-wn01.yaml
+talosctl apply-config --insecure --nodes 192.168.1.52 --file clusterconfig/student-service-cluster-wn02.yaml
 ```
 
 Both workers should appear in Kubernetes after they reboot and join the cluster.
@@ -153,7 +153,7 @@ Both workers should appear in Kubernetes after they reboot and join the cluster.
 From `infra/talos/`:
 
 ```bash
-talosctl kubeconfig ../../kubeconfig --nodes 192.168.122.46 --merge=false --force
+talosctl kubeconfig ../../kubeconfig --nodes 192.168.1.50 --merge=false --force
 ```
 
 Then export `KUBECONFIG` for the rest of the Kubernetes bootstrap session:
