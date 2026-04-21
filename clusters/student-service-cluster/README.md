@@ -57,6 +57,8 @@ flux reconcile source git flux-system -n flux-system
 flux reconcile kustomization flux-system -n flux-system
 flux reconcile kustomization gateway-api-crds -n flux-system
 flux reconcile kustomization infra -n flux-system
+flux reconcile source git local-path-provisioner -n flux-system
+flux reconcile kustomization storage -n flux-system
 flux reconcile kustomization cilium-l2 -n flux-system
 flux reconcile kustomization gateway-api -n flux-system
 ```

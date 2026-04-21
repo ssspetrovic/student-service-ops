@@ -7,4 +7,5 @@ resources:
   - infra.yaml
   - cilium-l2.yaml
   - gateway-api.yaml
+  - storage.yaml
   - ../../apps/test-ingress
