@@ -8,4 +8,5 @@ resources:
   - cilium-l2.yaml
   - gateway-api.yaml
   - storage.yaml
+  - harbor.yaml
   - ../../apps/test-ingress
