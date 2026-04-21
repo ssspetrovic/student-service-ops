@@ -7,6 +7,10 @@ spec:
   dependsOn:
     - name: storage
     - name: cilium-l2
+  decryption:
+    provider: sops
+    secretRef:
+      name: sops-age
   interval: 10m
   path: ./infra/registry/harbor
   prune: true
