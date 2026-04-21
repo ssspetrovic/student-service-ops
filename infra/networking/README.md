@@ -17,13 +17,14 @@ Current network settings:
 
 - Talos subnet: `192.168.1.0/24`
 - node addresses: `192.168.1.50-192.168.1.52`
-- Cilium LB pool: `192.168.1.240-192.168.1.248`
+- Cilium Gateway IP pool: `192.168.1.240`
+- Cilium Harbor IP pool: `192.168.1.241`
 - shared Gateway IP: `192.168.1.240`
 
-Current structure notes:
+Current structure:
 
 - `infra/networking/controllers/` holds controller installs such as Cilium
-- `infra/networking/cilium-l2/` contains `gateway/` for LB IPAM and L2 policy
+- `infra/networking/cilium-l2/` contains `gateway/` and `harbor/` for LB IPAM and L2 policy
 - `infra/networking/gateway-api/` holds the shared Gateway resources
 
 DNS bootstrap:
@@ -31,7 +32,7 @@ DNS bootstrap:
 - `/etc/hosts` on the client machine:
   `192.168.1.240 ingress.student-service.internal`
 
-Verify:
+Verification:
 
 ```bash
 flux get kustomizations -A

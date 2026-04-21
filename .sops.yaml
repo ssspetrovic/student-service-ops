@@ -2,13 +2,17 @@
 
 creation_rules:
   - path_regex: ^talos/.*\.sops\.ya?ml$
+    encrypted_regex: ^(data|stringData)$
     age: age1nsru6fkuqz9ys6z0tpw05psp5paytua6yrykscvn2akh5e4casgs3wnq6w
 
   - path_regex: ^infra/.*\.sops\.ya?ml$
+    encrypted_regex: ^(data|stringData)$
     age: age1nsru6fkuqz9ys6z0tpw05psp5paytua6yrykscvn2akh5e4casgs3wnq6w
 
   - path_regex: ^clusters/.*\.sops\.ya?ml$
+    encrypted_regex: ^(data|stringData)$
     age: age1nsru6fkuqz9ys6z0tpw05psp5paytua6yrykscvn2akh5e4casgs3wnq6w
 
   - path_regex: ^apps/.*\.sops\.ya?ml$
+    encrypted_regex: ^(data|stringData)$
     age: age1nsru6fkuqz9ys6z0tpw05psp5paytua6yrykscvn2akh5e4casgs3wnq6w

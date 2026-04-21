@@ -1,14 +1,14 @@
 apiVersion: cilium.io/v2
 kind: CiliumLoadBalancerIPPool
 metadata:
-  name: gateway-pool
+  name: harbor-pool
 spec:
   blocks:
-    - start: 192.168.1.240
-      stop: 192.168.1.240
+    - start: 192.168.1.241
+      stop: 192.168.1.241
   serviceSelector:
     matchExpressions:
       - key: io.kubernetes.service.namespace
         operator: In
         values:
-          - gateway-system
+          - harbor
