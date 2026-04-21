@@ -8,7 +8,8 @@ Components:
 
 Flux paths:
 
-- `infra` -> `./infra/networking/controllers`
+- `infra` -> `./infra` via `infra/kustomization.yaml`
+- `infra/kustomization.yaml` includes `networking/controllers` for networking controllers
 - `cilium-l2` -> `./infra/networking/cilium-l2`
 - `gateway-api` -> `./infra/networking/gateway-api`
 

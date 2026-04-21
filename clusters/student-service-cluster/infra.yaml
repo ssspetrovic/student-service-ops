@@ -7,7 +7,7 @@ spec:
   dependsOn:
     - name: gateway-api-crds
   interval: 10m
-  path: ./infra/networking/controllers
+  path: ./infra
   prune: true
   wait: true
   timeout: 10m
