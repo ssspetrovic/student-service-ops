@@ -73,8 +73,8 @@ Run from the repository root:
 
 ```bash
 export SOPS_AGE_KEY_FILE=/path/to/age.key
-talhelper gensecret > infra/talos/talsecret.sops.yaml
-sops -e -i infra/talos/talsecret.sops.yaml
+talhelper gensecret > talos/talsecret.sops.yaml
+sops -e -i talos/talsecret.sops.yaml
 ```
 
 General flow:
@@ -82,7 +82,7 @@ General flow:
 1. export `SOPS_AGE_KEY_FILE`
 2. generate Talos cluster secrets with `talhelper gensecret`
 3. encrypt the resulting file with `sops -e -i`
-4. edit later with `sops infra/talos/talsecret.sops.yaml`
+4. edit later with `sops talos/talsecret.sops.yaml`
 
 Verify the file is encrypted before committing it.
 
@@ -95,7 +95,7 @@ Important:
 
 ## Render Machine Configs
 
-Run from `infra/talos/`:
+Run from `talos/`:
 
 ```bash
 talhelper genconfig
@@ -118,7 +118,7 @@ export TALOSCONFIG=$(realpath ./clusterconfig/talosconfig)
 
 ## Apply Control Plane Config
 
-Run from `infra/talos/`:
+Run from `talos/`:
 
 ```bash
 talosctl apply-config --insecure --nodes 192.168.1.50 --file clusterconfig/student-service-cluster-cp01.yaml
@@ -139,7 +139,7 @@ Bootstrap is run once for the initial control plane.
 
 ## Apply Worker Configs
 
-Run from `infra/talos/`:
+Run from `talos/`:
 
 ```bash
 talosctl apply-config --insecure --nodes 192.168.1.51 --file clusterconfig/student-service-cluster-wn01.yaml
@@ -150,7 +150,7 @@ Both workers should appear in Kubernetes after they reboot and join the cluster.
 
 ## Fetch Kubeconfig
 
-From `infra/talos/`:
+From `talos/`:
 
 ```bash
 talosctl kubeconfig ../../kubeconfig --nodes 192.168.1.50 --merge=false --force
