@@ -61,6 +61,8 @@ flux reconcile kustomization cilium-l2 -n flux-system
 flux reconcile kustomization gateway-api -n flux-system
 ```
 
+Use only the reconciles needed for the change you merged.
+
 Verification:
 
 ```bash
