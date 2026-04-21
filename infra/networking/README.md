@@ -19,6 +19,12 @@ Current network settings:
 - Cilium LB pool: `192.168.1.240-192.168.1.248`
 - shared Gateway IP: `192.168.1.240`
 
+Current structure notes:
+
+- `infra/networking/controllers/` holds controller installs such as Cilium
+- `infra/networking/cilium-l2/` contains `gateway/` for LB IPAM and L2 policy
+- `infra/networking/gateway-api/` holds the shared Gateway resources
+
 DNS bootstrap:
 
 - `/etc/hosts` on the client machine:
