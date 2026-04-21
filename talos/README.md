@@ -153,13 +153,13 @@ Both workers should appear in Kubernetes after they reboot and join the cluster.
 From `talos/`:
 
 ```bash
-talosctl kubeconfig ../../kubeconfig --nodes 192.168.1.50 --merge=false --force
+talosctl kubeconfig ../kubeconfig --nodes 192.168.1.50 --merge=false --force
 ```
 
 Then export `KUBECONFIG` for the rest of the Kubernetes bootstrap session:
 
 ```bash
-export KUBECONFIG=$(realpath ../../kubeconfig)
+export KUBECONFIG=$(realpath ../kubeconfig)
 ```
 
 Then use `kubectl` normally:
