@@ -8,9 +8,12 @@ Current state:
 - Talos configuration lives under [talos](/home/spetrovic/dev/student-service-ops/talos/README.md)
 - Flux is bootstrapped from `clusters/student-service-cluster`
 - Cilium is deployed as the current CNI
+- Local Path Provisioner is deployed as the current storage backend
 - Networking design for Cilium L2 and Cilium Gateway API is documented under [infra/networking](/home/spetrovic/dev/student-service-ops/infra/networking/README.md)
+- Storage design for Local Path Provisioner is documented under [infra/storage](/home/spetrovic/dev/student-service-ops/infra/storage/README.md)
 - Cilium L2 and Cilium Gateway API manifests live under `infra/networking/` and target a shared private ingress IP on `192.168.1.240`
 - Gateway API CRDs are sourced from the official `kubernetes-sigs/gateway-api` repository and reconciled before Cilium Gateway API is enabled
+- `local-path` is the current default `StorageClass`
 - A disposable test backend and `HTTPRoute` currently verify end-to-end ingress through `ingress.student-service.internal`
 
 Current nodes:
@@ -28,6 +31,7 @@ Current nodes:
 - `infra/` holds shared cluster infrastructure managed by Flux
 - `infra/networking/` groups cluster networking components such as Cilium,
   Cilium L2, and Gateway API
+- `infra/storage/` groups shared storage sources and notes
 - `infra/networking/controllers/` is the Flux-owned path for networking
   controllers such as Cilium
 - `apps/` will hold workload manifests managed by Flux
