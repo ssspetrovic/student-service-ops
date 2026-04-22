@@ -32,7 +32,7 @@ data:
             cache 30 {
                disable success cluster.local
                disable denial cluster.local
-            }I
+            }
             loop
             reload
             loadbalance
