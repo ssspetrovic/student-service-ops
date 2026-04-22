@@ -10,6 +10,9 @@ Current settings:
 - issuer: `student-service-ca`
 - DNS name: `harbor.student-service.internal`
 
+This path contains service certificates for the registry tier.
+The CA bootstrap and shared issuer are documented under `infra/controllers/cert-manager/issuers/`.
+
 Verification:
 
 ```bash

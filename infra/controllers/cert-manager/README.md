@@ -19,6 +19,12 @@ Current settings:
 - source: `https://charts.jetstack.io`
 - CRDs are installed through the chart with `crds.enabled: true`
 
+Current responsibility:
+
+- installs the cert-manager controllers and CRDs
+- provides the shared certificate management layer for cluster services
+- does not define service-specific certificates directly
+
 Verification:
 
 ```bash
