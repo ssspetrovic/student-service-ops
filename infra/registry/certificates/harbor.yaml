@@ -1,0 +1,13 @@
+apiVersion: cert-manager.io/v1
+kind: Certificate
+metadata:
+  name: harbor-tls
+  namespace: harbor
+spec:
+  secretName: harbor-tls
+  dnsNames:
+    - harbor.student-service.internal
+  issuerRef:
+    group: cert-manager.io
+    kind: ClusterIssuer
+    name: student-service-ca

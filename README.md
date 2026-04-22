@@ -8,6 +8,7 @@ Current state:
 - Talos configuration lives under [talos](/home/spetrovic/dev/student-service-ops/talos/README.md)
 - Flux is bootstrapped from `clusters/student-service-cluster`
 - Cilium is deployed as the current CNI
+- cert-manager is deployed as the current certificate controller
 - Local Path Provisioner is deployed as the current storage backend
 - Networking design for Cilium L2 and Cilium Gateway API is documented under [infra/networking](/home/spetrovic/dev/student-service-ops/infra/networking/README.md)
 - Storage design for Local Path Provisioner is documented under [infra/storage](/home/spetrovic/dev/student-service-ops/infra/storage/README.md)
