@@ -3,6 +3,7 @@
 Components:
 
 - `controllers/`
+- `coredns/`
 - `cilium-l2/`
 - `gateway-api/`
 
@@ -23,6 +24,7 @@ Current network settings:
 
 Current structure:
 
+- `infra/networking/coredns/` holds the Git-managed CoreDNS ConfigMap overrides for cluster DNS
 - `infra/networking/controllers/` holds controller installs such as Cilium
 - `infra/networking/cilium-l2/` contains `gateway/` and `harbor/` for LB IPAM and L2 policy
 - `infra/networking/gateway-api/` holds the shared Gateway resources
@@ -31,6 +33,9 @@ DNS bootstrap:
 
 - `/etc/hosts` on the client machine:
   `192.168.1.240 ingress.student-service.internal`
+- CoreDNS static records in-cluster:
+  `192.168.1.240 ingress.student-service.internal`
+  `192.168.1.241 harbor.student-service.internal`
 
 Verification:
 
