@@ -9,31 +9,59 @@ Current pinned versions:
 
 Current bootstrap topology:
 
-| Node   | Role          | IP                | Interface | Disk       |
-| ------ | ------------- | ----------------- | --------- | ---------- |
-| `cp01` | control plane | `192.168.1.50` | `eth0` | `/dev/vda` |
-| `wn01` | worker        | `192.168.1.51` | `eth0` | `/dev/vda` |
-| `wn02` | worker        | `192.168.1.52` | `eth0` | `/dev/vda` |
+| Node   | Role          | IP             | Interface | Disk       |
+| ------ | ------------- | -------------- | --------- | ---------- |
+| `cp01` | control plane | `192.168.1.50` | `eth0`    | `/dev/vda` |
+| `wn01` | worker        | `192.168.1.51` | `eth0`    | `/dev/vda` |
+| `wn02` | worker        | `192.168.1.52` | `eth0`    | `/dev/vda` |
 
 Shared network settings:
 
-| Setting                | Value                         |
-| ---------------------- | ----------------------------- |
+| Setting                | Value                       |
+| ---------------------- | --------------------------- |
 | Control plane endpoint | `https://192.168.1.50:6443` |
-| Node addressing        | DHCP reservations on LAN     |
-| Subnet                 | `192.168.1.0/24`             |
+| Node addressing        | DHCP reservations on LAN    |
+| Subnet                 | `192.168.1.0/24`            |
 
 ## Current Talos Configuration Choices
 
 - The installer image / schematic ID is the source of truth for Talos image customization for all nodes.
 - The same installer image is pinned for both control plane and worker nodes via `talosImageURL`.
 - All current nodes use static addresses on the same libvirt network.
-- No patches are required for the current configuration because the needed settings are covered by `talconfig.yaml`.
+- Worker nodes carry a shared registry trust patch for `harbor.student-service.internal`.
 - Worker nodes are configured to carry a `UserVolumeConfig` patch for `local-path-provisioner` on `/dev/vdb`.
 
 Current installer image source of truth:
 
 - `factory.talos.dev/nocloud-installer/376567988ad370138ad8b2698212367b8edcb69b5fd68c80be1f2ec7d603b4ba`
+
+## Harbor Registry Trust Patch
+
+Current shared registry trust patch path:
+
+- `talos/patches/registry-harbor-ca.yaml`
+
+Current registry trust intent:
+
+- add a worker-local host entry for `harbor.student-service.internal -> 192.168.1.241`
+- trust the internal CA for `harbor.student-service.internal`
+- allow future worker node image pulls from Harbor over verified TLS
+
+Apply the registry trust patch to worker nodes:
+
+```bash
+talosctl --nodes 192.168.1.51,192.168.1.52 patch mc \
+  --patch @talos/patches/registry-harbor-ca.yaml
+```
+
+Verify the applied registry config:
+
+```bash
+talosctl -n 192.168.1.51 get machineconfig v1alpha1 -o jsonpath='{.spec}' | grep -A12 "extraHostEntries"
+talosctl -n 192.168.1.52 get machineconfig v1alpha1 -o jsonpath='{.spec}' | grep -A12 "extraHostEntries"
+talosctl -n 192.168.1.51 get machineconfig v1alpha1 -o jsonpath='{.spec}' | grep -A8 "harbor.student-service.internal"
+talosctl -n 192.168.1.52 get machineconfig v1alpha1 -o jsonpath='{.spec}' | grep -A8 "harbor.student-service.internal"
+```
 
 ## Verify Network Interface
 
