@@ -1,4 +1,9 @@
 machine:
+  network:
+    extraHostEntries:
+      - ip: 192.168.1.241
+        aliases:
+          - harbor.student-service.internal
   registries:
     config:
       harbor.student-service.internal:

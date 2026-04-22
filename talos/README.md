@@ -9,19 +9,19 @@ Current pinned versions:
 
 Current bootstrap topology:
 
-| Node   | Role          | IP                | Interface | Disk       |
-| ------ | ------------- | ----------------- | --------- | ---------- |
-| `cp01` | control plane | `192.168.1.50` | `eth0` | `/dev/vda` |
-| `wn01` | worker        | `192.168.1.51` | `eth0` | `/dev/vda` |
-| `wn02` | worker        | `192.168.1.52` | `eth0` | `/dev/vda` |
+| Node   | Role          | IP             | Interface | Disk       |
+| ------ | ------------- | -------------- | --------- | ---------- |
+| `cp01` | control plane | `192.168.1.50` | `eth0`    | `/dev/vda` |
+| `wn01` | worker        | `192.168.1.51` | `eth0`    | `/dev/vda` |
+| `wn02` | worker        | `192.168.1.52` | `eth0`    | `/dev/vda` |
 
 Shared network settings:
 
-| Setting                | Value                         |
-| ---------------------- | ----------------------------- |
+| Setting                | Value                       |
+| ---------------------- | --------------------------- |
 | Control plane endpoint | `https://192.168.1.50:6443` |
-| Node addressing        | DHCP reservations on LAN     |
-| Subnet                 | `192.168.1.0/24`             |
+| Node addressing        | DHCP reservations on LAN    |
+| Subnet                 | `192.168.1.0/24`            |
 
 ## Current Talos Configuration Choices
 
@@ -43,6 +43,7 @@ Current shared registry trust patch path:
 
 Current registry trust intent:
 
+- add a worker-local host entry for `harbor.student-service.internal -> 192.168.1.241`
 - trust the internal CA for `harbor.student-service.internal`
 - allow future worker node image pulls from Harbor over verified TLS
 
@@ -56,6 +57,8 @@ talosctl --nodes 192.168.1.51,192.168.1.52 patch mc \
 Verify the applied registry config:
 
 ```bash
+talosctl -n 192.168.1.51 get machineconfig v1alpha1 -o jsonpath='{.spec}' | grep -A12 "extraHostEntries"
+talosctl -n 192.168.1.52 get machineconfig v1alpha1 -o jsonpath='{.spec}' | grep -A12 "extraHostEntries"
 talosctl -n 192.168.1.51 get machineconfig v1alpha1 -o jsonpath='{.spec}' | grep -A8 "harbor.student-service.internal"
 talosctl -n 192.168.1.52 get machineconfig v1alpha1 -o jsonpath='{.spec}' | grep -A8 "harbor.student-service.internal"
 ```
