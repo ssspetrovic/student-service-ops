@@ -2,7 +2,6 @@
 
 Components:
 
-- `controllers/`
 - `coredns/`
 - `cilium-l2/`
 - `gateway-api/`
@@ -10,7 +9,7 @@ Components:
 Flux paths:
 
 - `infra` -> `./infra` via `infra/kustomization.yaml`
-- `infra/kustomization.yaml` includes `networking/controllers` for networking controllers
+- `infra/kustomization.yaml` includes `controllers` for shared cluster controllers
 - `cilium-l2` -> `./infra/networking/cilium-l2`
 - `gateway-api` -> `./infra/networking/gateway-api`
 
@@ -25,7 +24,6 @@ Current network settings:
 Current structure:
 
 - `infra/networking/coredns/` holds the Git-managed CoreDNS ConfigMap overrides for cluster DNS
-- `infra/networking/controllers/` holds controller installs such as Cilium
 - `infra/networking/cilium-l2/` contains `gateway/` and `harbor/` for LB IPAM and L2 policy
 - `infra/networking/gateway-api/` holds the shared Gateway resources
 
