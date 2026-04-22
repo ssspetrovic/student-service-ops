@@ -29,11 +29,10 @@ Current nodes:
 - `talos/` contains the Talos cluster definition and bootstrap workflow
 - `clusters/` contains Flux bootstrap output and cluster entrypoints
 - `infra/` holds shared cluster infrastructure managed by Flux
+- `infra/controllers/` groups shared cluster controllers such as Cilium and future cert-manager
 - `infra/networking/` groups cluster networking components such as Cilium,
   Cilium L2, and Gateway API
 - `infra/storage/` groups shared storage sources and notes
-- `infra/networking/controllers/` is the Flux-owned path for networking
-  controllers such as Cilium
 - `apps/` will hold workload manifests managed by Flux
 
 ## Secrets
