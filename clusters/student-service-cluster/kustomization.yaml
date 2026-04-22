@@ -5,6 +5,7 @@ resources:
   - gateway-api-source.yaml
   - gateway-api-crds.yaml
   - infra.yaml
+  - cert-manager.yaml
   - cilium-l2.yaml
   - gateway-api.yaml
   - storage.yaml
