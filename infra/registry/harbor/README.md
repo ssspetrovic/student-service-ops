@@ -52,4 +52,29 @@ kubectl get certificate -n harbor
 kubectl get pods -n harbor
 kubectl get pvc -n harbor
 kubectl get svc -n harbor
+curl -v https://harbor.student-service.internal/v2/
+```
+
+Client trust:
+
+Harbor uses a leaf certificate issued by the shared `student-service-ca` issuer.
+The internal CA export and OS trust-store steps are documented under `infra/controllers/cert-manager/issuers/`.
+Docker still uses a Harbor-specific path because Docker trust is configured per registry hostname.
+
+Docker trust:
+
+```bash
+kubectl get secret -n cert-manager student-service-root-ca \
+  -o jsonpath='{.data.ca\.crt}' | base64 -d > student-service-root-ca.crt
+
+sudo mkdir -p /etc/docker/certs.d/harbor.student-service.internal
+sudo cp student-service-root-ca.crt /etc/docker/certs.d/harbor.student-service.internal/ca.crt
+sudo systemctl restart docker
+```
+
+Validation:
+
+```bash
+docker login harbor.student-service.internal
+curl -v https://harbor.student-service.internal/v2/
 ```
