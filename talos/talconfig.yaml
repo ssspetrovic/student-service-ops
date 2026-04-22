@@ -26,6 +26,8 @@ nodes:
     controlPlane: false
     ipAddress: 192.168.1.51
     installDisk: /dev/vda
+    patches:
+      - "@./patches/workers/local-path-provisioner-volume.yaml"
     networkInterfaces:
       - interface: eth0
         dhcp: true
@@ -33,6 +35,8 @@ nodes:
     controlPlane: false
     ipAddress: 192.168.1.52
     installDisk: /dev/vda
+    patches:
+      - "@./patches/workers/local-path-provisioner-volume.yaml"
     networkInterfaces:
       - interface: eth0
         dhcp: true

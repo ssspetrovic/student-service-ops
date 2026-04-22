@@ -29,6 +29,7 @@ Shared network settings:
 - The same installer image is pinned for both control plane and worker nodes via `talosImageURL`.
 - All current nodes use static addresses on the same libvirt network.
 - No patches are required for the current configuration because the needed settings are covered by `talconfig.yaml`.
+- Worker nodes are configured to carry a `UserVolumeConfig` patch for `local-path-provisioner` on `/dev/vdb`.
 
 Current installer image source of truth:
 
@@ -57,6 +58,41 @@ talosctl get disks --insecure --nodes 192.168.1.52
 ```
 
 For the current nodes, the install disk is `/dev/vda`.
+
+## Worker Storage Patch
+
+Current worker storage patch path:
+
+- `talos/patches/workers/local-path-provisioner-volume.yaml`
+
+Current worker storage intent:
+
+- add a second worker disk at `/dev/vdb`
+- provision a Talos user volume named `local-path-provisioner`
+- mount it at `/var/mnt/local-path-provisioner`
+
+Verify the extra disk before applying worker config:
+
+```bash
+talosctl get disks --nodes 192.168.1.51
+talosctl get disks --nodes 192.168.1.52
+```
+
+Apply the worker storage patch:
+
+```bash
+talosctl --nodes 192.168.1.51,192.168.1.52 patch mc \
+  --patch @talos/patches/workers/local-path-provisioner-volume.yaml
+```
+
+Verify the user volume after applying worker config:
+
+```bash
+talosctl -n 192.168.1.51 get volumestatus u-local-path-provisioner
+talosctl -n 192.168.1.52 get volumestatus u-local-path-provisioner
+talosctl -n 192.168.1.51 ls /var/mnt/local-path-provisioner
+talosctl -n 192.168.1.52 ls /var/mnt/local-path-provisioner
+```
 
 ## Prerequisites
 
