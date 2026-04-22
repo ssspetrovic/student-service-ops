@@ -1,6 +1,6 @@
 # Cilium
 
-Managed by Flux from `infra/networking/controllers/cilium/`.
+Managed by Flux from `infra/controllers/cilium/`.
 
 Current settings:
 
