@@ -19,8 +19,9 @@ Talos-specific settings:
 - root path `/var/mnt/local-path-provisioner`
 - namespace `local-path-storage`
 - namespace label `pod-security.kubernetes.io/enforce: privileged`
+- worker nodes need a Talos user volume mounted at `/var/mnt/local-path-provisioner`
 
-Verify after reconcile:
+Verification:
 
 ```bash
 kubectl get storageclass
