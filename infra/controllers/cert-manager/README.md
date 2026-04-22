@@ -2,6 +2,15 @@
 
 Managed by Flux from `infra/controllers/cert-manager/`.
 
+Current paths:
+
+- `infra/controllers/cert-manager/`
+- `clusters/student-service-cluster/cert-manager.yaml`
+
+Flux ownership:
+
+- `cert-manager` reconciles `./infra/controllers/cert-manager`
+
 Current settings:
 
 - chart: `cert-manager`
@@ -13,6 +22,7 @@ Current settings:
 Verification:
 
 ```bash
+flux get kustomizations -A
 flux get helmreleases -A
 kubectl get pods -n cert-manager
 kubectl get crds | grep cert-manager.io
