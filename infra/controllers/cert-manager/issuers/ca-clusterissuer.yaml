@@ -1,0 +1,7 @@
+apiVersion: cert-manager.io/v1
+kind: ClusterIssuer
+metadata:
+  name: student-service-ca
+spec:
+  ca:
+    secretName: student-service-root-ca
