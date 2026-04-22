@@ -3,12 +3,15 @@
 Current Harbor path:
 
 - `infra/registry/harbor/`
+- `infra/registry/certificates/`
 - `clusters/student-service-cluster/harbor.yaml`
+- `clusters/student-service-cluster/harbor-certificates.yaml`
 
 Flux ownership:
 
 - `harbor` reconciles `./infra/registry/harbor`
-- `harbor` depends on `storage` and `cilium-l2`
+- `harbor-certificates` reconciles `./infra/registry/certificates`
+- `harbor` depends on `storage`, `cilium-l2`, and `harbor-certificates`
 
 Current bootstrap values:
 
@@ -16,7 +19,8 @@ Current bootstrap values:
 - chart version `1.18.3`
 - service exposure `LoadBalancer`
 - private IP `192.168.1.241`
-- `externalURL` `http://harbor.student-service.internal`
+- external TLS Secret `harbor-tls`
+- `externalURL` `https://harbor.student-service.internal`
 - PVCs pinned to `storageClass: local-path`
 - Trivy disabled
 - update strategy `Recreate`
@@ -36,6 +40,7 @@ Commands:
 source ~/envs/k8s.sh
 flux reconcile source git flux-system -n flux-system
 flux reconcile kustomization cilium-l2 -n flux-system
+flux reconcile kustomization harbor-certificates -n flux-system
 flux reconcile kustomization harbor -n flux-system
 ```
 
@@ -43,6 +48,7 @@ Verification:
 
 ```bash
 flux get kustomizations -A
+kubectl get certificate -n harbor
 kubectl get pods -n harbor
 kubectl get pvc -n harbor
 kubectl get svc -n harbor
