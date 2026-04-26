@@ -44,7 +44,7 @@ spec:
       persistentVolumeClaim:
         registry:
           storageClass: local-path
-          size: 20Gi
+          size: 180Gi
         jobservice:
           jobLog:
             storageClass: local-path
