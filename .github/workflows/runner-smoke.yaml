@@ -1,0 +1,11 @@
+name: Runner Smoke Test
+
+on:
+  workflow_dispatch:
+
+jobs:
+  hello:
+    runs-on: student-service-runner
+    steps:
+      - name: Hello from CI
+        run: echo "hello from CI"
