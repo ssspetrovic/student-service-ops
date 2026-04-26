@@ -1,0 +1,27 @@
+# Actions Runner Scale Set
+
+Current paths:
+
+- `infra/ci/actions-runner-scale-set`
+- `clusters/student-service-cluster/actions-runner-scale-set.yaml`
+
+Flux ownership:
+
+- `actions-runner-scale-set` reconciles `./infra/ci/actions-runner-scale-set`.
+- `actions-runner-controller` reconciles `./infra/controllers/actions-runner-controller`.
+
+Current settings:
+
+- The scale set registers repository runners for `https://github.com/ssspetrovic/student-service-ops`.
+- Workflows use `runs-on: student-service-runner`.
+- Runner pods use Docker-in-Docker and run in the privileged `arc-runners` namespace.
+- The scale set can run up to `2` concurrent ephemeral runners and scales to `0` when idle.
+- GitHub authentication is stored in the SOPS-encrypted `github-auth` Secret.
+
+Verification:
+
+```bash
+flux get kustomization actions-runner-scale-set -n flux-system
+flux get helmrelease actions-runner-scale-set -n arc-runners
+kubectl get pods -n arc-runners
+```
