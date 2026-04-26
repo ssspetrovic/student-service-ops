@@ -10,6 +10,8 @@ Current state:
 - Cilium is deployed as the current CNI
 - cert-manager is deployed as the current certificate controller
 - Local Path Provisioner is deployed as the current storage backend
+- Actions Runner Controller manifests are present for repository-scoped GitHub Actions runners
+- The GitHub runner scale set is configured for Docker-in-Docker
 - Networking design for Cilium L2 and Cilium Gateway API is documented under [infra/networking](/home/spetrovic/dev/student-service-ops/infra/networking/README.md)
 - Storage design for Local Path Provisioner is documented under [infra/storage](/home/spetrovic/dev/student-service-ops/infra/storage/README.md)
 - Cilium L2 and Cilium Gateway API manifests live under `infra/networking/` and target a shared private ingress IP on `192.168.1.240`
@@ -30,7 +32,8 @@ Current nodes:
 - `talos/` contains the Talos cluster definition and bootstrap workflow
 - `clusters/` contains Flux bootstrap output and cluster entrypoints
 - `infra/` holds shared cluster infrastructure managed by Flux
-- `infra/controllers/` groups shared cluster controllers such as Cilium
+- `infra/controllers/` groups shared cluster controllers such as Cilium and Actions Runner Controller
+- `infra/ci/` groups CI runner infrastructure managed by Flux
 - `infra/networking/` groups cluster networking components such as Cilium,
   Cilium L2, and Gateway API
 - `infra/storage/` groups shared storage sources and notes
@@ -48,6 +51,10 @@ This repo uses `SOPS` with `age`.
 Current encrypted Talos cluster secrets file:
 
 - [talos/talsecret.sops.yaml](/home/spetrovic/dev/student-service-ops/talos/talsecret.sops.yaml)
+
+Current encrypted platform secrets:
+
+- [infra/ci/actions-runner-scale-set/github-auth.sops.yaml](/home/spetrovic/dev/student-service-ops/infra/ci/actions-runner-scale-set/github-auth.sops.yaml)
 
 Basic local workflow:
 
@@ -73,3 +80,7 @@ sops talos/talsecret.sops.yaml
 ## Talos
 
 Talos-specific bootstrap and operator steps are documented in [talos/README.md](/home/spetrovic/dev/student-service-ops/talos/README.md).
+
+## GitHub Actions Runners
+
+GitHub runner deployment details are documented in [infra/ci/actions-runner-scale-set/README.md](/home/spetrovic/dev/student-service-ops/infra/ci/actions-runner-scale-set/README.md).

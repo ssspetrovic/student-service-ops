@@ -1,0 +1,31 @@
+apiVersion: helm.toolkit.fluxcd.io/v2
+kind: HelmRelease
+metadata:
+  name: actions-runner-scale-set
+  namespace: arc-runners
+spec:
+  interval: 30m
+  releaseName: student-service-runner
+  chartRef:
+    kind: OCIRepository
+    name: actions-runner-scale-set
+    namespace: flux-system
+  install:
+    crds: CreateReplace
+    remediation:
+      retries: 3
+  upgrade:
+    crds: CreateReplace
+    remediation:
+      retries: 3
+  values:
+    githubConfigUrl: https://github.com/ssspetrovic/student-service-ops
+    githubConfigSecret: github-auth
+    runnerScaleSetName: student-service-runner
+    minRunners: 0
+    maxRunners: 2
+    containerMode:
+      type: dind
+    controllerServiceAccount:
+      namespace: arc-systems
+      name: arc-gha-rs-controller
