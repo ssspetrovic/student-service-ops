@@ -68,7 +68,12 @@ spec:
               - name: dind-externals
                 mountPath: /home/runner/externals
               - name: harbor-ca
-                mountPath: /etc/docker/certs.d/harbor.student-service.internal
+                mountPath: /etc/docker/certs.d/harbor.student-service.internal/ca.crt
+                subPath: ca.crt
+                readOnly: true
+              - name: harbor-ca-system
+                mountPath: /etc/ssl/certs/harbor-ca.crt
+                subPath: ca.crt
                 readOnly: true
         containers:
           - name: runner
@@ -86,7 +91,12 @@ spec:
               - name: dind-sock
                 mountPath: /var/run
               - name: harbor-ca
-                mountPath: /etc/docker/certs.d/harbor.student-service.internal
+                mountPath: /etc/docker/certs.d/harbor.student-service.internal/ca.crt
+                subPath: ca.crt
+                readOnly: true
+              - name: harbor-ca-system
+                mountPath: /etc/ssl/certs/harbor-ca.crt
+                subPath: ca.crt
                 readOnly: true
         volumes:
           - name: work
@@ -96,5 +106,8 @@ spec:
           - name: dind-externals
             emptyDir: {}
           - name: harbor-ca
+            configMap:
+              name: harbor-ca
+          - name: harbor-ca-system
             configMap:
               name: harbor-ca
