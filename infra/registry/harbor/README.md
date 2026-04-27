@@ -22,6 +22,7 @@ Current bootstrap values:
 - external TLS Secret `harbor-tls`
 - `externalURL` `https://harbor.student-service.internal`
 - PVCs pinned to `storageClass: local-path`
+- registry PVC size `180Gi`
 - Trivy disabled
 - update strategy `Recreate`
 
@@ -30,6 +31,14 @@ Secrets:
 - `infra/registry/harbor/harbor-values.sops.yaml` stores the encrypted Harbor values
 - `harbor-values.secret.example.yaml` is the plaintext template
 - the Secret name is `harbor-values`
+- GitHub Actions uses repository secrets `HARBOR_USERNAME` and `HARBOR_PASSWORD` for the Harbor image smoke workflow
+
+Robot account:
+
+- Harbor project `student-service` stores app and smoke-test images
+- project robot account `github-actions-build` is used by GitHub Actions
+- the robot account has repository push and pull permission
+- ARC DinD runners trust Harbor through `infra/ci/actions-runner-scale-set/harbor-ca-configmap.yaml`
 
 The Harbor namespace is created by `namespace.yaml` in this directory.
 Encrypted secrets in this directory are listed after `namespace.yaml` in `kustomization.yaml`.
