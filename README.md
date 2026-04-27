@@ -12,6 +12,7 @@ Current state:
 - Local Path Provisioner is deployed as the current storage backend
 - Actions Runner Controller manifests are present for repository-scoped GitHub Actions runners
 - The GitHub runner scale set is configured for Docker-in-Docker
+- GitHub workflow smoke tests exist for runner scheduling and Harbor image push/pull
 - Networking design for Cilium L2 and Cilium Gateway API is documented under [infra/networking](/home/spetrovic/dev/student-service-ops/infra/networking/README.md)
 - Storage design for Local Path Provisioner is documented under [infra/storage](/home/spetrovic/dev/student-service-ops/infra/storage/README.md)
 - Cilium L2 and Cilium Gateway API manifests live under `infra/networking/` and target a shared private ingress IP on `192.168.1.240`
@@ -84,3 +85,7 @@ Talos-specific bootstrap and operator steps are documented in [talos/README.md](
 ## GitHub Actions Runners
 
 GitHub runner deployment details are documented in [infra/ci/actions-runner-scale-set/README.md](/home/spetrovic/dev/student-service-ops/infra/ci/actions-runner-scale-set/README.md).
+
+## Harbor
+
+Harbor deployment details are documented in [infra/registry/harbor/README.md](/home/spetrovic/dev/student-service-ops/infra/registry/harbor/README.md).
