@@ -1,0 +1,38 @@
+name: Harbor Image Smoke Test
+
+on:
+  workflow_dispatch:
+
+jobs:
+  image-smoke:
+    runs-on: student-service-runner
+    env:
+      IMAGE: harbor.student-service.internal/student-service/arc-smoke:${{ github.run_id }}
+    steps:
+      - name: Check Docker
+        run: docker version
+
+      - name: Log in to Harbor
+        run: printf '%s' "${{ secrets.HARBOR_PASSWORD }}" | docker login harbor.student-service.internal --username "${{ secrets.HARBOR_USERNAME }}" --password-stdin
+
+      - name: Build image
+        run: |
+          cat > Dockerfile <<'EOF'
+          FROM alpine:3.20
+          CMD ["echo", "hello from Harbor image smoke test"]
+          EOF
+
+          docker build --pull -t "$IMAGE" .
+
+      - name: Push image
+        run: docker push "$IMAGE"
+
+      - name: Pull image
+        run: |
+          docker rmi "$IMAGE"
+          docker pull "$IMAGE"
+          docker run --rm "$IMAGE"
+
+      - name: Log out of Harbor
+        if: always()
+        run: docker logout harbor.student-service.internal
