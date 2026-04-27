@@ -24,8 +24,75 @@ spec:
     runnerScaleSetName: student-service-runner
     minRunners: 0
     maxRunners: 2
-    containerMode:
-      type: dind
     controllerServiceAccount:
       namespace: arc-systems
       name: arc-gha-rs-controller
+    template:
+      spec:
+        initContainers:
+          - name: init-dind-externals
+            image: ghcr.io/actions/actions-runner:latest
+            command:
+              - cp
+            args:
+              - -r
+              - /home/runner/externals/.
+              - /home/runner/tmpDir/
+            volumeMounts:
+              - name: dind-externals
+                mountPath: /home/runner/tmpDir
+          - name: dind
+            image: docker:dind
+            args:
+              - dockerd
+              - --host=unix:///var/run/docker.sock
+              - --group=$(DOCKER_GROUP_GID)
+            env:
+              - name: DOCKER_GROUP_GID
+                value: "123"
+            restartPolicy: Always
+            securityContext:
+              privileged: true
+            startupProbe:
+              exec:
+                command:
+                  - docker
+                  - info
+              failureThreshold: 24
+              periodSeconds: 5
+            volumeMounts:
+              - name: work
+                mountPath: /home/runner/_work
+              - name: dind-sock
+                mountPath: /var/run
+              - name: dind-externals
+                mountPath: /home/runner/externals
+              - name: harbor-ca
+                mountPath: /etc/docker/certs.d/harbor.student-service.internal/ca.crt
+                subPath: ca.crt
+                readOnly: true
+        containers:
+          - name: runner
+            image: ghcr.io/actions/actions-runner:latest
+            command:
+              - /home/runner/run.sh
+            env:
+              - name: DOCKER_HOST
+                value: unix:///var/run/docker.sock
+              - name: RUNNER_WAIT_FOR_DOCKER_IN_SECONDS
+                value: "120"
+            volumeMounts:
+              - name: work
+                mountPath: /home/runner/_work
+              - name: dind-sock
+                mountPath: /var/run
+        volumes:
+          - name: work
+            emptyDir: {}
+          - name: dind-sock
+            emptyDir: {}
+          - name: dind-externals
+            emptyDir: {}
+          - name: harbor-ca
+            configMap:
+              name: harbor-ca
