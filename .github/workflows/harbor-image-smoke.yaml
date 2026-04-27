@@ -13,7 +13,13 @@ jobs:
         run: docker version
 
       - name: Log in to Harbor
-        run: printf '%s' "${{ secrets.HARBOR_PASSWORD }}" | docker login harbor.student-service.internal --username "${{ secrets.HARBOR_USERNAME }}" --password-stdin
+        env:
+          HARBOR_USERNAME: ${{ secrets.HARBOR_USERNAME }}
+          HARBOR_PASSWORD: ${{ secrets.HARBOR_PASSWORD }}
+        run: |
+          printf '%s' "$HARBOR_PASSWORD" | docker login harbor.student-service.internal \
+            --username "$HARBOR_USERNAME" \
+            --password-stdin
 
       - name: Build image
         run: |
