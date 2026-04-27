@@ -37,8 +37,11 @@ Robot account:
 
 - Harbor project `student-service` stores app and smoke-test images
 - project robot account `github-actions-build` is used by GitHub Actions
+- `HARBOR_USERNAME` must be the full generated robot account name shown by Harbor, such as `robot$student-service+github-actions-build`
+- `HARBOR_PASSWORD` must be the robot account secret token value, not the exported JSON document
+- workflows pass these secrets through environment variables so the `$` in the robot username is not expanded by the shell
 - the robot account has repository push and pull permission
-- ARC DinD runners trust Harbor through `infra/ci/actions-runner-scale-set/harbor-ca-configmap.yaml`
+- ARC runner Docker CLI and DinD daemon trust Harbor through `infra/ci/actions-runner-scale-set/harbor-ca-configmap.yaml`
 
 The Harbor namespace is created by `namespace.yaml` in this directory.
 Encrypted secrets in this directory are listed after `namespace.yaml` in `kustomization.yaml`.

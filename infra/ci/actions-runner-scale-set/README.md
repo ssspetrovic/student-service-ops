@@ -17,6 +17,11 @@ Current settings:
 - Runner pods use Docker-in-Docker and run in the privileged `arc-runners` namespace.
 - The scale set can run up to `2` concurrent ephemeral runners and scales to `0` when idle.
 - GitHub authentication is stored in the SOPS-encrypted `github-auth` Secret.
+- Harbor CA trust for the Docker CLI and DinD daemon is provided by the `harbor-ca` ConfigMap.
+- The Harbor CA is also mounted into `/etc/ssl/certs/harbor-ca.crt` for system TLS trust in the runner and DinD containers.
+- `.github/workflows/runner-smoke.yaml` verifies runner scheduling.
+- `.github/workflows/harbor-image-smoke.yaml` verifies Docker build, Harbor push, Harbor pull, and Docker logout.
+- Harbor login in workflows uses GitHub repository secrets `HARBOR_USERNAME` and `HARBOR_PASSWORD`.
 
 Verification:
 
