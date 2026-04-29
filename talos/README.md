@@ -39,7 +39,7 @@ Current installer image source of truth:
 
 Current shared registry trust patch path:
 
-- `talos/patches/registry-harbor-ca.yaml`
+- `talos/patches/workers/registry-harbor-ca.yaml`
 
 Current registry trust intent:
 
@@ -51,7 +51,7 @@ Apply the registry trust patch to worker nodes:
 
 ```bash
 talosctl --nodes 192.168.1.51,192.168.1.52 patch mc \
-  --patch @talos/patches/registry-harbor-ca.yaml
+  --patch @talos/patches/workers/registry-harbor-ca.yaml
 ```
 
 Verify the applied registry config:
