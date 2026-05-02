@@ -104,15 +104,33 @@ Common validation commands:
 
 ```bash
 mise run lint
+mise run lint:fix
 mise run lint:yaml
+mise run lint:fix:yaml
+mise run lint:markdown
+mise run lint:fix:markdown
+mise run lint:sh
+mise run lint:fix:sh
 mise run lint:actions
 mise run lint:kubernetes
 ```
 
+If you want only the fix/format step for a single category, use the task-specific commands directly, for example `mise run lint:fix:yaml`, `mise run lint:fix:markdown`, or `mise run lint:fix:sh`.
+
 Current validation scope:
 
 - `yamllint` for YAML structure and style
+- `yamlfmt` for YAML formatting fixes
+- `markdownlint-cli2` for Markdown linting and Markdown auto-fixes
+- `shellcheck` for shell linting
+- `shfmt` for shell formatting fixes
 - `actionlint` for GitHub Actions workflows
 - `kubeconform` for built-in Kubernetes schema validation
 
-Markdown linting is deferred for now so the repo does not need a Node-centric lint stack just to validate docs.
+`mise run lint:fix` currently applies:
+
+- YAML formatting fixes through `yamlfmt`
+- auto-fixable Markdown rules through `markdownlint-cli2`
+- shell formatting fixes through `shfmt`
+
+GitHub Actions, Kubernetes, and `shellcheck` findings remain report-only.

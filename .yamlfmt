@@ -1,0 +1,6 @@
+formatter:
+  type: basic
+  include_document_start: false
+  eof_newline: true
+
+gitignore_excludes: true
