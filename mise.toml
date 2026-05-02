@@ -1,0 +1,30 @@
+[settings]
+lockfile = true
+
+[tools]
+actionlint = "1.7.8"
+flux = "2.8.5"
+helm = "3.20.2"
+jq = "1.8.1"
+kubeconform = "0.6.7"
+talosctl = "1.12.6"
+kubectl = "1.36.0"
+sops = "3.12.2"
+yamllint = "1.37.1"
+yq = "4.49.2"
+
+[tasks.lint]
+description = "Run the baseline repo validation suite"
+depends = ["lint:yaml", "lint:actions", "lint:kubernetes"]
+
+[tasks."lint:yaml"]
+description = "Lint YAML files with repo rules"
+run = "yamllint -c .yamllint.yml ."
+
+[tasks."lint:actions"]
+description = "Lint GitHub Actions workflows"
+run = "actionlint"
+
+[tasks."lint:kubernetes"]
+description = "Validate built-in Kubernetes manifests with kubeconform"
+run = "./scripts/lint-kubernetes.sh"

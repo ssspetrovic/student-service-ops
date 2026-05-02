@@ -89,3 +89,30 @@ GitHub runner deployment details are documented in [infra/ci/actions-runner-scal
 ## Harbor
 
 Harbor deployment details are documented in [infra/registry/harbor/README.md](/home/spetrovic/dev/student-service-ops/infra/registry/harbor/README.md).
+
+## Developer Setup
+
+This repo uses `mise` as the local entry point for operator tooling and validation tasks.
+
+Install the pinned toolchain:
+
+```bash
+mise install
+```
+
+Common validation commands:
+
+```bash
+mise run lint
+mise run lint:yaml
+mise run lint:actions
+mise run lint:kubernetes
+```
+
+Current validation scope:
+
+- `yamllint` for YAML structure and style
+- `actionlint` for GitHub Actions workflows
+- `kubeconform` for built-in Kubernetes schema validation
+
+Markdown linting is deferred for now so the repo does not need a Node-centric lint stack just to validate docs.

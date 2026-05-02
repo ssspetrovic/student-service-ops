@@ -1,0 +1,17 @@
+extends: default
+
+ignore: |
+  *.sops.yaml
+  talos/talsecret.sops.yaml
+  talos/clusterconfig/
+
+rules:
+  comments:
+    min-spaces-from-content: 1
+  document-start: disable
+  line-length:
+    max: 120
+    level: warning
+  truthy:
+    allowed-values: ["true", "false"]
+    check-keys: true
