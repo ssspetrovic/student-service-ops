@@ -13,10 +13,12 @@ Current state:
 - Actions Runner Controller manifests are present for repository-scoped GitHub Actions runners
 - The GitHub runner scale set is configured for Docker-in-Docker
 - GitHub workflow smoke tests exist for runner scheduling and Harbor image push/pull
-- Networking design for Cilium L2 and Cilium Gateway API is documented under [infra/networking](/home/spetrovic/dev/student-service-ops/infra/networking/README.md)
+- Networking design for Cilium L2 and  Cilium Gateway API is documented under [infra/networking](/home/spetrovic/dev/student-service-ops/infra/networking/README.md)
 - Storage design for Local Path Provisioner is documented under [infra/storage](/home/spetrovic/dev/student-service-ops/infra/storage/README.md)
-- Cilium L2 and Cilium Gateway API manifests live under `infra/networking/` and target a shared private ingress IP on `192.168.1.240`
-- Gateway API CRDs are sourced from the official `kubernetes-sigs/gateway-api` repository and reconciled before Cilium Gateway API is enabled
+- Cilium L2 and Gateway API manifests live under `infra/networking/` and target a shared private ingress IP on `192.168.1.240`
+- Gateway API CRDs are sourced from the official
+  `kubernetes-sigs/gateway-api` repository and reconciled before Cilium Gateway
+  API is enabled
 - `local-path` is the current default `StorageClass`
 - A disposable test backend and `HTTPRoute` currently verify end-to-end ingress through `ingress.student-service.internal`
 
@@ -115,7 +117,8 @@ mise run lint:actions
 mise run lint:kubernetes
 ```
 
-If you want only the fix/format step for a single category, use the task-specific commands directly, for example `mise run lint:fix:yaml`, `mise run lint:fix:markdown`, or `mise run lint:fix:sh`.
+If you want only the fix/format step for a single category, use the task-specific commands directly,
+for example `mise run lint:fix:yaml`, `mise run lint:fix:markdown`, or `mise run lint:fix:sh`.
 
 Current validation scope:
 
