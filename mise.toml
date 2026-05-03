@@ -42,7 +42,7 @@ run = "npx --yes markdownlint-cli2@0.22.0 --fix"
 [tasks."lint:actions"]
 description = "Lint GitHub Actions workflows"
 tools.actionlint = "1.7.8"
-run = "actionlint"
+run = "actionlint -config-file .github/actionlint.yaml"
 
 [tasks."lint:sh"]
 description = "Lint shell scripts"

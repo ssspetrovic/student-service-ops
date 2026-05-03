@@ -28,6 +28,38 @@ jobs:
       - name: Run yamllint
         run: mise run lint:yaml
 
+  markdown:
+    name: Markdown
+    runs-on: student-service-runner
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup mise
+        uses: jdx/mise-action@v4
+        with:
+          install: true
+          cache: true
+
+      - name: Run markdownlint
+        run: mise run lint:markdown
+
+  shell:
+    name: Shell
+    runs-on: student-service-runner
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup mise
+        uses: jdx/mise-action@v4
+        with:
+          install: true
+          cache: true
+
+      - name: Run shell lint
+        run: mise run lint:sh
+
   actions:
     name: GitHub Actions
     runs-on: student-service-runner

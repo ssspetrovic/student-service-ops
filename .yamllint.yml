@@ -4,6 +4,8 @@ ignore: |
   *.sops.yaml
   talos/talsecret.sops.yaml
   talos/clusterconfig/
+  clusters/*/flux-system/
+  .github/workflows/
 
 rules:
   comments:
