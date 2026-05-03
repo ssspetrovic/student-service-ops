@@ -21,8 +21,8 @@ run = "mise run lint"
 
 [tasks."lint:yaml"]
 description = "Lint YAML files with repo rules"
-tools.yamllint = "1.37.1"
-run = "yamllint -c .yamllint.yml ."
+tools.uv = "0.11.7"
+run = "uvx --from yamllint==1.37.1 yamllint -c .yamllint.yml ."
 
 [tasks."lint:fix:yaml"]
 description = "Format YAML files with yamlfmt"
