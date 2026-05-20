@@ -109,8 +109,6 @@ mise run pre-commit:install
 mise run pre-commit:run
 ```
 
-Pre-commit runs the repo lint suite through `mise run lint`.
-
 Common validation commands:
 
 ```bash
