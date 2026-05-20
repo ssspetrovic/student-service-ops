@@ -61,3 +61,35 @@ run = "./scripts/lint-shell.sh --fix"
 description = "Validate built-in Kubernetes manifests with kubeconform"
 tools.kubeconform = "0.6.7"
 run = "./scripts/lint-kubernetes.sh"
+
+[tasks."backend:sync"]
+description = "Install backend dependencies from the lockfile"
+run = "cd backend && uv sync --frozen"
+
+[tasks."backend:lint"]
+description = "Lint backend Python code"
+run = "cd backend && uv run ruff check ."
+
+[tasks."backend:format"]
+description = "Format backend Python code"
+run = "cd backend && uv run ruff format ."
+
+[tasks."backend:test"]
+description = "Run backend tests"
+run = "cd backend && uv run pytest"
+
+[tasks."backend:check"]
+description = "Run Django system checks with local settings"
+run = "cd backend && uv run python manage.py check"
+
+[tasks."backend:run"]
+description = "Run the backend development server"
+run = "cd backend && uv run python manage.py runserver"
+
+[tasks."backend:migrate"]
+description = "Apply backend database migrations"
+run = "cd backend && uv run python manage.py migrate"
+
+[tasks."backend:makemigrations"]
+description = "Create backend database migrations"
+run = "cd backend && uv run python manage.py makemigrations"

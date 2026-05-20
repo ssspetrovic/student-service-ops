@@ -25,3 +25,15 @@ dev = [
     "pytest-django>=4.12.0,<4.13",
     "ruff>=0.15.13,<0.16",
 ]
+
+[tool.ruff]
+line-length = 100
+target-version = "py314"
+
+[tool.ruff.lint.per-file-ignores]
+"student_service/settings/local.py" = ["F403", "F405"]
+"student_service/settings/production.py" = ["F403", "F405"]
+
+[tool.pytest.ini_options]
+DJANGO_SETTINGS_MODULE = "student_service.settings.local"
+python_files = ["tests.py", "test_*.py", "*_tests.py"]
