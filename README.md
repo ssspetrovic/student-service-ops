@@ -102,6 +102,15 @@ Install the pinned toolchain:
 mise install
 ```
 
+Install and run the repo pre-commit hook:
+
+```bash
+mise run pre-commit:install
+mise run pre-commit:run
+```
+
+Pre-commit runs the repo lint suite through `mise run lint`.
+
 Common validation commands:
 
 ```bash
