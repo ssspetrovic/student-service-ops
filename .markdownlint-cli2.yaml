@@ -9,6 +9,11 @@ config:
 
 globs:
   - "**/*.md"
-  - "#.agents"
-  - "#.codex"
-  - "#node_modules"
+
+ignores:
+  - ".agents/**"
+  - ".codex/**"
+  - "**/.venv/**"
+  - "**/.uv-cache/**"
+  - "node_modules/**"
+  - "AGENTS.md"
