@@ -1,9 +1,13 @@
 extends: default
 
 ignore: |
+  .agents/
+  .codex/
   *.sops.yaml
-  talos/talsecret.sops.yaml
+  entities.json
+  mempalace.yaml
   talos/clusterconfig/
+  talos/talsecret.sops.yaml
   clusters/*/flux-system/
   .github/workflows/
 
