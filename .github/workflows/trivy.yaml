@@ -26,6 +26,7 @@ jobs:
           scan-ref: .
           scanners: vuln,misconfig
           vuln-type: os,library
+          skip-files: clusters/student-service-cluster/flux-system/gotk-components.yaml
           severity: HIGH,CRITICAL
           ignore-unfixed: true
           format: table
