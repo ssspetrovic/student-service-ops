@@ -137,6 +137,7 @@ Current validation scope:
 - `actionlint` for GitHub Actions workflows
 - `kubeconform` for built-in Kubernetes schema validation
 - `gitleaks` for secret scanning in local pre-commit hooks and GitHub Actions
+- `Trivy` for dependency vulnerability and configuration misconfiguration scanning in GitHub Actions
 
 `mise run lint:fix` currently applies:
 
