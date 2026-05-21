@@ -136,6 +136,7 @@ Current validation scope:
 - `shfmt` for shell formatting fixes
 - `actionlint` for GitHub Actions workflows
 - `kubeconform` for built-in Kubernetes schema validation
+- `gitleaks` for secret scanning in local pre-commit hooks and GitHub Actions
 
 `mise run lint:fix` currently applies:
 
