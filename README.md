@@ -20,7 +20,6 @@ Current state:
   `kubernetes-sigs/gateway-api` repository and reconciled before Cilium Gateway
   API is enabled
 - `local-path` is the current default `StorageClass`
-- A disposable test backend and `HTTPRoute` currently verify end-to-end ingress through `ingress.student-service.internal`
 
 Current nodes:
 
