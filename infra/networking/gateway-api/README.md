@@ -20,5 +20,4 @@ kubectl -n gateway-system get gateway
 kubectl -n gateway-system get svc
 kubectl describe gateway -n gateway-system shared-gateway
 kubectl get httproute -A
-curl http://ingress.student-service.internal
 ```

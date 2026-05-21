@@ -44,6 +44,4 @@ kubectl get ciliumloadbalancerippools
 kubectl get ciliuml2announcementpolicies
 kubectl -n gateway-system get gateway
 kubectl -n gateway-system get svc
-kubectl -n test-ingress get httproute
-curl http://ingress.student-service.internal
 ```

@@ -14,4 +14,3 @@ resources:
   - storage.yaml
   - harbor-certificates.yaml
   - harbor.yaml
-  - ../../apps/test-ingress

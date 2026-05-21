@@ -20,7 +20,6 @@ Current state:
   `kubernetes-sigs/gateway-api` repository and reconciled before Cilium Gateway
   API is enabled
 - `local-path` is the current default `StorageClass`
-- A disposable test backend and `HTTPRoute` currently verify end-to-end ingress through `ingress.student-service.internal`
 
 Current nodes:
 
@@ -137,6 +136,7 @@ Current validation scope:
 - `actionlint` for GitHub Actions workflows
 - `kubeconform` for built-in Kubernetes schema validation
 - `gitleaks` for secret scanning in local pre-commit hooks and GitHub Actions
+- `Trivy` for dependency vulnerability and configuration misconfiguration scanning in GitHub Actions
 
 `mise run lint:fix` currently applies:
 
