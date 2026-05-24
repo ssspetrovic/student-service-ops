@@ -61,6 +61,12 @@ flux reconcile source git local-path-provisioner -n flux-system
 flux reconcile kustomization storage -n flux-system
 flux reconcile kustomization cilium-l2 -n flux-system
 flux reconcile kustomization gateway-api -n flux-system
+flux reconcile kustomization actions-runner-controller -n flux-system
+flux reconcile kustomization actions-runner-scale-set -n flux-system
+flux reconcile kustomization cert-manager -n flux-system
+flux reconcile kustomization cert-manager-issuers -n flux-system
+flux reconcile kustomization harbor-certificates -n flux-system
+flux reconcile kustomization harbor -n flux-system
 ```
 
 Use only the reconciles needed for the change you merged.

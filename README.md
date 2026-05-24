@@ -13,6 +13,11 @@ Current state:
 - Actions Runner Controller manifests are present for repository-scoped GitHub Actions runners
 - The GitHub runner scale set is configured for Docker-in-Docker
 - GitHub workflow smoke tests exist for runner scheduling and Harbor image push/pull
+- GitHub CodeQL default setup is enabled in repository security settings; no CodeQL workflow is committed
+- PR-Agent is configured as a self-hosted PR review workflow on the repository runner
+- The Django backend scaffold lives under `backend/`; health endpoint, tests, image build, and app deployment
+  remain planned work
+- CNPG/PostgreSQL, frontend manifests, and `apps/student-service/` workload manifests have not been added yet
 - Networking design for Cilium L2 and  Cilium Gateway API is documented under [infra/networking](/home/spetrovic/dev/student-service-ops/infra/networking/README.md)
 - Storage design for Local Path Provisioner is documented under [infra/storage](/home/spetrovic/dev/student-service-ops/infra/storage/README.md)
 - Cilium L2 and Gateway API manifests live under `infra/networking/` and target a shared private ingress IP on `192.168.1.240`
@@ -34,11 +39,18 @@ Current nodes:
 - `talos/` contains the Talos cluster definition and bootstrap workflow
 - `clusters/` contains Flux bootstrap output and cluster entrypoints
 - `infra/` holds shared cluster infrastructure managed by Flux
+- `backend/` contains the current Django backend scaffold
+- `frontend/` is reserved for the future React frontend
+- `apps/student-service/` is reserved for future GitOps-managed application manifests
 - `infra/controllers/` groups shared cluster controllers such as Cilium and Actions Runner Controller
 - `infra/ci/` groups CI runner infrastructure managed by Flux
 - `infra/networking/` groups cluster networking components such as Cilium,
   Cilium L2, and Gateway API
 - `infra/storage/` groups shared storage sources and notes
+
+## Active Plan Notes
+
+Detailed progress and setup history live in ignored operator notes under `.codex/notes/`.
 
 ## Secrets
 
@@ -86,6 +98,23 @@ Talos-specific bootstrap and operator steps are documented in [talos/README.md](
 ## GitHub Actions Runners
 
 GitHub runner deployment details are documented in [infra/ci/actions-runner-scale-set/README.md](/home/spetrovic/dev/student-service-ops/infra/ci/actions-runner-scale-set/README.md).
+
+## PR Review Bot
+
+PR-Agent is configured by [.github/workflows/pr-agent.yml](/home/spetrovic/dev/student-service-ops/.github/workflows/pr-agent.yml)
+and [.pr_agent.toml](/home/spetrovic/dev/student-service-ops/.pr_agent.toml).
+It runs on `student-service-runner`, uses `gpt-4o-mini`, and expects a GitHub Actions repository secret named `OPENAI_KEY`.
+Automatic review runs on PR open/reopen/ready-for-review and follow-up commits.
+Automatic description runs only on initial PR lifecycle events to avoid repeatedly rewriting PR bodies.
+Slash commands are gated to repository collaborators.
+
+## Application Workloads
+
+The repo is using a monorepo layout:
+
+- `backend/` for the Django backend
+- `frontend/` for the React frontend
+- `apps/student-service/` for Kubernetes workload manifests, HTTP routing, and app config
 
 ## Harbor
 
@@ -137,6 +166,7 @@ Current validation scope:
 - `kubeconform` for built-in Kubernetes schema validation
 - `gitleaks` for secret scanning in local pre-commit hooks and GitHub Actions
 - `Trivy` for dependency vulnerability and configuration misconfiguration scanning in GitHub Actions
+- GitHub CodeQL default setup for code scanning, managed in repository security settings rather than a workflow file
 
 `mise run lint:fix` currently applies:
 

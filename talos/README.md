@@ -27,7 +27,7 @@ Shared network settings:
 
 - The installer image / schematic ID is the source of truth for Talos image customization for all nodes.
 - The same installer image is pinned for both control plane and worker nodes via `talosImageURL`.
-- All current nodes use static addresses on the same libvirt network.
+- All current nodes use DHCP on the bridged home LAN with router reservations matching the IPs above.
 - Worker nodes carry a shared registry trust patch for `harbor.student-service.internal`.
 - Worker nodes are configured to carry a `UserVolumeConfig` patch for `local-path-provisioner` on `/dev/vdb`.
 
