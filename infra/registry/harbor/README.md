@@ -42,6 +42,8 @@ Robot account:
 - workflows pass these secrets through environment variables so the `$` in the robot username is not expanded by the shell
 - the robot account has repository push and pull permission
 - ARC runner Docker CLI and DinD daemon trust Harbor through `infra/ci/actions-runner-scale-set/harbor-ca-configmap.yaml`
+- future backend and frontend image build workflows should push into the Harbor `student-service` project using the same
+  trust path and least-privilege robot credentials
 
 The Harbor namespace is created by `namespace.yaml` in this directory.
 Encrypted secrets in this directory are listed after `namespace.yaml` in `kustomization.yaml`.

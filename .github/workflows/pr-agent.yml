@@ -1,0 +1,101 @@
+name: PR Agent
+
+on:
+  pull_request:
+    branches:
+      - main
+    types:
+      - opened
+      - reopened
+      - ready_for_review
+      - synchronize
+  issue_comment:
+    types:
+      - created
+  workflow_dispatch:
+
+permissions:
+  contents: read
+  # Required so PR-Agent can publish review comments and summaries on pull requests.
+  pull-requests: write
+  # Required so PR-Agent can respond to slash commands posted as PR issue comments.
+  issues: write
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.event.pull_request.number || github.event.issue.number || github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  auto-review:
+    name: Auto review
+    runs-on: student-service-runner
+    if: >-
+      ${{
+        github.event_name == 'pull_request' &&
+        github.event.sender.type != 'Bot' &&
+        github.event.pull_request.draft == false
+      }}
+    steps:
+      - name: Run PR-Agent review
+        uses: docker://pragent/pr-agent:0.35.0-github_action
+        env:
+          OPENAI_KEY: ${{ secrets.OPENAI_KEY }}
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          config.model: gpt-4o-mini
+          config.model_turbo: gpt-4o-mini
+          github_action_config.auto_review: "true"
+          github_action_config.auto_describe: "false"
+          github_action_config.auto_improve: "false"
+          github_action_config.pr_actions: '["opened", "reopened", "ready_for_review", "synchronize"]'
+
+  auto-describe:
+    name: Auto describe
+    runs-on: student-service-runner
+    if: >-
+      ${{
+        github.event_name == 'pull_request' &&
+        github.event.action != 'synchronize' &&
+        github.event.sender.type != 'Bot' &&
+        github.event.pull_request.draft == false
+      }}
+    steps:
+      - name: Run PR-Agent describe
+        uses: docker://pragent/pr-agent:0.35.0-github_action
+        env:
+          OPENAI_KEY: ${{ secrets.OPENAI_KEY }}
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          config.model: gpt-4o-mini
+          config.model_turbo: gpt-4o-mini
+          github_action_config.auto_review: "false"
+          github_action_config.auto_describe: "true"
+          github_action_config.auto_improve: "false"
+          github_action_config.pr_actions: '["opened", "reopened", "ready_for_review"]'
+
+  slash-command:
+    name: Slash command
+    runs-on: student-service-runner
+    if: >-
+      ${{
+        github.event_name == 'issue_comment' &&
+        github.event.issue.pull_request &&
+        github.event.sender.type != 'Bot' &&
+        contains(fromJSON('["OWNER", "MEMBER", "COLLABORATOR"]'), github.event.comment.author_association) &&
+        (
+          startsWith(github.event.comment.body, '/review') ||
+          startsWith(github.event.comment.body, '/describe') ||
+          startsWith(github.event.comment.body, '/improve') ||
+          startsWith(github.event.comment.body, '/ask') ||
+          startsWith(github.event.comment.body, '/help')
+        )
+      }}
+    steps:
+      - name: Run PR-Agent command
+        uses: docker://pragent/pr-agent:0.35.0-github_action
+        env:
+          OPENAI_KEY: ${{ secrets.OPENAI_KEY }}
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          config.model: gpt-4o-mini
+          config.model_turbo: gpt-4o-mini
+          github_action_config.auto_review: "false"
+          github_action_config.auto_describe: "false"
+          github_action_config.auto_improve: "false"

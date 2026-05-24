@@ -21,7 +21,9 @@ Current settings:
 - The Harbor CA is also mounted into `/etc/ssl/certs/harbor-ca.crt` for system TLS trust in the runner and DinD containers.
 - `.github/workflows/runner-smoke.yaml` verifies runner scheduling.
 - `.github/workflows/harbor-image-smoke.yaml` verifies Docker build, Harbor push, Harbor pull, and Docker logout.
+- `.github/workflows/pr-agent.yml` runs PR-Agent on the same self-hosted runner label.
 - Harbor login in workflows uses GitHub repository secrets `HARBOR_USERNAME` and `HARBOR_PASSWORD`.
+- PR-Agent uses GitHub repository secret `OPENAI_KEY`.
 
 Verification:
 
