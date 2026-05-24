@@ -16,7 +16,9 @@ on:
 
 permissions:
   contents: read
+  # Required so PR-Agent can publish review comments and summaries on pull requests.
   pull-requests: write
+  # Required so PR-Agent can respond to slash commands posted as PR issue comments.
   issues: write
 
 concurrency:

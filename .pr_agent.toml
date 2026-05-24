@@ -13,6 +13,9 @@ extra_instructions = """\
 Focus on infrastructure and GitOps operational risk:
 - Do not treat AI review as an approval gate; surface actionable findings only.
 - Prioritize plaintext secrets, token exposure, kubeconfigs, private keys, and unencrypted sensitive manifests.
+- Treat secret exposure, unsafe `pull_request_target`, overly broad GitHub token permissions, untrusted code with write tokens, public service exposure, destructive cluster actions, and unencrypted credentials as security findings.
+- For security findings, state impact, exploit path or failure mode, affected file, and concrete remediation. Avoid vague "review security" advice.
+- Mark missing security context, missing probes, missing resource limits, missing network policy, or broad RBAC as findings only when they create concrete risk for the changed workload.
 - Check Flux dependency ordering, CRD readiness, and ownership overlap between Kustomizations.
 - Flag Talos, Cilium, Gateway API, storage, and runner changes that could block bootstrap, node join, or reconciliation.
 - For planned app rollout work, check backend, frontend, database, image-build, and GitOps manifests as one deployable path, not isolated files.
