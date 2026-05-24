@@ -1,0 +1,34 @@
+[config]
+model = "gpt-4o-mini"
+model_turbo = "gpt-4o-mini"
+
+[pr_reviewer]
+require_score_review = true
+require_tests_review = true
+require_security_review = true
+num_max_findings = 4
+enable_review_labels_security = false
+enable_review_labels_effort = false
+extra_instructions = """\
+Focus on infrastructure and GitOps operational risk:
+- Do not treat AI review as an approval gate; surface actionable findings only.
+- Prioritize plaintext secrets, token exposure, kubeconfigs, private keys, and unencrypted sensitive manifests.
+- Check Flux dependency ordering, CRD readiness, and ownership overlap between Kustomizations.
+- Flag Talos, Cilium, Gateway API, storage, and runner changes that could block bootstrap, node join, or reconciliation.
+- For planned app rollout work, check backend, frontend, database, image-build, and GitOps manifests as one deployable path, not isolated files.
+- For Django backend changes, check settings separation, production env requirements, health checks, migrations, tests, and container readiness.
+- For future React frontend changes, check build/runtime config separation, API base URL handling, container readiness, and Gateway routing assumptions.
+- For future CNPG/PostgreSQL work, check encrypted credentials, backup/recovery intent, storage class/PVC sizing, network policy, and dependency ordering before app startup.
+- For `apps/student-service/` manifests, check namespace ownership, image references from Harbor, ConfigMap/Secret boundaries, probes, resource requests, HTTPRoute/Gateway attachment, and Flux `dependsOn`.
+- For CI changes, check that backend/frontend lint, tests, image build, Harbor push, Trivy/Gitleaks, and PR-Agent workflows use the right runner and least necessary secrets.
+- Flag destructive or layout-heavy changes that are not explained by the PR.
+- Check whether docs and progress trackers drift from the manifests being changed.
+"""
+
+[pr_description]
+publish_labels = false
+use_bullet_points = true
+generate_ai_title = false
+
+[pr_code_suggestions]
+num_code_suggestions = 4
