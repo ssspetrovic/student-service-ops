@@ -15,7 +15,7 @@ yq = "4.49.2"
 
 [tasks.lint]
 description = "Run the baseline repo validation suite"
-depends = ["lint:yaml", "lint:markdown", "lint:sh", "lint:actions", "lint:kubernetes"]
+depends = ["lint:yaml", "lint:markdown", "lint:sh", "lint:actions", "lint:zizmor", "lint:kubernetes"]
 
 [tasks."lint:fix"]
 description = "Apply available lint fixes, then rerun the baseline lint suite"
@@ -47,6 +47,11 @@ description = "Lint GitHub Actions workflows"
 tools.actionlint = "1.7.8"
 tools.shellcheck = "0.11.0"
 run = "actionlint -config-file .github/actionlint.yaml"
+
+[tasks."lint:zizmor"]
+description = "Scan GitHub Actions workflows for security issues with zizmor"
+tools.uv = "0.11.7"
+run = "uvx --from zizmor==1.25.2 zizmor --offline --persona regular --min-severity medium ."
 
 [tasks."lint:sh"]
 description = "Lint shell scripts"

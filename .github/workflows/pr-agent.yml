@@ -16,10 +16,6 @@ on:
 
 permissions:
   contents: read
-  # Required so PR-Agent can publish review comments and summaries on pull requests.
-  pull-requests: write
-  # Required so PR-Agent can respond to slash commands posted as PR issue comments.
-  issues: write
 
 concurrency:
   group: ${{ github.workflow }}-${{ github.event.pull_request.number || github.event.issue.number || github.ref }}
@@ -29,6 +25,10 @@ jobs:
   auto-review:
     name: Auto review
     runs-on: student-service-runner
+    permissions:
+      contents: read
+      # Required so PR-Agent can publish review comments and summaries on pull requests.
+      pull-requests: write
     if: >-
       ${{
         github.event_name == 'pull_request' &&
@@ -51,6 +51,10 @@ jobs:
   auto-describe:
     name: Auto describe
     runs-on: student-service-runner
+    permissions:
+      contents: read
+      # Required so PR-Agent can update pull request descriptions.
+      pull-requests: write
     if: >-
       ${{
         github.event_name == 'pull_request' &&
@@ -74,6 +78,12 @@ jobs:
   slash-command:
     name: Slash command
     runs-on: student-service-runner
+    permissions:
+      contents: read
+      # Required so PR-Agent can publish review comments from slash commands.
+      pull-requests: write
+      # Required so PR-Agent can respond to slash commands posted as PR issue comments.
+      issues: write
     if: >-
       ${{
         github.event_name == 'issue_comment' &&
