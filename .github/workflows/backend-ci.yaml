@@ -1,0 +1,48 @@
+name: Backend CI
+
+on:
+  pull_request:
+    branches:
+      - main
+    paths:
+      - backend/**
+      - mise.toml
+      - mise.lock
+      - .github/workflows/backend-ci.yaml
+  push:
+    branches:
+      - main
+    paths:
+      - backend/**
+      - mise.toml
+      - mise.lock
+      - .github/workflows/backend-ci.yaml
+
+permissions:
+  contents: read
+
+jobs:
+  backend:
+    name: Backend
+    runs-on: student-service-runner
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v6
+
+      - name: Setup mise
+        uses: jdx/mise-action@v4
+        with:
+          install: true
+          cache: true
+
+      - name: Sync backend dependencies
+        run: mise run backend:sync
+
+      - name: Lint backend
+        run: mise run backend:lint
+
+      - name: Test backend
+        run: mise run backend:test
+
+      - name: Run Django checks
+        run: mise run backend:check
