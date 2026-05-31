@@ -1,6 +1,9 @@
 [settings]
 lockfile = true
 
+[env]
+NODE_VERSION = "24.16.0"
+
 [tools]
 flux2 = "2.8.5"
 helm = "3.20.2"
@@ -34,12 +37,12 @@ run = "yamlfmt"
 
 [tasks."lint:markdown"]
 description = "Lint Markdown files"
-tools.node = "24.15.0"
+tools.node = "{{ env.NODE_VERSION }}"
 run = "npx --yes markdownlint-cli2@0.22.0"
 
 [tasks."lint:fix:markdown"]
 description = "Apply auto-fixable Markdown lint rules"
-tools.node = "24.15.0"
+tools.node = "{{ env.NODE_VERSION }}"
 run = "npx --yes markdownlint-cli2@0.22.0 --fix"
 
 [tasks."lint:actions"]
@@ -102,3 +105,50 @@ run = "cd backend && uv run python manage.py migrate"
 [tasks."backend:makemigrations"]
 description = "Create backend database migrations"
 run = "cd backend && uv run python manage.py makemigrations"
+
+[tasks."frontend:sync"]
+description = "Install frontend dependencies from the lockfile"
+tools.node = "{{ env.NODE_VERSION }}"
+run = """
+if [ ! -f frontend/package.json ]; then
+  echo "frontend/package.json does not exist yet; skipping frontend dependency sync."
+elif [ -f frontend/package-lock.json ]; then
+  cd frontend && npm ci
+else
+  echo "frontend/package-lock.json is required for frontend CI." >&2
+  exit 1
+fi
+"""
+
+[tasks."frontend:lint"]
+description = "Lint frontend code"
+tools.node = "{{ env.NODE_VERSION }}"
+run = """
+if [ ! -f frontend/package.json ]; then
+  echo "frontend/package.json does not exist yet; skipping frontend lint."
+else
+  cd frontend && npm run lint --if-present
+fi
+"""
+
+[tasks."frontend:test"]
+description = "Run frontend tests"
+tools.node = "{{ env.NODE_VERSION }}"
+run = """
+if [ ! -f frontend/package.json ]; then
+  echo "frontend/package.json does not exist yet; skipping frontend tests."
+else
+  cd frontend && npm test --if-present
+fi
+"""
+
+[tasks."frontend:build"]
+description = "Build frontend assets"
+tools.node = "{{ env.NODE_VERSION }}"
+run = """
+if [ ! -f frontend/package.json ]; then
+  echo "frontend/package.json does not exist yet; skipping frontend build."
+else
+  cd frontend && npm run build --if-present
+fi
+"""

@@ -1,0 +1,48 @@
+name: Frontend CI
+
+on:
+  pull_request:
+    branches:
+      - main
+    paths:
+      - frontend/**
+      - mise.toml
+      - mise.lock
+      - .github/workflows/frontend-ci.yaml
+  push:
+    branches:
+      - main
+    paths:
+      - frontend/**
+      - mise.toml
+      - mise.lock
+      - .github/workflows/frontend-ci.yaml
+
+permissions:
+  contents: read
+
+jobs:
+  frontend:
+    name: Frontend
+    runs-on: student-service-runner
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v6
+
+      - name: Setup mise
+        uses: jdx/mise-action@v4
+        with:
+          install: true
+          cache: true
+
+      - name: Install frontend dependencies
+        run: mise run frontend:sync
+
+      - name: Lint frontend
+        run: mise run frontend:lint
+
+      - name: Test frontend
+        run: mise run frontend:test
+
+      - name: Build frontend
+        run: mise run frontend:build
