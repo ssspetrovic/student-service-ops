@@ -1,4 +1,5 @@
 from django.contrib.auth.models import AbstractUser, BaseUserManager
+from django.core.validators import MinValueValidator, MaxValueValidator
 from django.db import models
 from django.utils.translation import gettext_lazy as _
 
@@ -54,3 +55,46 @@ class User(AbstractUser):
 
     def __str__(self):
         return self.email
+
+
+class StudentProfile(models.Model):
+    user = models.OneToOneField(
+        User,
+        on_delete=models.CASCADE,
+        primary_key=True,
+        related_name="student_profile",
+    )
+    index_no = models.CharField(max_length=30, unique=True)
+    current_year_of_study = models.PositiveSmallIntegerField(
+        default=1,
+        validators=[MinValueValidator(1), MaxValueValidator(8)],
+    )
+
+    class Meta:
+        constraints = [
+            models.CheckConstraint(
+                condition=models.Q(current_year_of_study__gte=1)
+                & models.Q(current_year_of_study__lte=8),
+                name="student_current_year_of_study_between_1_and_8",
+            )
+        ]
+
+    def __str__(self):
+        return f"{self.user.get_full_name()} [{self.index_no}]"
+
+
+class ProfessorProfile(models.Model):
+    user = models.OneToOneField(
+        User,
+        on_delete=models.CASCADE,
+        primary_key=True,
+        related_name="professor_profile",
+    )
+
+    employee_no = models.CharField(
+        max_length=20,
+        unique=True,
+    )
+
+    def __str__(self):
+        return f"{self.user.get_full_name()} [{self.employee_no}]"
