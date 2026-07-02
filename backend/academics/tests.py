@@ -73,6 +73,30 @@ class CurriculumCourseUniqueTestCase(TestCase):
                 school_year="2020/2021",
             )
 
+
+class CurriculumCourseSemesterTestCase(TestCase):
+    def setUp(self):
+        self.professor_user = User.objects.create_user(
+            email="professor@example.com",
+            password="professor123",
+            role=UserRole.PROFESSOR,
+        )
+        self.professor = ProfessorProfile.objects.create(user=self.professor_user)
+
+        self.course = Course.objects.create(
+            code="TCOURSE",
+            name="Test Course",
+            espb=60,
+            professor=self.professor,
+        )
+
+        self.curriculum = Curriculum.objects.create(
+            code="TCURR",
+            name="Test Curriculum",
+            degree_level=DegreeLevel.MASTER,
+            duration=3,
+        )
+
     def test_curriculum_course_reject_semester_below_min(self):
         with self.assertRaises(IntegrityError):
             CurriculumCourse.objects.create(
@@ -87,6 +111,6 @@ class CurriculumCourseUniqueTestCase(TestCase):
             CurriculumCourse.objects.create(
                 curriculum=self.curriculum,
                 course=self.course,
-                semester=5,
+                semester=13,
                 school_year="2020/2021",
             )
