@@ -88,7 +88,7 @@ class CurriculumCourseUniquenessAndSemesterTestCase(TestCase):
                 curriculum=self.curriculum,
                 course=self.course,
                 semester=13,
-                school_year="2020/2021",
+                school_year="2022/2023",
             )
 
 
@@ -142,6 +142,6 @@ class EnrollmentUniquenessAndSemesterTestCase(TestCase):
             Enrollment.objects.create(
                 student=self.student,
                 course=self.course,
-                school_year="2020/2021",
+                school_year="2022/2023",
                 semester=13,
             )
