@@ -2,7 +2,7 @@ from django.db import IntegrityError
 from django.test import TestCase
 
 from accounts.models import User, UserRole, ProfessorProfile, StudentProfile
-from .models import Course, Curriculum, CurriculumCourse, DegreeLevel, Enrollment, EnrollmentStatus
+from .models import Course, Curriculum, CurriculumCourse, DegreeLevel, Enrollment
 
 
 # Create your tests here.
