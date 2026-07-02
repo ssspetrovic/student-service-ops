@@ -137,7 +137,7 @@ class EnrollmentUniquenessAndSemesterTestCase(TestCase):
                 semester=0,
             )
 
-    def test_enrollment_rejects_semester_above_min(self):
+    def test_enrollment_rejects_semester_above_max(self):
         with self.assertRaises(IntegrityError):
             Enrollment.objects.create(
                 student=self.student,
