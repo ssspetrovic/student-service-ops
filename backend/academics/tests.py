@@ -97,7 +97,7 @@ class CurriculumCourseSemesterTestCase(TestCase):
             duration=3,
         )
 
-    def test_curriculum_course_reject_semester_below_min(self):
+    def test_curriculum_course_rejects_semester_below_min(self):
         with self.assertRaises(IntegrityError):
             CurriculumCourse.objects.create(
                 curriculum=self.curriculum,
@@ -106,7 +106,7 @@ class CurriculumCourseSemesterTestCase(TestCase):
                 school_year="2020/2021",
             )
 
-    def test_curriculum_course_reject_semester_above_max(self):
+    def test_curriculum_course_rejects_semester_above_max(self):
         with self.assertRaises(IntegrityError):
             CurriculumCourse.objects.create(
                 curriculum=self.curriculum,
