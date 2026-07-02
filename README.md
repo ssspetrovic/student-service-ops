@@ -15,8 +15,7 @@ Current state:
 - GitHub workflow smoke tests exist for runner scheduling and Harbor image push/pull
 - GitHub CodeQL default setup is enabled in repository security settings; no CodeQL workflow is committed
 - PR-Agent is configured as a self-hosted PR review workflow on the repository runner
-- The Django backend scaffold lives under `backend/`; health endpoint, tests, image build, and app deployment
-  remain planned work
+- The Django backend lives under [backend](/home/spetrovic/dev/student-service-ops/backend/README.md)
 - CNPG/PostgreSQL, frontend manifests, and `apps/student-service/` workload manifests have not been added yet
 - Networking design for Cilium L2 and  Cilium Gateway API is documented under [infra/networking](/home/spetrovic/dev/student-service-ops/infra/networking/README.md)
 - Storage design for Local Path Provisioner is documented under [infra/storage](/home/spetrovic/dev/student-service-ops/infra/storage/README.md)
@@ -39,7 +38,7 @@ Current nodes:
 - `talos/` contains the Talos cluster definition and bootstrap workflow
 - `clusters/` contains Flux bootstrap output and cluster entrypoints
 - `infra/` holds shared cluster infrastructure managed by Flux
-- `backend/` contains the current Django backend scaffold
+- `backend/` contains the current Django backend application
 - `frontend/` is reserved for the future React frontend
 - `apps/student-service/` is reserved for future GitOps-managed application manifests
 - `infra/controllers/` groups shared cluster controllers such as Cilium and Actions Runner Controller
