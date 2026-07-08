@@ -6,8 +6,51 @@ repos:
 
   - repo: local
     hooks:
-      - id: repo-lint
-        name: Repo lint
-        entry: mise run lint
+      - id: backend-lint
+        name: Backend lint
+        entry: mise run backend:lint
         language: system
         pass_filenames: false
+        files: ^backend/.*\.py$
+
+      - id: backend-check
+        name: Backend Django check
+        entry: mise run backend:check
+        language: system
+        pass_filenames: false
+        files: ^backend/
+
+      - id: yaml-lint
+        name: YAML lint
+        entry: mise run lint:yaml
+        language: system
+        pass_filenames: false
+        types_or: [yaml]
+
+      - id: markdown-lint
+        name: Markdown lint
+        entry: mise run lint:markdown
+        language: system
+        pass_filenames: false
+        types: [markdown]
+
+      - id: shell-lint
+        name: Shell lint
+        entry: mise run lint:sh
+        language: system
+        pass_filenames: false
+        types: [shell]
+
+      - id: actions-lint
+        name: GitHub Actions lint
+        entry: mise run lint:actions
+        language: system
+        pass_filenames: false
+        files: ^\.github/workflows/.*\.ya?ml$
+
+      - id: kubernetes-lint
+        name: Kubernetes manifest lint
+        entry: mise run lint:kubernetes
+        language: system
+        pass_filenames: false
+        files: ^(apps|clusters|infra)/.*\.ya?ml$
