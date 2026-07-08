@@ -21,6 +21,7 @@ mapfile -d '' files < <(
 		\( -name '*.yaml' -o -name '*.yml' \) \
 		! -name 'kustomization.yaml' \
 		! -name '*.sops.yaml' \
+		! -path '*/flux-system/*' \
 		-print0
 )
 
