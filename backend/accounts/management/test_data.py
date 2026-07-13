@@ -1,6 +1,6 @@
 STUDENT_EMAIL = "student@example.com"
 STUDENT_PASSWORD = "student123"
-STUDENT_INDEX_NO = "2024/0001"
+STUDENT_INDEX_NO = "IN 47/2020"
 
 PROFESSOR_EMAIL = "professor@example.com"
 PROFESSOR_PASSWORD = "professor123"
