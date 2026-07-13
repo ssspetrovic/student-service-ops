@@ -5,10 +5,7 @@ from .models import Course, Curriculum, CurriculumCourse, Enrollment
 
 class CourseSerializer(serializers.ModelSerializer):
     professor_email = serializers.CharField(source="professor.user.email")
-    professor_employee_no = serializers.CharField(
-        source="professor.employee_no",
-        read_only=True,
-    )
+    professor_employee_no = serializers.CharField(source="professor.employee_no")
 
     class Meta:
         model = Course
