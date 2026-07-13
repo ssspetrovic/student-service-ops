@@ -1,61 +1,57 @@
-from django.core.management.base import BaseCommand, CommandError
+from django.core.management.base import BaseCommand
 
+from academics.management.test_data import (
+    COURSE_CODE,
+    COURSE_ESPB,
+    COURSE_NAME,
+    CURRICULUM_CODE,
+    CURRICULUM_DURATION,
+    CURRICULUM_NAME,
+    SCHOOL_YEAR,
+    SEMESTER,
+)
 from academics.models import Course, Curriculum, CurriculumCourse, DegreeLevel, Enrollment
-from accounts.management.test_data import PROFESSOR_EMAIL, STUDENT_EMAIL
-from accounts.models import ProfessorProfile, StudentProfile
+from accounts.management.test_data_helpers import (
+    get_test_professor_profile,
+    get_test_student_profile,
+)
 
 
 class Command(BaseCommand):
     help = "Create or update basic local test academics data."
 
     def handle(self, *args, **options):
-        student = self.get_student_profile()
-        professor = self.get_professor_profile()
+        student = get_test_student_profile()
+        professor = get_test_professor_profile()
 
         course = self.create_or_update_course(
-            code="TEST01",
-            name="Test Course",
-            espb=5,
+            code=COURSE_CODE,
+            name=COURSE_NAME,
+            espb=COURSE_ESPB,
             professor=professor,
         )
         curriculum = self.create_or_update_curriculum(
-            code="IE-BSC",
-            name="Information Engineering",
+            code=CURRICULUM_CODE,
+            name=CURRICULUM_NAME,
             degree_level=DegreeLevel.BACHELOR,
-            duration=4,
+            duration=CURRICULUM_DURATION,
         )
 
         CurriculumCourse.objects.update_or_create(
             curriculum=curriculum,
             course=course,
-            school_year="2020/2021",
-            defaults={"semester": 1, "is_mandatory": True},
+            school_year=SCHOOL_YEAR,
+            defaults={"semester": SEMESTER, "is_mandatory": True},
         )
 
         Enrollment.objects.update_or_create(
             student=student,
             course=course,
-            school_year="2020/2021",
-            defaults={"semester": 1},
+            school_year=SCHOOL_YEAR,
+            defaults={"semester": SEMESTER},
         )
 
         self.stdout.write(self.style.SUCCESS("Created test academics data."))
-
-    def get_student_profile(self):
-        try:
-            return StudentProfile.objects.get(user__email=STUDENT_EMAIL)
-        except StudentProfile.DoesNotExist as e:
-            raise CommandError(
-                "Run 'create_test_accounts.py' command before this one."
-            ) from e
-
-    def get_professor_profile(self):
-        try:
-            return ProfessorProfile.objects.get(user__email=PROFESSOR_EMAIL)
-        except ProfessorProfile.DoesNotExist as e:
-            raise CommandError(
-                "Run 'create_test_accounts.py' command before this one."
-            ) from e
 
     def create_or_update_course(self, code, name, espb, professor):
         course, _created = Course.objects.update_or_create(
