@@ -23,8 +23,8 @@ class InvalidTransactionAmountError(ValueError):
 
 
 def _validate_amount(amount: Decimal) -> None:
-    if amount <= Decimal("0"):
-        raise InvalidTransactionAmountError("Transaction amount must be greater than zero.")
+    if amount < Decimal("1.00"):
+        raise InvalidTransactionAmountError("Transaction amount must be at least 1.00.")
 
 
 @transaction.atomic
