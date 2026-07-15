@@ -15,11 +15,6 @@ class TransactionCause(models.TextChoices):
     DEPOSIT = "deposit", "Deposit"
 
 
-class TransactionType(models.TextChoices):
-    CREDIT = "credit", "Credit"
-    DEBIT = "debit", "Debit"
-
-
 class Transaction(models.Model):
     student = models.ForeignKey(
         StudentProfile,
@@ -36,7 +31,6 @@ class Transaction(models.Model):
         choices=TransactionCause.choices,
     )
     created_at = models.DateTimeField(auto_now_add=True)
-    type = models.CharField(choices=TransactionType.choices, max_length=10)
     exam_registration = models.ForeignKey(
         ExamRegistration,
         on_delete=models.PROTECT,
