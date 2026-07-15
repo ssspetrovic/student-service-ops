@@ -1,61 +1,34 @@
-from datetime import datetime
-
 from django.core.management.base import BaseCommand, CommandError
-from django.utils import timezone
 
-from academics.management.test_data import COURSE_CODE
+from academics.management.test_data import TEST_COURSES
 from academics.models import Course
 from accounts.management.test_data_helpers import (
-    get_test_professor_profile,
-    get_test_student_profile,
+    get_test_student_profiles,
 )
-from exams.models import Exam, ExamRegistration, ExamRegistrationStatus
-
-TEST_EXAM_DATE = timezone.make_aware(datetime(2026, 9, 1, 10, 0))
-TEST_EXAM_ROOM = "A1"
+from exams.seeders import seed_exams
 
 
 class Command(BaseCommand):
     help = "Create or update basic local test exams data."
 
     def handle(self, *args, **options):
-        student = get_test_student_profile()
-        professor = get_test_professor_profile()
-        course = self.get_test_course()
+        students = get_test_student_profiles()
+        courses = self.get_test_courses()
+        result = seed_exams(courses=courses, students=students)
 
-        exam = self.create_or_update_exam(
-            course=course,
-            professor=professor,
-            date=TEST_EXAM_DATE,
-            room=TEST_EXAM_ROOM,
+        self.stdout.write(
+            self.style.SUCCESS(f"Created test exams data: {len(result.exams)} exams.")
         )
 
-        ExamRegistration.objects.update_or_create(
-            student=student,
-            exam=exam,
-            defaults={
-                "grade": None,
-                "status": ExamRegistrationStatus.ACTIVE,
-            },
-        )
+    def get_test_courses(self):
+        course_codes = [course["code"] for course in TEST_COURSES]
+        courses = Course.objects.select_related("professor").filter(code__in=course_codes)
+        courses_by_code = {course.code: course for course in courses}
 
-        self.stdout.write(self.style.SUCCESS("Created test exams data."))
-
-    def get_test_course(self):
-        try:
-            return Course.objects.get(code=COURSE_CODE)
-        except Course.DoesNotExist as exc:
+        missing_codes = set(course_codes) - set(courses_by_code)
+        if missing_codes:
             raise CommandError(
                 "Run `python manage.py create_test_academics` before this command."
-            ) from exc
+            )
 
-    def create_or_update_exam(self, course, professor, date, room):
-        exam, _created = Exam.objects.update_or_create(
-            course=course,
-            professor=professor,
-            date=date,
-            defaults={
-                "room": room,
-            },
-        )
-        return exam
+        return [courses_by_code[code] for code in course_codes]
