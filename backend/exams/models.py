@@ -1,3 +1,4 @@
+from django.core.exceptions import ValidationError
 from django.core.validators import MinValueValidator, MaxValueValidator
 from django.db import models
 
@@ -21,6 +22,22 @@ class Exam(models.Model):
     )
     date = models.DateTimeField()
     room = models.CharField(max_length=50, blank=True)
+
+    def clean(self):
+        super().clean()
+
+        if (
+            self.course_id
+            and self.professor_id
+            and self.course.professor_id != self.professor_id
+        ):
+            raise ValidationError(
+                {
+                    "professor": (
+                        "The professor must be responsible for the selected course."
+                    )
+                }
+            )
 
     def __str__(self):
         return f"{self.course.code} - {self.date:%d-%m-%Y %H:%M} [{self.room}]"
@@ -57,10 +74,14 @@ class ExamRegistration(models.Model):
 
     class Meta:
         constraints = [
+            models.UniqueConstraint(
+                fields=["student", "exam"],
+                name="uq_exam_registration_student_exam",
+            ),
             models.CheckConstraint(
                 condition=(models.Q(grade__gte=5) & models.Q(grade__lte=10))
                 | models.Q(grade__isnull=True),
-                name="exam_registration_grade_between_5_and_10_or_null",
+                name="exam_registration_grade_valid",
             )
         ]
 
