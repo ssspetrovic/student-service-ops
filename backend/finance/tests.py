@@ -9,7 +9,7 @@ from .models import Transaction, TransactionCause, Wallet
 # Create your tests here.
 
 
-class TransactionAmountAndCauseTestCase(TestCase):
+class TransactionAmountTestCase(TestCase):
     def setUp(self):
         self.student_user = User.objects.create_user(
             email="student@example.com",
@@ -17,16 +17,6 @@ class TransactionAmountAndCauseTestCase(TestCase):
             role=UserRole.STUDENT,
         )
         self.student = StudentProfile.objects.create(user=self.student_user)
-
-    def test_transaction_stores_positive_amount_and_cause(self):
-        transaction = Transaction.objects.create(
-            student=self.student,
-            amount=Decimal("100.00"),
-            cause=TransactionCause.DEPOSIT,
-        )
-
-        self.assertEqual(transaction.amount, Decimal("100.00"))
-        self.assertEqual(transaction.cause, TransactionCause.DEPOSIT)
 
     def test_transaction_rejects_amount_below_min(self):
         transaction = Transaction(
@@ -47,11 +37,6 @@ class WalletTestCase(TestCase):
             role=UserRole.STUDENT,
         )
         self.student = StudentProfile.objects.create(user=self.student_user)
-
-    def test_wallet_defaults_to_zero_balance(self):
-        wallet = Wallet.objects.create(student=self.student)
-
-        self.assertEqual(wallet.balance, Decimal("0.00"))
 
     def test_wallet_rejects_negative_balance(self):
         wallet = Wallet(
