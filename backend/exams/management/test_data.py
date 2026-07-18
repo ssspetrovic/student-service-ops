@@ -1,21 +1,34 @@
-from datetime import datetime
-
-from django.utils import timezone
-
 TEST_EXAMS = [
     {
         "course_code": "TEST01",
-        "date": timezone.make_aware(datetime(2026, 9, 1, 10, 0)),
+        "days_until_exam": 14,
+        "hour": 10,
+        "minute": 0,
         "room": "A1",
     },
     {
         "course_code": "TEST02",
-        "date": timezone.make_aware(datetime(2026, 9, 3, 12, 0)),
+        "days_until_exam": 45,
+        "hour": 12,
+        "minute": 0,
         "room": "B2",
     },
     {
         "course_code": "TEST03",
-        "date": timezone.make_aware(datetime(2026, 9, 5, 14, 0)),
+        "days_until_exam": 10,
+        "hour": 14,
+        "minute": 0,
         "room": "C3",
+    },
+]
+
+TEST_EXAM_REGISTRATIONS = [
+    {
+        "student_email": "student@example.com",
+        "course_code": "TEST01",
+    },
+    {
+        "student_email": "student2@example.com",
+        "course_code": "TEST02",
     },
 ]
