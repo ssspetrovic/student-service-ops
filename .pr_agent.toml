@@ -1,6 +1,6 @@
 [config]
-model = "gpt-4o-mini"
-model_turbo = "gpt-4o-mini"
+model = "gpt-5.1"
+model_turbo = "gpt-5.1"
 
 [pr_reviewer]
 require_score_review = true
@@ -20,6 +20,10 @@ Focus on infrastructure and GitOps operational risk:
 - Flag Talos, Cilium, Gateway API, storage, and runner changes that could block bootstrap, node join, or reconciliation.
 - For planned app rollout work, check backend, frontend, database, image-build, and GitOps manifests as one deployable path, not isolated files.
 - For Django backend changes, check settings separation, production env requirements, health checks, migrations, tests, and container readiness.
+- For Django service/view changes, trace called service functions before claiming missing validation, missing authorization, or transaction-safety issues. If validation or locking is delegated to another changed function, do not report it as missing in the caller.
+- For Django money/balance logic, distinguish advisory pre-checks from the authoritative debit/credit operation. Do not recommend duplicate balance checks in views or orchestration services when the called finance service already validates funds and updates balance atomically.
+- For Django API error handling, prefer stable public error codes/messages over returning raw exception strings. Do not ask for logging of expected business-rule failures unless there is a concrete operational need.
+- Do not label a backend finding as security unless there is a concrete user-controlled input path, privilege boundary, data exposure, or financial consistency failure. Generic "could fail" or "consider handling" comments should be downgraded or omitted.
 - For future React frontend changes, check build/runtime config separation, API base URL handling, container readiness, and Gateway routing assumptions.
 - For future CNPG/PostgreSQL work, check encrypted credentials, backup/recovery intent, storage class/PVC sizing, network policy, and dependency ordering before app startup.
 - For `apps/student-service/` manifests, check namespace ownership, image references from Harbor, ConfigMap/Secret boundaries, probes, resource requests, HTTPRoute/Gateway attachment, and Flux `dependsOn`.
