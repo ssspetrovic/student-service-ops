@@ -8,11 +8,9 @@ from accounts.models import StudentProfile
 from academics.models import Enrollment, EnrollmentStatus
 from exams.models import Exam, ExamRegistration, ExamRegistrationStatus
 from finance.models import TransactionCause
-from finance.services import debit_wallet
+from finance.services import debit_wallet, InsufficientFundsError
 
 EXAM_REGISTRATION_FEE = Decimal("200.00")
-
-
 REGISTRATION_OPENS_BEFORE_DAYS = 14
 REGISTRATION_CLOSES_BEFORE_DAYS = 2
 
@@ -33,6 +31,10 @@ class AlreadyRegisteredError(ExamRegistrationError):
     pass
 
 
+class ExamRegistrationPaymentError(ExamRegistrationError):
+    pass
+
+
 def is_registration_open(exam: Exam) -> bool:
     registration_opens = exam.date - timedelta(days=REGISTRATION_OPENS_BEFORE_DAYS)
     registration_closes = exam.date - timedelta(days=REGISTRATION_CLOSES_BEFORE_DAYS)
@@ -44,15 +46,18 @@ def is_registration_open(exam: Exam) -> bool:
 
 
 @transaction.atomic
-def register_student_for_exam(student: StudentProfile, exam: Exam) -> ExamRegistration:
+def register_student_for_exam(
+    student: StudentProfile,
+    exam: Exam,
+) -> ExamRegistration:
     is_enrolled = Enrollment.objects.filter(
-        student=student, course=exam.course, status=EnrollmentStatus.ACTIVE
+        student=student,
+        course=exam.course,
+        status=EnrollmentStatus.ACTIVE,
     ).exists()
 
     if not is_enrolled:
-        raise StudentNotEnrolledError(
-            f"Student is not enrolled in course '{exam.course.name}'."
-        )
+        raise StudentNotEnrolledError(f"Student is not enrolled in course '{exam.course.name}'.")
 
     if not is_registration_open(exam):
         raise RegistrationPeriodClosedError("Registration period is not active.")
@@ -69,11 +74,14 @@ def register_student_for_exam(student: StudentProfile, exam: Exam) -> ExamRegist
     if not was_created:
         raise AlreadyRegisteredError("Student is already registered for this exam.")
 
-    debit_wallet(
-        student=student,
-        amount=EXAM_REGISTRATION_FEE,
-        cause=TransactionCause.EXAM_REGISTRATION,
-        exam_registration=registration,
-    )
+    try:
+        debit_wallet(
+            student=student,
+            amount=EXAM_REGISTRATION_FEE,
+            cause=TransactionCause.EXAM_REGISTRATION,
+            exam_registration=registration,
+        )
+    except InsufficientFundsError as e:
+        raise ExamRegistrationPaymentError(str(e)) from e
 
     return registration
