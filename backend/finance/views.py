@@ -1,10 +1,15 @@
 from django.shortcuts import get_object_or_404
-from rest_framework.generics import RetrieveAPIView
+from rest_framework import status
+from rest_framework.generics import ListAPIView, RetrieveAPIView
+from rest_framework.response import Response
+from rest_framework.views import APIView
 
+from accounts.models import StudentProfile
 from accounts.permissions import IsStudent
 
-from .models import Wallet
-from .serializers import WalletSerializer
+from .models import Transaction, TransactionCause, Wallet
+from .serializers import DepositSerializer, TransactionSerializer, WalletSerializer
+from .services import credit_wallet
 
 # Create your views here.
 
@@ -15,3 +20,36 @@ class CurrentStudentWalletView(RetrieveAPIView):
 
     def get_object(self):
         return get_object_or_404(Wallet, student__user=self.request.user)
+
+
+class CurrentStudentTransactionListView(ListAPIView):
+    serializer_class = TransactionSerializer
+    permission_classes = [IsStudent]
+
+    def get_queryset(self):
+        return Transaction.objects.filter(student__user=self.request.user).order_by(
+            "-created_at", "-pk"
+        )
+
+
+class CurrentStudentDepositView(APIView):
+    permission_classes = [IsStudent]
+
+    def post(self, request):
+        request_serializer = DepositSerializer(data=request.data)
+        request_serializer.is_valid(raise_exception=True)
+        student = get_object_or_404(StudentProfile, user=request.user)
+        transaction_record = credit_wallet(
+            student=student,
+            amount=request_serializer.validated_data["amount"],
+            cause=TransactionCause.DEPOSIT,
+        )
+        transaction_record.refresh_from_db()
+        wallet = Wallet.objects.get(student=student)
+        return Response(
+            {
+                "transaction": TransactionSerializer(transaction_record).data,
+                "balance": str(wallet.balance),
+            },
+            status=status.HTTP_201_CREATED,
+        )
