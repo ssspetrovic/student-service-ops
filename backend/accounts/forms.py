@@ -1,0 +1,45 @@
+from django import forms
+from django.contrib.auth.forms import UserChangeForm, UserCreationForm
+
+from academics.models import Curriculum
+
+from .models import User, UserRole
+
+
+class ManagedUserCreationForm(UserCreationForm):
+    first_name = forms.CharField(max_length=150)
+    last_name = forms.CharField(max_length=150)
+    role = forms.ChoiceField(
+        choices=[
+            (UserRole.STUDENT, UserRole.STUDENT.label),
+            (UserRole.PROFESSOR, UserRole.PROFESSOR.label),
+        ]
+    )
+    index_no = forms.CharField(required=False)
+    current_year_of_study = forms.IntegerField(required=False, min_value=1, max_value=8)
+    curriculum = forms.ModelChoiceField(queryset=Curriculum.objects.all(), required=False)
+    employee_no = forms.CharField(required=False)
+
+    class Meta(UserCreationForm.Meta):
+        model = User
+        fields = ("email", "first_name", "last_name", "role")
+
+    def clean(self):
+        cleaned_data = super().clean()
+        role = cleaned_data.get("role")
+        if role == UserRole.STUDENT:
+            for name in ("index_no", "current_year_of_study", "curriculum"):
+                if not cleaned_data.get(name):
+                    self.add_error(name, "This field is required for students.")
+        elif role == UserRole.PROFESSOR and not cleaned_data.get("employee_no"):
+            self.add_error("employee_no", "This field is required for professors.")
+        return cleaned_data
+
+
+class ManagedUserChangeForm(UserChangeForm):
+    first_name = forms.CharField(max_length=150)
+    last_name = forms.CharField(max_length=150)
+
+    class Meta(UserChangeForm.Meta):
+        model = User
+        fields = "__all__"
