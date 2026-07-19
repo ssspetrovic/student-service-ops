@@ -30,7 +30,7 @@ def seed_exams(
             course=course,
             professor=course.professor,
             date=get_seed_exam_date(
-                days_until_exam=exam_data["days_until_exam"],
+                days_from_now=exam_data["days_from_now"],
                 hour=exam_data["hour"],
                 minute=exam_data["minute"],
             ),
@@ -38,11 +38,13 @@ def seed_exams(
         )
         exams.append(exam)
 
-    exams_by_course_code = {exam.course.code: exam for exam in exams}
+    exams_by_course_and_room = {(exam.course.code, exam.room): exam for exam in exams}
 
     for registration_data in TEST_EXAM_REGISTRATIONS:
         student = students_by_email[registration_data["student_email"]]
-        exam = exams_by_course_code[registration_data["course_code"]]
+        exam = exams_by_course_and_room[
+            (registration_data["course_code"], registration_data["exam_room"])
+        ]
         registration, _ = ExamRegistration.objects.update_or_create(
             student=student,
             exam=exam,
@@ -56,13 +58,13 @@ def seed_exams(
     return ExamSeedData(exams=exams, registrations=registrations)
 
 
-def get_seed_exam_date(days_until_exam: int, hour: int, minute: int):
-    exam_date = timezone.now() + timedelta(days=days_until_exam)
+def get_seed_exam_date(days_from_now: int, hour: int, minute: int):
+    exam_date = timezone.now() + timedelta(days=days_from_now)
     return exam_date.replace(hour=hour, minute=minute, second=0, microsecond=0)
 
 
 def create_or_update_exam(course: Course, professor: ProfessorProfile, date, room: str) -> Exam:
-    exam = Exam.objects.filter(course=course).order_by("id").first()
+    exam = Exam.objects.filter(course=course, room=room).order_by("id").first()
 
     if exam is None:
         exam = Exam(course=course)
