@@ -25,6 +25,7 @@ class UserCreationTestCase(TestCase):
         self.assertFalse(user.check_password("bad-password"))
         self.assertTrue(user.password.startswith("bcrypt_sha256$"))
 
+
 class ManagedUserAdminTestCase(TestCase):
     def test_admin_form_creates_professor_without_offering_admin_role(self):
         self.assertNotIn(

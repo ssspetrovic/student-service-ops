@@ -94,6 +94,7 @@ def register_student_for_exam(
     student: StudentProfile,
     exam: Exam,
 ) -> ExamRegistration:
+    student = StudentProfile.objects.select_for_update().get(pk=student.pk)
     is_enrolled = Enrollment.objects.filter(
         student=student,
         course=exam.course,
@@ -106,17 +107,19 @@ def register_student_for_exam(
     if not is_registration_open(exam):
         raise RegistrationPeriodClosedError("Registration period is not active.")
 
-    registration, was_created = ExamRegistration.objects.get_or_create(
+    if (
+        ExamRegistration.objects.filter(student=student, exam=exam)
+        .exclude(status=ExamRegistrationStatus.CANCELED)
+        .exists()
+    ):
+        raise AlreadyRegisteredError("Student is already registered for this exam.")
+
+    registration = ExamRegistration.objects.create(
         student=student,
         exam=exam,
-        defaults={
-            "grade": None,
-            "status": ExamRegistrationStatus.ACTIVE,
-        },
+        grade=None,
+        status=ExamRegistrationStatus.ACTIVE,
     )
-
-    if not was_created:
-        raise AlreadyRegisteredError("Student is already registered for this exam.")
 
     try:
         debit_wallet(
@@ -157,10 +160,6 @@ def cancel_exam_registration(
     except Transaction.DoesNotExist as e:
         raise ExamRegistrationRefundError(
             "The original exam registration payment could not be found."
-        ) from e
-    except Transaction.MultipleObjectsReturned as e:
-        raise ExamRegistrationRefundError(
-            "Multiple exam registration payments were found."
         ) from e
 
     registration.status = ExamRegistrationStatus.CANCELED

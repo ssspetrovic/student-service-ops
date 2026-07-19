@@ -26,17 +26,9 @@ class Exam(models.Model):
     def clean(self):
         super().clean()
 
-        if (
-            self.course_id
-            and self.professor_id
-            and self.course.professor_id != self.professor_id
-        ):
+        if self.course_id and self.professor_id and self.course.professor_id != self.professor_id:
             raise ValidationError(
-                {
-                    "professor": (
-                        "The professor must be responsible for the selected course."
-                    )
-                }
+                {"professor": ("The professor must be responsible for the selected course.")}
             )
 
     def __str__(self):
@@ -74,10 +66,6 @@ class ExamRegistration(models.Model):
 
     class Meta:
         constraints = [
-            models.UniqueConstraint(
-                fields=["student", "exam"],
-                name="uq_exam_registration_student_exam",
-            ),
             models.CheckConstraint(
                 condition=(models.Q(grade__gte=5) & models.Q(grade__lte=10))
                 | models.Q(grade__isnull=True),
