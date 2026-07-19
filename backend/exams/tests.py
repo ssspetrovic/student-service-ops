@@ -958,5 +958,110 @@ class ProfessorExamCreateApiTestCase(TestCase):
         self.assertEqual(response.status_code, status.HTTP_404_NOT_FOUND)
         self.assertFalse(Exam.objects.filter(course=self.other_course).exists())
 
-    def test_student_cannot_create_exam(self):
+
+class StudentExamDiscoveryApiTestCase(TestCase):
+    def setUp(self):
+        self.client = APIClient()
+        self.now = timezone.now()
+        self.student_user = User.objects.create_user(
+            email="discovery-student@example.com",
+            password="student123",
+            role=UserRole.STUDENT,
+        )
+        self.student = create_student_profile(
+            user=self.student_user,
+            index_no="DISC-001",
+        )
+        self.professor_user = User.objects.create_user(
+            email="discovery-professor@example.com",
+            password="professor123",
+            role=UserRole.PROFESSOR,
+        )
+        self.professor = ProfessorProfile.objects.create(
+            user=self.professor_user,
+            employee_no="DISC-P01",
+        )
+        self.course = Course.objects.create(
+            code="DISC-COURSE",
+            name="Discovery Course",
+            espb=6,
+            professor=self.professor,
+        )
+        self.other_course = Course.objects.create(
+            code="DISC-OTHER",
+            name="Other Discovery Course",
+            espb=6,
+            professor=self.professor,
+        )
+        Enrollment.objects.create(
+            student=self.student,
+            course=self.course,
+            school_year="2025/2026",
+            semester=1,
+            status=EnrollmentStatus.ACTIVE,
+        )
+        self.available_exam = Exam.objects.create(
+            course=self.course,
+            professor=self.professor,
+            date=self.now + timedelta(days=7),
+            room="D1",
+        )
+        Wallet.objects.create(student=self.student, balance=Decimal("100.00"))
         self.client.force_authenticate(user=self.student_user)
+
+    def test_available_exams_enforce_enrollment_window_and_registration_absence(self):
+        Exam.objects.create(
+            course=self.other_course,
+            professor=self.professor,
+            date=self.now + timedelta(days=7),
+        )
+        Exam.objects.create(
+            course=self.course,
+            professor=self.professor,
+            date=self.now + timedelta(days=15),
+        )
+
+        response = self.client.get(reverse("available-exams"))
+
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+        self.assertEqual([item["id"] for item in response.data], [self.available_exam.pk])
+        self.assertEqual(response.data[0]["registration_fee"], "200.00")
+        self.assertFalse(response.data[0]["can_afford"])
+
+        ExamRegistration.objects.create(
+            student=self.student,
+            exam=self.available_exam,
+            status=ExamRegistrationStatus.CANCELED,
+        )
+        response = self.client.get(reverse("available-exams"))
+        self.assertEqual(response.data, [])
+
+    def test_cancellable_list_includes_only_owned_active_before_deadline(self):
+        cancellable = ExamRegistration.objects.create(
+            student=self.student,
+            exam=self.available_exam,
+        )
+        exact_deadline_exam = Exam.objects.create(
+            course=self.course,
+            professor=self.professor,
+            date=self.now + timedelta(hours=48),
+        )
+        ExamRegistration.objects.create(
+            student=self.student,
+            exam=exact_deadline_exam,
+        )
+        canceled_exam = Exam.objects.create(
+            course=self.course,
+            professor=self.professor,
+            date=self.now + timedelta(days=8),
+        )
+        ExamRegistration.objects.create(
+            student=self.student,
+            exam=canceled_exam,
+            status=ExamRegistrationStatus.CANCELED,
+        )
+
+        response = self.client.get(reverse("cancellable-exam-registrations"))
+
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+        self.assertEqual([item["id"] for item in response.data], [cancellable.pk])
