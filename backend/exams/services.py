@@ -7,12 +7,13 @@ from django.utils import timezone
 from accounts.models import StudentProfile
 from academics.models import Enrollment, EnrollmentStatus
 from exams.models import Exam, ExamRegistration, ExamRegistrationStatus
-from finance.models import TransactionCause
-from finance.services import debit_wallet, InsufficientFundsError
+from finance.models import Transaction, TransactionCause
+from finance.services import credit_wallet, debit_wallet, InsufficientFundsError
 
 EXAM_REGISTRATION_FEE = Decimal("200.00")
 REGISTRATION_OPENS_BEFORE_DAYS = 14
 REGISTRATION_CLOSES_BEFORE_DAYS = 2
+CANCELLATION_CLOSES_BEFORE_HOURS = 48
 
 
 class ExamRegistrationError(ValueError):
@@ -35,6 +36,22 @@ class ExamRegistrationPaymentError(ExamRegistrationError):
     pass
 
 
+class ExamRegistrationCancellationClosedError(ExamRegistrationError):
+    pass
+
+
+class ExamRegistrationNotActiveError(ExamRegistrationError):
+    pass
+
+
+class ExamRegistrationOwnershipError(ExamRegistrationError):
+    pass
+
+
+class ExamRegistrationRefundError(ExamRegistrationError):
+    pass
+
+
 def is_registration_open(exam: Exam) -> bool:
     registration_opens = exam.date - timedelta(days=REGISTRATION_OPENS_BEFORE_DAYS)
     registration_closes = exam.date - timedelta(days=REGISTRATION_CLOSES_BEFORE_DAYS)
@@ -43,6 +60,13 @@ def is_registration_open(exam: Exam) -> bool:
         raise ValueError("Registration opening must be before its closing.")
 
     return registration_opens <= timezone.now() < registration_closes
+
+
+def can_cancel_registration(registration: ExamRegistration) -> bool:
+    cancellation_deadline = registration.exam.date - timedelta(
+        hours=CANCELLATION_CLOSES_BEFORE_HOURS
+    )
+    return timezone.now() <= cancellation_deadline
 
 
 @transaction.atomic
@@ -83,5 +107,50 @@ def register_student_for_exam(
         )
     except InsufficientFundsError as e:
         raise ExamRegistrationPaymentError(str(e)) from e
+
+    return registration
+
+
+@transaction.atomic
+def cancel_exam_registration(
+    student: StudentProfile, registration: ExamRegistration
+) -> ExamRegistration:
+    registration = (
+        ExamRegistration.objects.select_for_update().select_related("exam").get(pk=registration.pk)
+    )
+
+    if registration.student_id != student.pk:
+        raise ExamRegistrationOwnershipError("Registration does not belong to this student.")
+
+    if registration.status != ExamRegistrationStatus.ACTIVE:
+        raise ExamRegistrationNotActiveError("Only active registrations can be canceled.")
+
+    if not can_cancel_registration(registration):
+        raise ExamRegistrationCancellationClosedError("Registration can no longer be canceled.")
+
+    try:
+        payment_transaction = Transaction.objects.get(
+            student=student,
+            exam_registration=registration,
+            cause=TransactionCause.EXAM_REGISTRATION,
+        )
+    except Transaction.DoesNotExist as e:
+        raise ExamRegistrationRefundError(
+            "The original exam registration payment could not be found."
+        ) from e
+    except Transaction.MultipleObjectsReturned as e:
+        raise ExamRegistrationRefundError(
+            "Multiple exam registration payments were found."
+        ) from e
+
+    registration.status = ExamRegistrationStatus.CANCELED
+    registration.save(update_fields=["status"])
+
+    credit_wallet(
+        student=student,
+        amount=payment_transaction.amount,
+        cause=TransactionCause.EXAM_REFUND,
+        exam_registration=registration,
+    )
 
     return registration

@@ -13,10 +13,15 @@ from accounts.permissions import IsStudent
 from .models import Exam, ExamRegistration
 from .services import (
     AlreadyRegisteredError,
+    ExamRegistrationCancellationClosedError,
     ExamRegistrationError,
+    ExamRegistrationNotActiveError,
+    ExamRegistrationOwnershipError,
     ExamRegistrationPaymentError,
+    ExamRegistrationRefundError,
     RegistrationPeriodClosedError,
     StudentNotEnrolledError,
+    cancel_exam_registration,
     register_student_for_exam,
 )
 from .serializers import ExamSerializer, ExamRegistrationSerializer
@@ -67,6 +72,36 @@ class ExamRegistrationView(APIView):
         )
 
 
+class ExamRegistrationCancelView(APIView):
+    permission_classes = [IsStudent]
+
+    def post(self, request, registration_id):
+        student = get_object_or_404(StudentProfile, user=request.user)
+        registration = get_object_or_404(
+            ExamRegistration,
+            pk=registration_id,
+            student=student,
+        )
+
+        try:
+            registration = cancel_exam_registration(
+                student=student,
+                registration=registration,
+            )
+        except ExamRegistrationError as e:
+            return Response(
+                {"detail": get_registration_error_detail(e)},
+                status=status.HTTP_400_BAD_REQUEST,
+            )
+
+        serializer = ExamRegistrationSerializer(registration)
+
+        return Response(
+            serializer.data,
+            status=status.HTTP_200_OK,
+        )
+
+
 def get_registration_error_detail(error: ExamRegistrationError) -> str:
     if isinstance(error, StudentNotEnrolledError):
         return "Student is not enrolled in this course."
@@ -76,4 +111,12 @@ def get_registration_error_detail(error: ExamRegistrationError) -> str:
         return "Student is already registered for this exam."
     if isinstance(error, ExamRegistrationPaymentError):
         return "Student does not have enough funds to register for this exam."
+    if isinstance(error, ExamRegistrationCancellationClosedError):
+        return "Registration can no longer be canceled."
+    if isinstance(error, ExamRegistrationNotActiveError):
+        return "Only active registrations can be canceled."
+    if isinstance(error, ExamRegistrationOwnershipError):
+        return "Registration does not belong to this student."
+    if isinstance(error, ExamRegistrationRefundError):
+        return "The original exam registration payment could not be found."
     return "Exam registration failed."

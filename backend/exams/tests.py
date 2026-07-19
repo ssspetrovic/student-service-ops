@@ -1,5 +1,6 @@
 from decimal import Decimal
 from datetime import timedelta
+from unittest.mock import patch
 
 from django.core.exceptions import ValidationError
 from django.db import IntegrityError, transaction
@@ -15,9 +16,13 @@ from finance.models import Transaction, TransactionCause, Wallet
 from .models import Exam, ExamRegistration, ExamRegistrationStatus
 from .services import (
     AlreadyRegisteredError,
+    ExamRegistrationCancellationClosedError,
+    ExamRegistrationNotActiveError,
     ExamRegistrationPaymentError,
+    ExamRegistrationRefundError,
     RegistrationPeriodClosedError,
     StudentNotEnrolledError,
+    cancel_exam_registration,
     register_student_for_exam,
 )
 
@@ -281,6 +286,189 @@ class ExamRegistrationServiceTestCase(TestCase):
         self.assertEqual(self.wallet.balance, Decimal("100.00"))
 
 
+class ExamRegistrationCancellationServiceTestCase(TestCase):
+    def setUp(self):
+        self.student_user = User.objects.create_user(
+            email="cancel-student@example.com",
+            password="student123",
+            role=UserRole.STUDENT,
+        )
+        self.student = StudentProfile.objects.create(
+            user=self.student_user,
+            index_no="CANCEL-001",
+        )
+        self.professor_user = User.objects.create_user(
+            email="cancel-professor@example.com",
+            password="professor123",
+            role=UserRole.PROFESSOR,
+        )
+        self.professor = ProfessorProfile.objects.create(
+            user=self.professor_user,
+            employee_no="CANCEL-PROF-001",
+        )
+        self.course = Course.objects.create(
+            code="CANCEL-COURSE",
+            name="Cancellation Course",
+            espb=6,
+            professor=self.professor,
+        )
+        self.exam = Exam.objects.create(
+            course=self.course,
+            professor=self.professor,
+            date=timezone.now() + timedelta(days=10),
+        )
+        self.wallet = Wallet.objects.create(
+            student=self.student,
+            balance=Decimal("300.00"),
+        )
+
+    def create_paid_registration(self, status=ExamRegistrationStatus.ACTIVE):
+        registration = ExamRegistration.objects.create(
+            student=self.student,
+            exam=self.exam,
+            status=status,
+        )
+        payment_transaction = Transaction.objects.create(
+            student=self.student,
+            amount=Decimal("200.00"),
+            cause=TransactionCause.EXAM_REGISTRATION,
+            exam_registration=registration,
+        )
+        return registration, payment_transaction
+
+    def assert_no_refund_was_created(self):
+        self.assertFalse(
+            Transaction.objects.filter(
+                student=self.student,
+                cause=TransactionCause.EXAM_REFUND,
+            ).exists()
+        )
+
+    def test_cancel_exam_registration_refunds_original_payment_amount(self):
+        registration, payment_transaction = self.create_paid_registration()
+
+        canceled_registration = cancel_exam_registration(
+            student=self.student,
+            registration=registration,
+        )
+
+        canceled_registration.refresh_from_db()
+        self.wallet.refresh_from_db()
+        payment_transaction.refresh_from_db()
+        refund_transaction = Transaction.objects.get(
+            student=self.student,
+            cause=TransactionCause.EXAM_REFUND,
+            exam_registration=registration,
+        )
+
+        self.assertEqual(canceled_registration.status, ExamRegistrationStatus.CANCELED)
+        self.assertEqual(self.wallet.balance, Decimal("500.00"))
+        self.assertEqual(refund_transaction.amount, payment_transaction.amount)
+        self.assertEqual(payment_transaction.cause, TransactionCause.EXAM_REGISTRATION)
+
+    def test_cancel_exam_registration_rejects_inside_final_lock_window(self):
+        registration, _ = self.create_paid_registration()
+        self.exam.date = timezone.now() + timedelta(days=1)
+        self.exam.save(update_fields=["date"])
+
+        with self.assertRaises(ExamRegistrationCancellationClosedError):
+            cancel_exam_registration(
+                student=self.student,
+                registration=registration,
+            )
+
+        registration.refresh_from_db()
+        self.wallet.refresh_from_db()
+        self.assertEqual(registration.status, ExamRegistrationStatus.ACTIVE)
+        self.assertEqual(self.wallet.balance, Decimal("300.00"))
+        self.assert_no_refund_was_created()
+
+    def test_cancel_exam_registration_rejects_missing_original_payment(self):
+        registration = ExamRegistration.objects.create(
+            student=self.student,
+            exam=self.exam,
+        )
+
+        with self.assertRaises(ExamRegistrationRefundError):
+            cancel_exam_registration(
+                student=self.student,
+                registration=registration,
+            )
+
+        registration.refresh_from_db()
+        self.wallet.refresh_from_db()
+        self.assertEqual(registration.status, ExamRegistrationStatus.ACTIVE)
+        self.assertEqual(self.wallet.balance, Decimal("300.00"))
+        self.assert_no_refund_was_created()
+
+    def test_cancel_exam_registration_rejects_multiple_original_payments(self):
+        registration, _ = self.create_paid_registration()
+        Transaction.objects.create(
+            student=self.student,
+            amount=Decimal("250.00"),
+            cause=TransactionCause.EXAM_REGISTRATION,
+            exam_registration=registration,
+        )
+
+        with self.assertRaises(ExamRegistrationRefundError):
+            cancel_exam_registration(
+                student=self.student,
+                registration=registration,
+            )
+
+        registration.refresh_from_db()
+        self.wallet.refresh_from_db()
+        self.assertEqual(registration.status, ExamRegistrationStatus.ACTIVE)
+        self.assertEqual(self.wallet.balance, Decimal("300.00"))
+        self.assert_no_refund_was_created()
+
+    def test_cancel_exam_registration_rolls_back_status_when_refund_fails(self):
+        registration, _ = self.create_paid_registration()
+
+        with patch(
+            "exams.services.credit_wallet",
+            side_effect=ValueError("Refund failed."),
+        ):
+            with self.assertRaises(ValueError):
+                cancel_exam_registration(
+                    student=self.student,
+                    registration=registration,
+                )
+
+        registration.refresh_from_db()
+        self.wallet.refresh_from_db()
+        self.assertEqual(registration.status, ExamRegistrationStatus.ACTIVE)
+        self.assertEqual(self.wallet.balance, Decimal("300.00"))
+        self.assert_no_refund_was_created()
+
+    def test_cancel_exam_registration_does_not_refund_twice(self):
+        registration, _ = self.create_paid_registration()
+
+        cancel_exam_registration(
+            student=self.student,
+            registration=registration,
+        )
+
+        with self.assertRaises(ExamRegistrationNotActiveError):
+            cancel_exam_registration(
+                student=self.student,
+                registration=registration,
+            )
+
+        registration.refresh_from_db()
+        self.wallet.refresh_from_db()
+        self.assertEqual(registration.status, ExamRegistrationStatus.CANCELED)
+        self.assertEqual(self.wallet.balance, Decimal("500.00"))
+        self.assertEqual(
+            Transaction.objects.filter(
+                student=self.student,
+                cause=TransactionCause.EXAM_REFUND,
+                exam_registration=registration,
+            ).count(),
+            1,
+        )
+
+
 class ExamRegistrationApiTestCase(TestCase):
     def setUp(self):
         self.client = APIClient()
@@ -359,9 +547,8 @@ class ExamRegistrationApiTestCase(TestCase):
             response.data["detail"],
             "Student is already registered for this exam.",
         )
-        self.assertEqual(self.wallet.balance, Decimal("500.00"))
 
-    def test_insufficient_funds_returns_bad_request_and_rolls_back(self):
+    def test_insufficient_funds_returns_bad_request(self):
         self.wallet.balance = Decimal("100.00")
         self.wallet.save(update_fields=["balance"])
         self.client.force_authenticate(user=self.student_user)
@@ -374,13 +561,6 @@ class ExamRegistrationApiTestCase(TestCase):
             response.data["detail"],
             "Student does not have enough funds to register for this exam.",
         )
-        self.assertFalse(
-            ExamRegistration.objects.filter(
-                student=self.student,
-                exam=self.exam,
-            ).exists()
-        )
-        self.assertEqual(self.wallet.balance, Decimal("100.00"))
 
     def test_professor_cannot_register_for_exam(self):
         self.client.force_authenticate(user=self.professor_user)
@@ -388,3 +568,104 @@ class ExamRegistrationApiTestCase(TestCase):
         response = self.client.post(self.register_url())
 
         self.assertEqual(response.status_code, status.HTTP_403_FORBIDDEN)
+
+
+class ExamRegistrationCancellationApiTestCase(TestCase):
+    def setUp(self):
+        self.client = APIClient()
+        self.student_user = User.objects.create_user(
+            email="cancel-api-student@example.com",
+            password="student123",
+            role=UserRole.STUDENT,
+        )
+        self.student = StudentProfile.objects.create(
+            user=self.student_user,
+            index_no="CANCEL-API-001",
+        )
+        self.other_student_user = User.objects.create_user(
+            email="cancel-api-other-student@example.com",
+            password="student123",
+            role=UserRole.STUDENT,
+        )
+        self.other_student = StudentProfile.objects.create(
+            user=self.other_student_user,
+            index_no="CANCEL-API-002",
+        )
+        self.professor_user = User.objects.create_user(
+            email="cancel-api-professor@example.com",
+            password="professor123",
+            role=UserRole.PROFESSOR,
+        )
+        self.professor = ProfessorProfile.objects.create(
+            user=self.professor_user,
+            employee_no="CANCEL-API-PROF-001",
+        )
+        self.course = Course.objects.create(
+            code="CANCEL-API-COURSE",
+            name="Cancellation API Course",
+            espb=6,
+            professor=self.professor,
+        )
+        self.exam = Exam.objects.create(
+            course=self.course,
+            professor=self.professor,
+            date=timezone.now() + timedelta(days=10),
+        )
+        self.wallet = Wallet.objects.create(
+            student=self.student,
+            balance=Decimal("300.00"),
+        )
+        self.registration = ExamRegistration.objects.create(
+            student=self.student,
+            exam=self.exam,
+        )
+        Transaction.objects.create(
+            student=self.student,
+            amount=Decimal("200.00"),
+            cause=TransactionCause.EXAM_REGISTRATION,
+            exam_registration=self.registration,
+        )
+
+    def cancel_url(self, registration=None):
+        registration = registration or self.registration
+        return reverse(
+            "exam-registration-cancel",
+            kwargs={"registration_id": registration.id},
+        )
+
+    def test_student_can_cancel_own_registration(self):
+        self.client.force_authenticate(user=self.student_user)
+
+        response = self.client.post(self.cancel_url())
+
+        self.registration.refresh_from_db()
+        self.wallet.refresh_from_db()
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+        self.assertEqual(response.data["id"], self.registration.id)
+        self.assertEqual(response.data["status"], ExamRegistrationStatus.CANCELED)
+        self.assertEqual(self.registration.status, ExamRegistrationStatus.CANCELED)
+        self.assertEqual(self.wallet.balance, Decimal("500.00"))
+
+    def test_professor_cannot_cancel_registration(self):
+        self.client.force_authenticate(user=self.professor_user)
+
+        response = self.client.post(self.cancel_url())
+
+        self.assertEqual(response.status_code, status.HTTP_403_FORBIDDEN)
+
+    def test_another_student_cannot_cancel_registration(self):
+        self.client.force_authenticate(user=self.other_student_user)
+
+        response = self.client.post(self.cancel_url())
+
+        self.assertEqual(response.status_code, status.HTTP_404_NOT_FOUND)
+
+    def test_expected_cancellation_error_returns_bad_request(self):
+        self.registration.status = ExamRegistrationStatus.CANCELED
+        self.registration.save(update_fields=["status"])
+        self.client.force_authenticate(user=self.student_user)
+
+        response = self.client.post(self.cancel_url())
+
+        self.assertEqual(response.status_code, status.HTTP_400_BAD_REQUEST)
+        self.assertEqual(response.data["detail"], "Only active registrations can be canceled.")

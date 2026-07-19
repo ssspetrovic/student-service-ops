@@ -1,6 +1,11 @@
 from django.urls import path
 
-from .views import CurrentStudentExamRegistrationListView, ExamListView, ExamRegistrationView
+from .views import (
+    CurrentStudentExamRegistrationListView,
+    ExamListView,
+    ExamRegistrationCancelView,
+    ExamRegistrationView,
+)
 
 urlpatterns = [
     path("", ExamListView.as_view(), name="exams"),
@@ -10,4 +15,9 @@ urlpatterns = [
         name="current-student-exam-registrations",
     ),
     path("<int:exam_id>/register/", ExamRegistrationView.as_view(), name="exam-registration"),
+    path(
+        "registrations/<int:registration_id>/cancel/",
+        ExamRegistrationCancelView.as_view(),
+        name="exam-registration-cancel",
+    ),
 ]
