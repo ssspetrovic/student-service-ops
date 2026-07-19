@@ -6,8 +6,8 @@ from rest_framework.permissions import IsAuthenticated
 from rest_framework.response import Response
 from rest_framework.views import APIView
 
-from accounts.models import StudentProfile
-from accounts.permissions import IsStudent
+from accounts.models import ProfessorProfile, StudentProfile
+from accounts.permissions import IsProfessor, IsStudent
 
 
 from .models import Exam, ExamRegistration
@@ -24,7 +24,11 @@ from .services import (
     cancel_exam_registration,
     register_student_for_exam,
 )
-from .serializers import ExamSerializer, ExamRegistrationSerializer
+from .serializers import (
+    ExamRegistrationSerializer,
+    ExamSerializer,
+    ProfessorExamRegistrationSerializer,
+)
 
 
 # Create your views here.
@@ -46,6 +50,25 @@ class CurrentStudentExamRegistrationListView(ListAPIView):
             ExamRegistration.objects.select_related("student", "exam__course")
             .filter(student__user=self.request.user)
             .order_by("exam__date", "exam__course__code")
+        )
+
+
+class ProfessorExamRegistrationListView(ListAPIView):
+    serializer_class = ProfessorExamRegistrationSerializer
+    permission_classes = [IsProfessor]
+
+    def get_queryset(self):
+        professor = get_object_or_404(ProfessorProfile, user=self.request.user)
+        exam = get_object_or_404(
+            Exam,
+            pk=self.kwargs["exam_id"],
+            professor=professor,
+        )
+
+        return (
+            ExamRegistration.objects.select_related("student__user", "exam__course")
+            .filter(exam=exam)
+            .order_by("student__index_no")
         )
 
 

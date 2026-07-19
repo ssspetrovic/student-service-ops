@@ -5,6 +5,7 @@ from .views import (
     ExamListView,
     ExamRegistrationCancelView,
     ExamRegistrationView,
+    ProfessorExamRegistrationListView,
 )
 
 urlpatterns = [
@@ -13,6 +14,11 @@ urlpatterns = [
         "registrations/",
         CurrentStudentExamRegistrationListView.as_view(),
         name="current-student-exam-registrations",
+    ),
+    path(
+        "<int:exam_id>/registrations/",
+        ProfessorExamRegistrationListView.as_view(),
+        name="professor-exam-registrations",
     ),
     path("<int:exam_id>/register/", ExamRegistrationView.as_view(), name="exam-registration"),
     path(
