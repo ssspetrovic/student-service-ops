@@ -401,6 +401,27 @@ class ExamRegistrationCancellationServiceTestCase(TestCase):
         self.assertEqual(self.wallet.balance, Decimal("300.00"))
         self.assert_no_refund_was_created()
 
+    def test_cancel_exam_registration_rejects_multiple_original_payments(self):
+        registration, _ = self.create_paid_registration()
+        Transaction.objects.create(
+            student=self.student,
+            amount=Decimal("250.00"),
+            cause=TransactionCause.EXAM_REGISTRATION,
+            exam_registration=registration,
+        )
+
+        with self.assertRaises(ExamRegistrationRefundError):
+            cancel_exam_registration(
+                student=self.student,
+                registration=registration,
+            )
+
+        registration.refresh_from_db()
+        self.wallet.refresh_from_db()
+        self.assertEqual(registration.status, ExamRegistrationStatus.ACTIVE)
+        self.assertEqual(self.wallet.balance, Decimal("300.00"))
+        self.assert_no_refund_was_created()
+
     def test_cancel_exam_registration_rolls_back_status_when_refund_fails(self):
         registration, _ = self.create_paid_registration()
 

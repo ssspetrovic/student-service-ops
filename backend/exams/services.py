@@ -128,16 +128,20 @@ def cancel_exam_registration(
     if not can_cancel_registration(registration):
         raise ExamRegistrationCancellationClosedError("Registration can no longer be canceled.")
 
-    payment_transaction = Transaction.objects.filter(
-        student=student,
-        exam_registration=registration,
-        cause=TransactionCause.EXAM_REGISTRATION,
-    ).first()
-
-    if payment_transaction is None:
+    try:
+        payment_transaction = Transaction.objects.get(
+            student=student,
+            exam_registration=registration,
+            cause=TransactionCause.EXAM_REGISTRATION,
+        )
+    except Transaction.DoesNotExist as e:
         raise ExamRegistrationRefundError(
             "The original exam registration payment could not be found."
-        )
+        ) from e
+    except Transaction.MultipleObjectsReturned as e:
+        raise ExamRegistrationRefundError(
+            "Multiple exam registration payments were found."
+        ) from e
 
     registration.status = ExamRegistrationStatus.CANCELED
     registration.save(update_fields=["status"])
