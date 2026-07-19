@@ -8,6 +8,7 @@ from rest_framework.views import APIView
 
 from accounts.models import ProfessorProfile, StudentProfile
 from accounts.permissions import IsProfessor, IsStudent
+from academics.models import Course
 
 
 from .models import Exam, ExamRegistration
@@ -29,6 +30,7 @@ from .services import (
     register_student_for_exam,
 )
 from .serializers import (
+    ExamCreateSerializer,
     ExamRegistrationGradeSerializer,
     ExamRegistrationSerializer,
     ExamSerializer,
@@ -43,6 +45,30 @@ class ExamListView(ListAPIView):
     )
     serializer_class = ExamSerializer
     permission_classes = [IsAuthenticated]
+
+    def get_permissions(self):
+        if self.request.method == "POST":
+            return [IsProfessor()]
+        return super().get_permissions()
+
+    def post(self, request):
+        professor = get_object_or_404(ProfessorProfile, user=request.user)
+        request_serializer = ExamCreateSerializer(data=request.data)
+        request_serializer.is_valid(raise_exception=True)
+        course = get_object_or_404(
+            Course,
+            code=request_serializer.validated_data["course_code"],
+            professor=professor,
+        )
+        exam = Exam.objects.create(
+            course=course,
+            professor=professor,
+            date=request_serializer.validated_data["date"],
+            room=request_serializer.validated_data["room"],
+        )
+
+        serializer = ExamSerializer(exam)
+        return Response(serializer.data, status=status.HTTP_201_CREATED)
 
 
 class CurrentStudentExamRegistrationListView(ListAPIView):

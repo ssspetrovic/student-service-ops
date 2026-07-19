@@ -22,6 +22,12 @@ class ExamSerializer(serializers.ModelSerializer):
         ]
 
 
+class ExamCreateSerializer(serializers.Serializer):
+    course_code = serializers.CharField(max_length=20)
+    date = serializers.DateTimeField()
+    room = serializers.CharField(max_length=50, allow_blank=True, default="")
+
+
 class ExamRegistrationSerializer(serializers.ModelSerializer):
     student_index_no = serializers.CharField(source="student.index_no")
     exam_id = serializers.IntegerField(source="exam.id")

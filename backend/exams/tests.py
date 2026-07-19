@@ -881,3 +881,82 @@ class ExamRegistrationGradeApiTestCase(TestCase):
         response = self.client.patch(self.grade_url(), {"grade": 8}, format="json")
 
         self.assertEqual(response.status_code, status.HTTP_403_FORBIDDEN)
+
+
+class ProfessorExamCreateApiTestCase(TestCase):
+    def setUp(self):
+        self.client = APIClient()
+        self.professor_user = User.objects.create_user(
+            email="create-exam-professor@example.com",
+            password="professor123",
+            role=UserRole.PROFESSOR,
+        )
+        self.professor = ProfessorProfile.objects.create(
+            user=self.professor_user,
+            employee_no="CREATE-EXAM-PROF-001",
+        )
+        self.other_professor_user = User.objects.create_user(
+            email="other-create-exam-professor@example.com",
+            password="professor123",
+            role=UserRole.PROFESSOR,
+        )
+        self.other_professor = ProfessorProfile.objects.create(
+            user=self.other_professor_user,
+            employee_no="CREATE-EXAM-PROF-002",
+        )
+        self.student_user = User.objects.create_user(
+            email="create-exam-student@example.com",
+            password="student123",
+            role=UserRole.STUDENT,
+        )
+        create_student_profile(
+            user=self.student_user,
+            index_no="CREATE-EXAM-001",
+        )
+        self.course = Course.objects.create(
+            code="CREATE-EXAM-COURSE",
+            name="Exam Creation Course",
+            espb=6,
+            professor=self.professor,
+        )
+        self.other_course = Course.objects.create(
+            code="OTHER-EXAM-COURSE",
+            name="Other Exam Creation Course",
+            espb=6,
+            professor=self.other_professor,
+        )
+
+    def exam_payload(self, course=None):
+        course = course or self.course
+        return {
+            "course_code": course.code,
+            "date": (timezone.now() + timedelta(days=30)).isoformat(),
+            "room": "CREATE-1",
+        }
+
+    def test_professor_can_create_exam_for_assigned_course(self):
+        self.client.force_authenticate(user=self.professor_user)
+
+        response = self.client.post(reverse("exams"), self.exam_payload(), format="json")
+
+        self.assertEqual(response.status_code, status.HTTP_201_CREATED)
+        exam = Exam.objects.get(pk=response.data["id"])
+        self.assertEqual(response.data["course_code"], self.course.code)
+        self.assertEqual(response.data["professor_email"], self.professor_user.email)
+        self.assertEqual(exam.course, self.course)
+        self.assertEqual(exam.professor, self.professor)
+
+    def test_professor_cannot_create_exam_for_another_professors_course(self):
+        self.client.force_authenticate(user=self.professor_user)
+
+        response = self.client.post(
+            reverse("exams"),
+            self.exam_payload(course=self.other_course),
+            format="json",
+        )
+
+        self.assertEqual(response.status_code, status.HTTP_404_NOT_FOUND)
+        self.assertFalse(Exam.objects.filter(course=self.other_course).exists())
+
+    def test_student_cannot_create_exam(self):
+        self.client.force_authenticate(user=self.student_user)
