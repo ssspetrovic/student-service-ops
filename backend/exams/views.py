@@ -1,5 +1,6 @@
 from datetime import timedelta
 
+from django.db.models import Avg
 from django.shortcuts import get_object_or_404
 from django.utils import timezone
 
@@ -88,7 +89,30 @@ class CurrentStudentExamRegistrationListView(ListAPIView):
         return (
             ExamRegistration.objects.select_related("student", "exam__course")
             .filter(student__user=self.request.user)
-            .order_by("exam__date", "exam__course__code")
+            .order_by("-exam__date", "-pk")
+        )
+
+
+class CurrentStudentExamResultView(APIView):
+    permission_classes = [IsStudent]
+
+    def get(self, request):
+        student = get_object_or_404(StudentProfile, user=request.user)
+        results = (
+            ExamRegistration.objects.select_related("student", "exam__course")
+            .filter(
+                student=student,
+                status=ExamRegistrationStatus.GRADED,
+                grade__isnull=False,
+            )
+            .order_by("-exam__date", "-pk")
+        )
+        passing_average = results.filter(grade__gte=6).aggregate(value=Avg("grade"))["value"]
+        return Response(
+            {
+                "results": ExamRegistrationSerializer(results, many=True).data,
+                "average": f"{passing_average:.2f}" if passing_average is not None else None,
+            }
         )
 
 

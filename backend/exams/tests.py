@@ -1065,3 +1065,118 @@ class StudentExamDiscoveryApiTestCase(TestCase):
 
         self.assertEqual(response.status_code, status.HTTP_200_OK)
         self.assertEqual([item["id"] for item in response.data], [cancellable.pk])
+
+
+class StudentResultsAndHistoryApiTestCase(TestCase):
+    def setUp(self):
+        self.client = APIClient()
+        self.student_user = User.objects.create_user(
+            email="results-student@example.com",
+            password="student123",
+            role=UserRole.STUDENT,
+        )
+        self.student = create_student_profile(
+            user=self.student_user,
+            index_no="RESULT-001",
+        )
+        self.other_user = User.objects.create_user(
+            email="other-results-student@example.com",
+            password="student123",
+            role=UserRole.STUDENT,
+        )
+        self.other_student = create_student_profile(
+            user=self.other_user,
+            index_no="RESULT-002",
+        )
+        professor_user = User.objects.create_user(
+            email="results-professor@example.com",
+            password="professor123",
+            role=UserRole.PROFESSOR,
+        )
+        self.professor = ProfessorProfile.objects.create(
+            user=professor_user,
+            employee_no="RESULT-P01",
+        )
+        self.course = Course.objects.create(
+            code="RESULT-COURSE",
+            name="Results Course",
+            espb=6,
+            professor=self.professor,
+        )
+        self.exam_older = Exam.objects.create(
+            course=self.course,
+            professor=self.professor,
+            date=timezone.now() - timedelta(days=20),
+            room="R1",
+        )
+        self.exam_newer = Exam.objects.create(
+            course=self.course,
+            professor=self.professor,
+            date=timezone.now() - timedelta(days=10),
+            room="R2",
+        )
+        self.failed = ExamRegistration.objects.create(
+            student=self.student,
+            exam=self.exam_older,
+            grade=5,
+            status=ExamRegistrationStatus.GRADED,
+        )
+        self.passed = ExamRegistration.objects.create(
+            student=self.student,
+            exam=self.exam_newer,
+            grade=9,
+            status=ExamRegistrationStatus.GRADED,
+        )
+        canceled_exam = Exam.objects.create(
+            course=self.course,
+            professor=self.professor,
+            date=timezone.now() - timedelta(days=15),
+        )
+        self.canceled = ExamRegistration.objects.create(
+            student=self.student,
+            exam=canceled_exam,
+            status=ExamRegistrationStatus.CANCELED,
+        )
+        other_exam = Exam.objects.create(
+            course=self.course,
+            professor=self.professor,
+            date=timezone.now() - timedelta(days=5),
+        )
+        ExamRegistration.objects.create(
+            student=self.other_student,
+            exam=other_exam,
+            grade=10,
+            status=ExamRegistrationStatus.GRADED,
+        )
+        future_exam = Exam.objects.create(
+            course=self.course,
+            professor=self.professor,
+            date=timezone.now() + timedelta(days=5),
+        )
+        self.active = ExamRegistration.objects.create(
+            student=self.student,
+            exam=future_exam,
+            status=ExamRegistrationStatus.ACTIVE,
+        )
+        self.client.force_authenticate(user=self.student_user)
+
+    def test_results_are_owned_ordered_and_average_only_passing_grades(self):
+        response = self.client.get(reverse("current-student-results"))
+
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+        self.assertEqual(
+            [item["id"] for item in response.data["results"]],
+            [self.passed.pk, self.failed.pk],
+        )
+        self.assertEqual(response.data["average"], "9.00")
+
+    def test_history_includes_all_statuses_newest_first(self):
+        response = self.client.get(reverse("current-student-exam-registrations"))
+
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+        self.assertEqual(
+            [item["id"] for item in response.data],
+            [self.active.pk, self.passed.pk, self.canceled.pk, self.failed.pk],
+        )
+        self.assertIsNone(response.data[0]["grade"])
+        self.assertEqual(response.data[0]["exam_course_name"], self.course.name)
