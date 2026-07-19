@@ -1,6 +1,7 @@
 from rest_framework import serializers
 
 from .models import Exam, ExamRegistration
+from .services import EXAM_REGISTRATION_FEE
 
 
 class ExamSerializer(serializers.ModelSerializer):
@@ -20,6 +21,37 @@ class ExamSerializer(serializers.ModelSerializer):
             "professor_employee_no",
             "professor_email",
         ]
+
+
+class ExamCreateSerializer(serializers.Serializer):
+    course_code = serializers.CharField(max_length=20)
+    date = serializers.DateTimeField()
+    room = serializers.CharField(max_length=50, allow_blank=True, default="")
+
+
+class AvailableExamSerializer(ExamSerializer):
+    registration_fee = serializers.SerializerMethodField()
+    can_afford = serializers.SerializerMethodField()
+
+    class Meta:
+        model = Exam
+        fields = [
+            "id",
+            "date",
+            "room",
+            "course_code",
+            "course_name",
+            "professor_employee_no",
+            "professor_email",
+            "registration_fee",
+            "can_afford",
+        ]
+
+    def get_registration_fee(self, _exam):
+        return f"{EXAM_REGISTRATION_FEE:.2f}"
+
+    def get_can_afford(self, _exam):
+        return self.context["wallet_balance"] >= EXAM_REGISTRATION_FEE
 
 
 class ExamRegistrationSerializer(serializers.ModelSerializer):

@@ -86,7 +86,7 @@ def can_cancel_registration(registration: ExamRegistration) -> bool:
     cancellation_deadline = registration.exam.date - timedelta(
         hours=CANCELLATION_CLOSES_BEFORE_HOURS
     )
-    return timezone.now() <= cancellation_deadline
+    return timezone.now() < cancellation_deadline
 
 
 @transaction.atomic

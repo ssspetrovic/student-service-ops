@@ -2,6 +2,12 @@ from dataclasses import dataclass
 
 from accounts.management.test_data import TEST_PROFESSORS, TEST_STUDENTS
 from accounts.models import ProfessorProfile, StudentProfile, User, UserRole
+from academics.management.test_data import (
+    CURRICULUM_CODE,
+    CURRICULUM_DURATION,
+    CURRICULUM_NAME,
+)
+from academics.models import Curriculum, DegreeLevel
 
 
 @dataclass
@@ -13,6 +19,14 @@ class AccountSeedData:
 def seed_accounts() -> AccountSeedData:
     students = []
     professors = []
+    curriculum, _ = Curriculum.objects.update_or_create(
+        code=CURRICULUM_CODE,
+        defaults={
+            "name": CURRICULUM_NAME,
+            "degree_level": DegreeLevel.BACHELOR,
+            "duration": CURRICULUM_DURATION,
+        },
+    )
 
     for student_data in TEST_STUDENTS:
         student_user = create_or_update_user(
@@ -27,6 +41,7 @@ def seed_accounts() -> AccountSeedData:
             defaults={
                 "index_no": student_data["index_no"],
                 "current_year_of_study": student_data["current_year_of_study"],
+                "curriculum": curriculum,
             },
         )
         students.append(student)

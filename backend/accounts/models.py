@@ -49,7 +49,7 @@ class User(AbstractUser):
     )
 
     USERNAME_FIELD = "email"
-    REQUIRED_FIELDS = []
+    REQUIRED_FIELDS = ["first_name", "last_name"]
 
     objects = UserManager()
 
@@ -68,6 +68,11 @@ class StudentProfile(models.Model):
     current_year_of_study = models.PositiveSmallIntegerField(
         default=1,
         validators=[MinValueValidator(1), MaxValueValidator(8)],
+    )
+    curriculum = models.ForeignKey(
+        "academics.Curriculum",
+        on_delete=models.PROTECT,
+        related_name="students",
     )
 
     class Meta:

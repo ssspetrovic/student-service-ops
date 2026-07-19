@@ -1,7 +1,10 @@
 from django.urls import path
 
 from .views import (
+    AvailableExamListView,
+    CancellableExamRegistrationListView,
     CurrentStudentExamRegistrationListView,
+    CurrentStudentExamResultView,
     ExamListView,
     ExamRegistrationCancelView,
     ExamRegistrationGradeView,
@@ -11,10 +14,17 @@ from .views import (
 
 urlpatterns = [
     path("", ExamListView.as_view(), name="exams"),
+    path("available/", AvailableExamListView.as_view(), name="available-exams"),
+    path("results/", CurrentStudentExamResultView.as_view(), name="current-student-results"),
     path(
         "registrations/",
         CurrentStudentExamRegistrationListView.as_view(),
         name="current-student-exam-registrations",
+    ),
+    path(
+        "registrations/cancellable/",
+        CancellableExamRegistrationListView.as_view(),
+        name="cancellable-exam-registrations",
     ),
     path(
         "<int:exam_id>/registrations/",

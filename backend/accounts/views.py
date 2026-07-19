@@ -1,10 +1,17 @@
 from django.shortcuts import get_object_or_404
+from rest_framework import status
 from rest_framework.generics import RetrieveAPIView
-
+from rest_framework.permissions import AllowAny
+from rest_framework.response import Response
+from rest_framework.views import APIView
 
 from .models import ProfessorProfile, StudentProfile
 from .permissions import IsProfessor, IsStudent
-from .serializers import ProfessorProfileSerializer, StudentProfileSerializer
+from .serializers import (
+    ProfessorProfileSerializer,
+    StudentProfileSerializer,
+    StudentRegistrationSerializer,
+)
 
 
 # Create your views here.
@@ -22,3 +29,16 @@ class ProfessorProfileView(RetrieveAPIView):
 
     def get_object(self):
         return get_object_or_404(ProfessorProfile, user=self.request.user)
+
+
+class StudentRegistrationView(APIView):
+    permission_classes = [AllowAny]
+
+    def post(self, request):
+        serializer = StudentRegistrationSerializer(data=request.data)
+        serializer.is_valid(raise_exception=True)
+        profile = serializer.save()
+        return Response(
+            StudentProfileSerializer(profile).data,
+            status=status.HTTP_201_CREATED,
+        )

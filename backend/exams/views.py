@@ -1,4 +1,8 @@
+from datetime import timedelta
+
+from django.db.models import Avg
 from django.shortcuts import get_object_or_404
+from django.utils import timezone
 
 from rest_framework import status
 from rest_framework.generics import ListAPIView
@@ -8,9 +12,11 @@ from rest_framework.views import APIView
 
 from accounts.models import ProfessorProfile, StudentProfile
 from accounts.permissions import IsProfessor, IsStudent
+from academics.models import Course, EnrollmentStatus
+from finance.models import Wallet
 
 
-from .models import Exam, ExamRegistration
+from .models import Exam, ExamRegistration, ExamRegistrationStatus
 from .services import (
     AlreadyRegisteredError,
     ExamGradingError,
@@ -24,11 +30,16 @@ from .services import (
     ExamRegistrationRefundError,
     RegistrationPeriodClosedError,
     StudentNotEnrolledError,
+    CANCELLATION_CLOSES_BEFORE_HOURS,
+    REGISTRATION_CLOSES_BEFORE_DAYS,
+    REGISTRATION_OPENS_BEFORE_DAYS,
     cancel_exam_registration,
     grade_exam_registration,
     register_student_for_exam,
 )
 from .serializers import (
+    AvailableExamSerializer,
+    ExamCreateSerializer,
     ExamRegistrationGradeSerializer,
     ExamRegistrationSerializer,
     ExamSerializer,
@@ -44,16 +55,107 @@ class ExamListView(ListAPIView):
     serializer_class = ExamSerializer
     permission_classes = [IsAuthenticated]
 
+    def get_permissions(self):
+        if self.request.method == "POST":
+            return [IsProfessor()]
+        return super().get_permissions()
+
+    def post(self, request):
+        professor = get_object_or_404(ProfessorProfile, user=request.user)
+        serializer = ExamCreateSerializer(data=request.data)
+        serializer.is_valid(raise_exception=True)
+        course = get_object_or_404(
+            Course,
+            code=serializer.validated_data["course_code"],
+            professor=professor,
+        )
+        exam = Exam.objects.create(
+            course=course,
+            professor=professor,
+            date=serializer.validated_data["date"],
+            room=serializer.validated_data["room"],
+        )
+
+        return Response(ExamSerializer(exam).data, status=status.HTTP_201_CREATED)
+
 
 class CurrentStudentExamRegistrationListView(ListAPIView):
     serializer_class = ExamRegistrationSerializer
     permission_classes = [IsStudent]
 
-    # get queryset for binding the registration to the user sending the requestd
     def get_queryset(self):
         return (
             ExamRegistration.objects.select_related("student", "exam__course")
             .filter(student__user=self.request.user)
+            .order_by("-exam__date", "-pk")
+        )
+
+
+class CurrentStudentExamResultView(APIView):
+    permission_classes = [IsStudent]
+
+    def get(self, request):
+        results = (
+            ExamRegistration.objects.select_related("student", "exam__course")
+            .filter(
+                student__user=request.user,
+                status=ExamRegistrationStatus.GRADED,
+                grade__isnull=False,
+            )
+            .order_by("-exam__date", "-pk")
+        )
+        average_grade = results.filter(grade__gte=6).aggregate(value=Avg("grade"))["value"]
+        return Response(
+            {
+                "results": ExamRegistrationSerializer(results, many=True).data,
+                "average": f"{average_grade:.2f}" if average_grade is not None else None,
+            }
+        )
+
+
+class AvailableExamListView(ListAPIView):
+    serializer_class = AvailableExamSerializer
+    permission_classes = [IsStudent]
+
+    def get_queryset(self):
+        student = get_object_or_404(StudentProfile, user=self.request.user)
+        now = timezone.now()
+        return (
+            Exam.objects.select_related("course", "professor__user")
+            .filter(
+                course__enrollments__student=student,
+                course__enrollments__status=EnrollmentStatus.ACTIVE,
+                date__lte=now + timedelta(days=REGISTRATION_OPENS_BEFORE_DAYS),
+                date__gt=now + timedelta(days=REGISTRATION_CLOSES_BEFORE_DAYS),
+            )
+            .exclude(registrations__student=student)
+            .distinct()
+            .order_by("date", "course__code")
+        )
+
+    def get_serializer_context(self):
+        context = super().get_serializer_context()
+        wallet = get_object_or_404(
+            Wallet,
+            student__user=self.request.user,
+        )
+        context["wallet_balance"] = wallet.balance
+        return context
+
+
+class CancellableExamRegistrationListView(ListAPIView):
+    serializer_class = ExamRegistrationSerializer
+    permission_classes = [IsStudent]
+
+    def get_queryset(self):
+        return (
+            ExamRegistration.objects.select_related("student", "exam__course")
+            .filter(
+                student__user=self.request.user,
+                status=ExamRegistrationStatus.ACTIVE,
+                exam__date__gt=timezone.now()
+                + timedelta(hours=CANCELLATION_CLOSES_BEFORE_HOURS),
+            )
             .order_by("exam__date", "exam__course__code")
         )
 
