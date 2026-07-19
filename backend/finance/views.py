@@ -36,19 +36,18 @@ class CurrentStudentDepositView(APIView):
     permission_classes = [IsStudent]
 
     def post(self, request):
-        request_serializer = DepositSerializer(data=request.data)
-        request_serializer.is_valid(raise_exception=True)
+        serializer = DepositSerializer(data=request.data)
+        serializer.is_valid(raise_exception=True)
         student = get_object_or_404(StudentProfile, user=request.user)
-        transaction_record = credit_wallet(
+        transaction = credit_wallet(
             student=student,
-            amount=request_serializer.validated_data["amount"],
+            amount=serializer.validated_data["amount"],
             cause=TransactionCause.DEPOSIT,
         )
-        transaction_record.refresh_from_db()
         wallet = Wallet.objects.get(student=student)
         return Response(
             {
-                "transaction": TransactionSerializer(transaction_record).data,
+                "transaction": TransactionSerializer(transaction).data,
                 "balance": str(wallet.balance),
             },
             status=status.HTTP_201_CREATED,

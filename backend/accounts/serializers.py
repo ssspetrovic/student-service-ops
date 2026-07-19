@@ -1,10 +1,11 @@
 from django.contrib.auth.password_validation import validate_password
+from django.db import transaction
 from rest_framework import serializers
 
 from academics.models import Curriculum
+from finance.models import Wallet
 
-from .models import ProfessorProfile, StudentProfile, User
-from .services import create_student_account
+from .models import ProfessorProfile, StudentProfile, User, UserRole
 
 
 class StudentProfileSerializer(serializers.ModelSerializer):
@@ -73,6 +74,21 @@ class StudentRegistrationSerializer(serializers.Serializer):
         validate_password(attrs["password"], user=user)
         return attrs
 
+    @transaction.atomic
     def create(self, validated_data):
         curriculum = validated_data.pop("curriculum_code")
-        return create_student_account(curriculum=curriculum, **validated_data)
+        user = User.objects.create_user(
+            email=validated_data["email"],
+            password=validated_data["password"],
+            first_name=validated_data["first_name"],
+            last_name=validated_data["last_name"],
+            role=UserRole.STUDENT,
+        )
+        profile = StudentProfile.objects.create(
+            user=user,
+            index_no=validated_data["index_no"],
+            current_year_of_study=validated_data["current_year_of_study"],
+            curriculum=curriculum,
+        )
+        Wallet.objects.create(student=profile)
+        return profile

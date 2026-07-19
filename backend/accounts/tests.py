@@ -143,7 +143,6 @@ class StudentRegistrationApiTestCase(TestCase):
         user = User.objects.get(email=self.payload["email"])
         self.assertEqual(user.role, UserRole.STUDENT)
         self.assertFalse(user.is_staff)
-        self.assertTrue(user.student_profile.wallet)
         self.assertEqual(user.student_profile.wallet.balance, 0)
         self.client.force_authenticate(user=user)
 

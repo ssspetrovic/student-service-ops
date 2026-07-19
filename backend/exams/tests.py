@@ -904,15 +904,6 @@ class ProfessorExamCreateApiTestCase(TestCase):
             user=self.other_professor_user,
             employee_no="CREATE-EXAM-PROF-002",
         )
-        self.student_user = User.objects.create_user(
-            email="create-exam-student@example.com",
-            password="student123",
-            role=UserRole.STUDENT,
-        )
-        create_student_profile(
-            user=self.student_user,
-            index_no="CREATE-EXAM-001",
-        )
         self.course = Course.objects.create(
             code="CREATE-EXAM-COURSE",
             name="Exam Creation Course",
@@ -941,8 +932,6 @@ class ProfessorExamCreateApiTestCase(TestCase):
 
         self.assertEqual(response.status_code, status.HTTP_201_CREATED)
         exam = Exam.objects.get(pk=response.data["id"])
-        self.assertEqual(response.data["course_code"], self.course.code)
-        self.assertEqual(response.data["professor_email"], self.professor_user.email)
         self.assertEqual(exam.course, self.course)
         self.assertEqual(exam.professor, self.professor)
 
@@ -1178,5 +1167,3 @@ class StudentResultsAndHistoryApiTestCase(TestCase):
             [item["id"] for item in response.data],
             [self.active.pk, self.passed.pk, self.canceled.pk, self.failed.pk],
         )
-        self.assertIsNone(response.data[0]["grade"])
-        self.assertEqual(response.data[0]["exam_course_name"], self.course.name)

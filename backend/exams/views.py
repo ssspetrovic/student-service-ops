@@ -62,29 +62,27 @@ class ExamListView(ListAPIView):
 
     def post(self, request):
         professor = get_object_or_404(ProfessorProfile, user=request.user)
-        request_serializer = ExamCreateSerializer(data=request.data)
-        request_serializer.is_valid(raise_exception=True)
+        serializer = ExamCreateSerializer(data=request.data)
+        serializer.is_valid(raise_exception=True)
         course = get_object_or_404(
             Course,
-            code=request_serializer.validated_data["course_code"],
+            code=serializer.validated_data["course_code"],
             professor=professor,
         )
         exam = Exam.objects.create(
             course=course,
             professor=professor,
-            date=request_serializer.validated_data["date"],
-            room=request_serializer.validated_data["room"],
+            date=serializer.validated_data["date"],
+            room=serializer.validated_data["room"],
         )
 
-        serializer = ExamSerializer(exam)
-        return Response(serializer.data, status=status.HTTP_201_CREATED)
+        return Response(ExamSerializer(exam).data, status=status.HTTP_201_CREATED)
 
 
 class CurrentStudentExamRegistrationListView(ListAPIView):
     serializer_class = ExamRegistrationSerializer
     permission_classes = [IsStudent]
 
-    # get queryset for binding the registration to the user sending the requestd
     def get_queryset(self):
         return (
             ExamRegistration.objects.select_related("student", "exam__course")
@@ -97,21 +95,20 @@ class CurrentStudentExamResultView(APIView):
     permission_classes = [IsStudent]
 
     def get(self, request):
-        student = get_object_or_404(StudentProfile, user=request.user)
         results = (
             ExamRegistration.objects.select_related("student", "exam__course")
             .filter(
-                student=student,
+                student__user=request.user,
                 status=ExamRegistrationStatus.GRADED,
                 grade__isnull=False,
             )
             .order_by("-exam__date", "-pk")
         )
-        passing_average = results.filter(grade__gte=6).aggregate(value=Avg("grade"))["value"]
+        average_grade = results.filter(grade__gte=6).aggregate(value=Avg("grade"))["value"]
         return Response(
             {
                 "results": ExamRegistrationSerializer(results, many=True).data,
-                "average": f"{passing_average:.2f}" if passing_average is not None else None,
+                "average": f"{average_grade:.2f}" if average_grade is not None else None,
             }
         )
 
@@ -151,11 +148,10 @@ class CancellableExamRegistrationListView(ListAPIView):
     permission_classes = [IsStudent]
 
     def get_queryset(self):
-        student = get_object_or_404(StudentProfile, user=self.request.user)
         return (
             ExamRegistration.objects.select_related("student", "exam__course")
             .filter(
-                student=student,
+                student__user=self.request.user,
                 status=ExamRegistrationStatus.ACTIVE,
                 exam__date__gt=timezone.now()
                 + timedelta(hours=CANCELLATION_CLOSES_BEFORE_HOURS),

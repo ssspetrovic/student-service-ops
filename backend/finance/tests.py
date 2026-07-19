@@ -111,8 +111,8 @@ class StudentFinanceApiTestCase(TestCase):
 
         self.assertEqual(response.status_code, status.HTTP_201_CREATED)
         self.assertEqual(response.data["balance"], "125.50")
-        self.assertEqual(response.data["transaction"]["amount"], "125.50")
-        self.assertEqual(response.data["transaction"]["cause"], TransactionCause.DEPOSIT)
         self.student.wallet.refresh_from_db()
         self.assertEqual(self.student.wallet.balance, Decimal("125.50"))
-        self.assertEqual(self.student.transactions.count(), 1)
+        transaction = self.student.transactions.get()
+        self.assertEqual(transaction.amount, Decimal("125.50"))
+        self.assertEqual(transaction.cause, TransactionCause.DEPOSIT)

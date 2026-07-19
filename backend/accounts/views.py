@@ -35,9 +35,9 @@ class StudentRegistrationView(APIView):
     permission_classes = [AllowAny]
 
     def post(self, request):
-        request_serializer = StudentRegistrationSerializer(data=request.data)
-        request_serializer.is_valid(raise_exception=True)
-        profile = request_serializer.save()
+        serializer = StudentRegistrationSerializer(data=request.data)
+        serializer.is_valid(raise_exception=True)
+        profile = serializer.save()
         return Response(
             StudentProfileSerializer(profile).data,
             status=status.HTTP_201_CREATED,
