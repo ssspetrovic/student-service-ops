@@ -4,7 +4,7 @@ from datetime import timedelta
 from django.db import transaction
 from django.utils import timezone
 
-from accounts.models import StudentProfile
+from accounts.models import ProfessorProfile, StudentProfile
 from academics.models import Enrollment, EnrollmentStatus
 from exams.models import Exam, ExamRegistration, ExamRegistrationStatus
 from finance.models import Transaction, TransactionCause
@@ -49,6 +49,26 @@ class ExamRegistrationOwnershipError(ExamRegistrationError):
 
 
 class ExamRegistrationRefundError(ExamRegistrationError):
+    pass
+
+
+class ExamGradingError(ValueError):
+    """Base exception for expected exam grading failures."""
+
+
+class ExamGradingOwnershipError(ExamGradingError):
+    pass
+
+
+class ExamNotFinishedError(ExamGradingError):
+    pass
+
+
+class ExamRegistrationNotGradableError(ExamGradingError):
+    pass
+
+
+class InvalidExamGradeError(ExamGradingError):
     pass
 
 
@@ -152,5 +172,36 @@ def cancel_exam_registration(
         cause=TransactionCause.EXAM_REFUND,
         exam_registration=registration,
     )
+
+    return registration
+
+
+@transaction.atomic
+def grade_exam_registration(
+    professor: ProfessorProfile,
+    registration: ExamRegistration,
+    grade: int,
+) -> ExamRegistration:
+    registration = (
+        ExamRegistration.objects.select_for_update()
+        .select_related("exam__course", "student__user")
+        .get(pk=registration.pk)
+    )
+
+    if registration.exam.professor_id != professor.pk:
+        raise ExamGradingOwnershipError("Professor is not responsible for this exam.")
+
+    if registration.exam.date >= timezone.now():
+        raise ExamNotFinishedError("The exam has not finished yet.")
+
+    if registration.status == ExamRegistrationStatus.CANCELED:
+        raise ExamRegistrationNotGradableError("Canceled registrations cannot be graded.")
+
+    if not 5 <= grade <= 10:
+        raise InvalidExamGradeError("Grade must be between 5 and 10.")
+
+    registration.grade = grade
+    registration.status = ExamRegistrationStatus.GRADED
+    registration.save(update_fields=["grade", "status"])
 
     return registration

@@ -13,8 +13,11 @@ from accounts.permissions import IsProfessor, IsStudent
 from .models import Exam, ExamRegistration
 from .services import (
     AlreadyRegisteredError,
+    ExamGradingError,
+    ExamNotFinishedError,
     ExamRegistrationCancellationClosedError,
     ExamRegistrationError,
+    ExamRegistrationNotGradableError,
     ExamRegistrationNotActiveError,
     ExamRegistrationOwnershipError,
     ExamRegistrationPaymentError,
@@ -22,9 +25,11 @@ from .services import (
     RegistrationPeriodClosedError,
     StudentNotEnrolledError,
     cancel_exam_registration,
+    grade_exam_registration,
     register_student_for_exam,
 )
 from .serializers import (
+    ExamRegistrationGradeSerializer,
     ExamRegistrationSerializer,
     ExamSerializer,
     ProfessorExamRegistrationSerializer,
@@ -125,6 +130,35 @@ class ExamRegistrationCancelView(APIView):
         )
 
 
+class ExamRegistrationGradeView(APIView):
+    permission_classes = [IsProfessor]
+
+    def patch(self, request, registration_id):
+        professor = get_object_or_404(ProfessorProfile, user=request.user)
+        registration = get_object_or_404(
+            ExamRegistration,
+            pk=registration_id,
+            exam__professor=professor,
+        )
+        grade_serializer = ExamRegistrationGradeSerializer(data=request.data)
+        grade_serializer.is_valid(raise_exception=True)
+
+        try:
+            registration = grade_exam_registration(
+                professor=professor,
+                registration=registration,
+                grade=grade_serializer.validated_data["grade"],
+            )
+        except ExamGradingError as error:
+            return Response(
+                {"detail": get_grading_error_detail(error)},
+                status=status.HTTP_400_BAD_REQUEST,
+            )
+
+        serializer = ProfessorExamRegistrationSerializer(registration)
+        return Response(serializer.data, status=status.HTTP_200_OK)
+
+
 def get_registration_error_detail(error: ExamRegistrationError) -> str:
     if isinstance(error, StudentNotEnrolledError):
         return "Student is not enrolled in this course."
@@ -143,3 +177,11 @@ def get_registration_error_detail(error: ExamRegistrationError) -> str:
     if isinstance(error, ExamRegistrationRefundError):
         return "The original exam registration payment could not be found."
     return "Exam registration failed."
+
+
+def get_grading_error_detail(error: ExamGradingError) -> str:
+    if isinstance(error, ExamNotFinishedError):
+        return "The exam has not finished yet."
+    if isinstance(error, ExamRegistrationNotGradableError):
+        return "Canceled registrations cannot be graded."
+    return "Exam grading failed."
