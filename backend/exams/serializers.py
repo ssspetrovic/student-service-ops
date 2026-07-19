@@ -44,3 +44,17 @@ class ExamRegistrationSerializer(serializers.ModelSerializer):
             "status",
             "registered_at",
         ]
+
+
+class ProfessorExamRegistrationSerializer(ExamRegistrationSerializer):
+    student_name = serializers.SerializerMethodField()
+
+    class Meta(ExamRegistrationSerializer.Meta):
+        fields = [*ExamRegistrationSerializer.Meta.fields, "student_name"]
+
+    def get_student_name(self, registration):
+        return registration.student.user.get_full_name()
+
+
+class ExamRegistrationGradeSerializer(serializers.Serializer):
+    grade = serializers.IntegerField(min_value=5, max_value=10)

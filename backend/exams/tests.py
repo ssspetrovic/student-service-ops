@@ -669,3 +669,214 @@ class ExamRegistrationCancellationApiTestCase(TestCase):
 
         self.assertEqual(response.status_code, status.HTTP_400_BAD_REQUEST)
         self.assertEqual(response.data["detail"], "Only active registrations can be canceled.")
+
+
+class ProfessorExamRegistrationListApiTestCase(TestCase):
+    def setUp(self):
+        self.client = APIClient()
+        self.professor_user = User.objects.create_user(
+            email="list-professor@example.com",
+            password="professor123",
+            role=UserRole.PROFESSOR,
+        )
+        self.professor = ProfessorProfile.objects.create(
+            user=self.professor_user,
+            employee_no="LIST-PROF-001",
+        )
+        self.other_professor_user = User.objects.create_user(
+            email="other-list-professor@example.com",
+            password="professor123",
+            role=UserRole.PROFESSOR,
+        )
+        self.other_professor = ProfessorProfile.objects.create(
+            user=self.other_professor_user,
+            employee_no="LIST-PROF-002",
+        )
+        self.student_user = User.objects.create_user(
+            email="list-student@example.com",
+            password="student123",
+            role=UserRole.STUDENT,
+            first_name="List",
+            last_name="Student",
+        )
+        self.student = StudentProfile.objects.create(
+            user=self.student_user,
+            index_no="LIST-001",
+        )
+        self.course = Course.objects.create(
+            code="LIST-COURSE",
+            name="List Course",
+            espb=6,
+            professor=self.professor,
+        )
+        self.exam = Exam.objects.create(
+            course=self.course,
+            professor=self.professor,
+            date=timezone.now() + timedelta(days=10),
+        )
+        self.registration = ExamRegistration.objects.create(
+            student=self.student,
+            exam=self.exam,
+        )
+
+    def registrations_url(self, exam=None):
+        exam = exam or self.exam
+        return reverse(
+            "professor-exam-registrations",
+            kwargs={"exam_id": exam.id},
+        )
+
+    def test_professor_can_list_registrations_for_own_exam(self):
+        self.client.force_authenticate(user=self.professor_user)
+
+        response = self.client.get(self.registrations_url())
+
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+        self.assertEqual(len(response.data), 1)
+        self.assertEqual(response.data[0]["id"], self.registration.id)
+        self.assertEqual(response.data[0]["student_index_no"], self.student.index_no)
+        self.assertEqual(response.data[0]["student_name"], "List Student")
+
+    def test_professor_cannot_list_registrations_for_another_professors_exam(self):
+        self.client.force_authenticate(user=self.other_professor_user)
+
+        response = self.client.get(self.registrations_url())
+
+        self.assertEqual(response.status_code, status.HTTP_404_NOT_FOUND)
+
+    def test_student_cannot_list_professor_exam_registrations(self):
+        self.client.force_authenticate(user=self.student_user)
+
+        response = self.client.get(self.registrations_url())
+
+        self.assertEqual(response.status_code, status.HTTP_403_FORBIDDEN)
+
+
+class ExamRegistrationGradeApiTestCase(TestCase):
+    def setUp(self):
+        self.client = APIClient()
+        self.professor_user = User.objects.create_user(
+            email="grade-professor@example.com",
+            password="professor123",
+            role=UserRole.PROFESSOR,
+        )
+        self.professor = ProfessorProfile.objects.create(
+            user=self.professor_user,
+            employee_no="GRADE-PROF-001",
+        )
+        self.other_professor_user = User.objects.create_user(
+            email="other-grade-professor@example.com",
+            password="professor123",
+            role=UserRole.PROFESSOR,
+        )
+        ProfessorProfile.objects.create(
+            user=self.other_professor_user,
+            employee_no="GRADE-PROF-002",
+        )
+        self.student_user = User.objects.create_user(
+            email="grade-student@example.com",
+            password="student123",
+            role=UserRole.STUDENT,
+            first_name="Grade",
+            last_name="Student",
+        )
+        self.student = StudentProfile.objects.create(
+            user=self.student_user,
+            index_no="GRADE-001",
+        )
+        self.course = Course.objects.create(
+            code="GRADE-COURSE",
+            name="Grading Course",
+            espb=6,
+            professor=self.professor,
+        )
+        self.exam = Exam.objects.create(
+            course=self.course,
+            professor=self.professor,
+            date=timezone.now() - timedelta(days=1),
+        )
+        self.registration = ExamRegistration.objects.create(
+            student=self.student,
+            exam=self.exam,
+        )
+
+    def grade_url(self):
+        return reverse(
+            "exam-registration-grade",
+            kwargs={"registration_id": self.registration.id},
+        )
+
+    def test_professor_can_grade_and_correct_registration(self):
+        self.client.force_authenticate(user=self.professor_user)
+
+        response = self.client.patch(self.grade_url(), {"grade": 8}, format="json")
+
+        self.registration.refresh_from_db()
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+        self.assertEqual(response.data["grade"], 8)
+        self.assertEqual(response.data["status"], ExamRegistrationStatus.GRADED)
+        self.assertEqual(self.registration.grade, 8)
+        self.assertEqual(self.registration.status, ExamRegistrationStatus.GRADED)
+
+        correction_response = self.client.patch(
+            self.grade_url(),
+            {"grade": 9},
+            format="json",
+        )
+
+        self.registration.refresh_from_db()
+        self.assertEqual(correction_response.status_code, status.HTTP_200_OK)
+        self.assertEqual(correction_response.data["grade"], 9)
+        self.assertEqual(correction_response.data["status"], ExamRegistrationStatus.GRADED)
+        self.assertEqual(correction_response.data["student_name"], "Grade Student")
+        self.assertEqual(self.registration.grade, 9)
+        self.assertEqual(self.registration.status, ExamRegistrationStatus.GRADED)
+
+    def test_professor_cannot_grade_unfinished_exam(self):
+        self.exam.date = timezone.now() + timedelta(days=1)
+        self.exam.save(update_fields=["date"])
+        self.client.force_authenticate(user=self.professor_user)
+
+        response = self.client.patch(self.grade_url(), {"grade": 8}, format="json")
+
+        self.registration.refresh_from_db()
+        self.assertEqual(response.status_code, status.HTTP_400_BAD_REQUEST)
+        self.assertEqual(response.data["detail"], "The exam has not finished yet.")
+        self.assertIsNone(self.registration.grade)
+        self.assertEqual(self.registration.status, ExamRegistrationStatus.ACTIVE)
+
+    def test_professor_cannot_grade_canceled_registration(self):
+        self.registration.status = ExamRegistrationStatus.CANCELED
+        self.registration.save(update_fields=["status"])
+        self.client.force_authenticate(user=self.professor_user)
+
+        response = self.client.patch(self.grade_url(), {"grade": 8}, format="json")
+
+        self.registration.refresh_from_db()
+        self.assertEqual(response.status_code, status.HTTP_400_BAD_REQUEST)
+        self.assertEqual(response.data["detail"], "Canceled registrations cannot be graded.")
+        self.assertIsNone(self.registration.grade)
+        self.assertEqual(self.registration.status, ExamRegistrationStatus.CANCELED)
+
+    def test_grade_must_be_in_valid_range(self):
+        self.client.force_authenticate(user=self.professor_user)
+
+        response = self.client.patch(self.grade_url(), {"grade": 11}, format="json")
+
+        self.registration.refresh_from_db()
+        self.assertEqual(response.status_code, status.HTTP_400_BAD_REQUEST)
+        self.assertIsNone(self.registration.grade)
+
+    def test_another_professor_cannot_grade_registration(self):
+        self.client.force_authenticate(user=self.other_professor_user)
+
+        response = self.client.patch(self.grade_url(), {"grade": 8}, format="json")
+
+        self.assertEqual(response.status_code, status.HTTP_404_NOT_FOUND)
+
+    def test_student_cannot_grade_registration(self):
+        self.client.force_authenticate(user=self.student_user)
+
+        response = self.client.patch(self.grade_url(), {"grade": 8}, format="json")
+
+        self.assertEqual(response.status_code, status.HTTP_403_FORBIDDEN)
