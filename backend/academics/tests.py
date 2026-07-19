@@ -1,7 +1,8 @@
 from django.db import IntegrityError
 from django.test import TestCase
 
-from accounts.models import User, UserRole, ProfessorProfile, StudentProfile
+from accounts.models import ProfessorProfile, User, UserRole
+from accounts.test_helpers import create_student_profile
 from .models import Course, Curriculum, CurriculumCourse, DegreeLevel, Enrollment
 
 
@@ -99,7 +100,7 @@ class EnrollmentUniquenessAndSemesterTestCase(TestCase):
             password="student123",
             role=UserRole.STUDENT,
         )
-        self.student = StudentProfile.objects.create(user=self.student_user)
+        self.student = create_student_profile(user=self.student_user)
         self.professor_user = User.objects.create_user(
             email="professor@example.com",
             password="professor132",

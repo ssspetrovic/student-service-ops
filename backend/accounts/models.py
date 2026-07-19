@@ -69,6 +69,11 @@ class StudentProfile(models.Model):
         default=1,
         validators=[MinValueValidator(1), MaxValueValidator(8)],
     )
+    curriculum = models.ForeignKey(
+        "academics.Curriculum",
+        on_delete=models.PROTECT,
+        related_name="students",
+    )
 
     class Meta:
         constraints = [

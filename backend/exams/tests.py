@@ -11,7 +11,8 @@ from rest_framework import status
 from rest_framework.test import APIClient
 
 from academics.models import Course, Enrollment, EnrollmentStatus
-from accounts.models import ProfessorProfile, StudentProfile, User, UserRole
+from accounts.models import ProfessorProfile, User, UserRole
+from accounts.test_helpers import create_student_profile
 from finance.models import Transaction, TransactionCause, Wallet
 from .models import Exam, ExamRegistration, ExamRegistrationStatus
 from .services import (
@@ -36,7 +37,7 @@ class ExamRegistrationGradeAndStatusTestCase(TestCase):
             password="student123",
             role=UserRole.STUDENT,
         )
-        self.student = StudentProfile.objects.create(user=self.student_user)
+        self.student = create_student_profile(user=self.student_user)
 
         self.professor_user = User.objects.create_user(
             email="professor@example.com",
@@ -127,7 +128,7 @@ class ExamRegistrationServiceTestCase(TestCase):
             password="student123",
             role=UserRole.STUDENT,
         )
-        self.student = StudentProfile.objects.create(
+        self.student = create_student_profile(
             user=self.student_user,
             index_no="REG-001",
         )
@@ -293,7 +294,7 @@ class ExamRegistrationCancellationServiceTestCase(TestCase):
             password="student123",
             role=UserRole.STUDENT,
         )
-        self.student = StudentProfile.objects.create(
+        self.student = create_student_profile(
             user=self.student_user,
             index_no="CANCEL-001",
         )
@@ -477,7 +478,7 @@ class ExamRegistrationApiTestCase(TestCase):
             password="student123",
             role=UserRole.STUDENT,
         )
-        self.student = StudentProfile.objects.create(
+        self.student = create_student_profile(
             user=self.student_user,
             index_no="API-001",
         )
@@ -578,7 +579,7 @@ class ExamRegistrationCancellationApiTestCase(TestCase):
             password="student123",
             role=UserRole.STUDENT,
         )
-        self.student = StudentProfile.objects.create(
+        self.student = create_student_profile(
             user=self.student_user,
             index_no="CANCEL-API-001",
         )
@@ -587,7 +588,7 @@ class ExamRegistrationCancellationApiTestCase(TestCase):
             password="student123",
             role=UserRole.STUDENT,
         )
-        self.other_student = StudentProfile.objects.create(
+        self.other_student = create_student_profile(
             user=self.other_student_user,
             index_no="CANCEL-API-002",
         )
@@ -699,7 +700,7 @@ class ProfessorExamRegistrationListApiTestCase(TestCase):
             first_name="List",
             last_name="Student",
         )
-        self.student = StudentProfile.objects.create(
+        self.student = create_student_profile(
             user=self.student_user,
             index_no="LIST-001",
         )
@@ -780,7 +781,7 @@ class ExamRegistrationGradeApiTestCase(TestCase):
             first_name="Grade",
             last_name="Student",
         )
-        self.student = StudentProfile.objects.create(
+        self.student = create_student_profile(
             user=self.student_user,
             index_no="GRADE-001",
         )

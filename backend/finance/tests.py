@@ -3,7 +3,8 @@ from decimal import Decimal
 from django.core.exceptions import ValidationError
 from django.test import TestCase
 
-from accounts.models import StudentProfile, User, UserRole
+from accounts.models import User, UserRole
+from accounts.test_helpers import create_student_profile
 from .models import Transaction, TransactionCause, Wallet
 
 # Create your tests here.
@@ -16,7 +17,7 @@ class TransactionAmountTestCase(TestCase):
             password="student123",
             role=UserRole.STUDENT,
         )
-        self.student = StudentProfile.objects.create(user=self.student_user)
+        self.student = create_student_profile(user=self.student_user)
 
     def test_transaction_rejects_amount_below_min(self):
         transaction = Transaction(
@@ -36,7 +37,7 @@ class WalletTestCase(TestCase):
             password="student123",
             role=UserRole.STUDENT,
         )
-        self.student = StudentProfile.objects.create(user=self.student_user)
+        self.student = create_student_profile(user=self.student_user)
 
     def test_wallet_rejects_negative_balance(self):
         wallet = Wallet(
