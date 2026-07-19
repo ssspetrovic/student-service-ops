@@ -120,6 +120,13 @@ class AvailableExamListView(ListAPIView):
     def get_queryset(self):
         student = get_object_or_404(StudentProfile, user=self.request.user)
         now = timezone.now()
+        blocked_exam_ids = ExamRegistration.objects.filter(
+            student=student,
+            status__in=[
+                ExamRegistrationStatus.ACTIVE,
+                ExamRegistrationStatus.GRADED,
+            ],
+        ).values("exam_id")
         return (
             Exam.objects.select_related("course", "professor__user")
             .filter(
@@ -128,7 +135,7 @@ class AvailableExamListView(ListAPIView):
                 date__lte=now + timedelta(days=REGISTRATION_OPENS_BEFORE_DAYS),
                 date__gt=now + timedelta(days=REGISTRATION_CLOSES_BEFORE_DAYS),
             )
-            .exclude(registrations__student=student)
+            .exclude(pk__in=blocked_exam_ids)
             .distinct()
             .order_by("date", "course__code")
         )
@@ -153,8 +160,7 @@ class CancellableExamRegistrationListView(ListAPIView):
             .filter(
                 student__user=self.request.user,
                 status=ExamRegistrationStatus.ACTIVE,
-                exam__date__gt=timezone.now()
-                + timedelta(hours=CANCELLATION_CLOSES_BEFORE_HOURS),
+                exam__date__gt=timezone.now() + timedelta(hours=CANCELLATION_CLOSES_BEFORE_HOURS),
             )
             .order_by("exam__date", "exam__course__code")
         )
@@ -174,7 +180,13 @@ class ProfessorExamRegistrationListView(ListAPIView):
 
         return (
             ExamRegistration.objects.select_related("student__user", "exam__course")
-            .filter(exam=exam)
+            .filter(
+                exam=exam,
+                status__in=[
+                    ExamRegistrationStatus.ACTIVE,
+                    ExamRegistrationStatus.GRADED,
+                ],
+            )
             .order_by("student__index_no")
         )
 

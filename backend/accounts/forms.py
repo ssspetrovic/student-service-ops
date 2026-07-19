@@ -43,3 +43,9 @@ class ManagedUserChangeForm(UserChangeForm):
     class Meta(UserChangeForm.Meta):
         model = User
         fields = "__all__"
+
+    def clean_role(self):
+        role = self.cleaned_data["role"]
+        if self.instance.pk and role != self.instance.role:
+            raise forms.ValidationError("A user's role cannot be changed after creation.")
+        return role

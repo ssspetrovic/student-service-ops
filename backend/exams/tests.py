@@ -85,9 +85,7 @@ class ExamApiTestCase(TestCase):
         exam = self.create_exam()
         self.client.force_authenticate(user=self.student_user)
 
-        response = self.client.post(
-            reverse("exam-registration", kwargs={"exam_id": exam.id})
-        )
+        response = self.client.post(reverse("exam-registration", kwargs={"exam_id": exam.id}))
 
         self.wallet.refresh_from_db()
         registration = ExamRegistration.objects.get(student=self.student, exam=exam)
@@ -106,9 +104,7 @@ class ExamApiTestCase(TestCase):
         self.wallet.save(update_fields=["balance"])
         self.client.force_authenticate(user=self.student_user)
 
-        response = self.client.post(
-            reverse("exam-registration", kwargs={"exam_id": exam.id})
-        )
+        response = self.client.post(reverse("exam-registration", kwargs={"exam_id": exam.id}))
 
         self.wallet.refresh_from_db()
         self.assertEqual(response.status_code, status.HTTP_400_BAD_REQUEST)
@@ -135,6 +131,57 @@ class ExamApiTestCase(TestCase):
         self.assertEqual(self.wallet.balance, Decimal("500.00"))
         self.assertEqual(refund.amount, Decimal("200.00"))
 
+    def test_student_can_reregister_after_canceling_and_cancel_again(self):
+        exam = self.create_exam()
+        self.client.force_authenticate(user=self.student_user)
+
+        first_registration = self.client.post(
+            reverse("exam-registration", kwargs={"exam_id": exam.id})
+        )
+        first_cancellation = self.client.post(
+            reverse(
+                "exam-registration-cancel",
+                kwargs={"registration_id": first_registration.data["id"]},
+            )
+        )
+        available_exams = self.client.get(reverse("available-exams"))
+        second_registration = self.client.post(
+            reverse("exam-registration", kwargs={"exam_id": exam.id})
+        )
+        second_cancellation = self.client.post(
+            reverse(
+                "exam-registration-cancel",
+                kwargs={"registration_id": second_registration.data["id"]},
+            )
+        )
+
+        self.wallet.refresh_from_db()
+        self.assertEqual(first_registration.status_code, status.HTTP_201_CREATED)
+        self.assertEqual(first_cancellation.status_code, status.HTTP_200_OK)
+        self.assertEqual([item["id"] for item in available_exams.data], [exam.id])
+        self.assertEqual(second_registration.status_code, status.HTTP_201_CREATED)
+        self.assertEqual(second_cancellation.status_code, status.HTTP_200_OK)
+        self.assertEqual(self.wallet.balance, Decimal("500.00"))
+        self.assertNotEqual(first_registration.data["id"], second_registration.data["id"])
+        for registration_id in (
+            first_registration.data["id"],
+            second_registration.data["id"],
+        ):
+            self.assertEqual(
+                Transaction.objects.filter(
+                    exam_registration_id=registration_id,
+                    cause=TransactionCause.EXAM_REGISTRATION,
+                ).count(),
+                1,
+            )
+            self.assertEqual(
+                Transaction.objects.filter(
+                    exam_registration_id=registration_id,
+                    cause=TransactionCause.EXAM_REFUND,
+                ).count(),
+                1,
+            )
+
     def test_cancellation_rolls_back_when_refund_fails(self):
         registration = self.create_paid_registration()
 
@@ -152,15 +199,18 @@ class ExamApiTestCase(TestCase):
         self.wallet.refresh_from_db()
         self.assertEqual(registration.status, ExamRegistrationStatus.ACTIVE)
         self.assertEqual(self.wallet.balance, Decimal("300.00"))
-        self.assertFalse(
-            Transaction.objects.filter(cause=TransactionCause.EXAM_REFUND).exists()
-        )
+        self.assertFalse(Transaction.objects.filter(cause=TransactionCause.EXAM_REFUND).exists())
 
     def test_professor_can_list_exam_registrations(self):
         exam = self.create_exam()
         registration = ExamRegistration.objects.create(
             student=self.student,
             exam=exam,
+        )
+        ExamRegistration.objects.create(
+            student=self.student,
+            exam=exam,
+            status=ExamRegistrationStatus.CANCELED,
         )
         self.client.force_authenticate(user=self.professor_user)
 
@@ -169,7 +219,7 @@ class ExamApiTestCase(TestCase):
         )
 
         self.assertEqual(response.status_code, status.HTTP_200_OK)
-        self.assertEqual(response.data[0]["id"], registration.id)
+        self.assertEqual([item["id"] for item in response.data], [registration.id])
         self.assertEqual(response.data[0]["student_index_no"], self.student.index_no)
 
     def test_professor_can_grade_and_correct_registration(self):

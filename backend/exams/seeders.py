@@ -45,14 +45,23 @@ def seed_exams(
         exam = exams_by_course_and_room[
             (registration_data["course_code"], registration_data["exam_room"])
         ]
-        registration, _ = ExamRegistration.objects.update_or_create(
-            student=student,
-            exam=exam,
-            defaults={
-                "grade": None,
-                "status": ExamRegistrationStatus.ACTIVE,
-            },
+        registration = (
+            ExamRegistration.objects.filter(student=student, exam=exam)
+            .exclude(status=ExamRegistrationStatus.CANCELED)
+            .order_by("-pk")
+            .first()
         )
+        if registration is None:
+            registration = ExamRegistration.objects.create(
+                student=student,
+                exam=exam,
+                grade=None,
+                status=ExamRegistrationStatus.ACTIVE,
+            )
+        else:
+            registration.grade = None
+            registration.status = ExamRegistrationStatus.ACTIVE
+            registration.save(update_fields=["grade", "status"])
         registrations.append(registration)
 
     return ExamSeedData(exams=exams, registrations=registrations)
