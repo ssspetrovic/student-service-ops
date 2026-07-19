@@ -1,3 +1,4 @@
+from datetime import timedelta
 from decimal import Decimal
 
 from django.core.exceptions import ValidationError
@@ -93,7 +94,7 @@ class StudentFinanceApiTestCase(TestCase):
             cause=TransactionCause.DEPOSIT,
         )
         Transaction.objects.filter(pk=older.pk).update(
-            created_at=timezone.now() - timezone.timedelta(days=1)
+            created_at=timezone.now() - timedelta(days=1)
         )
         self.client.force_authenticate(user=self.student_user)
 
