@@ -1,23 +1,23 @@
 apiVersion: v1
 kind: Secret
 metadata:
-  name: github-auth
-  namespace: arc-runners
+    name: github-auth
+    namespace: arc-runners
 type: Opaque
 stringData:
-  github_token: ENC[AES256_GCM,data:3IxnpuSxjLM5X8ouLeO2Y0Edpq3pXY75l+sMiDVI46B2u7MkQhubC3+tCFU1V++ZJztaa9mks3kDJeeg2EvMFwRc/Utbt/qFjAuM94wPHuiFCe5Jo1Muvv3WZvb7,iv:0Mb+tJktKPsQmgUDXMeyS80RWeivNmHu+NmBKvIhVwU=,tag:vXPXeLJ+1hyjQQSPHG9K9Q==,type:str]
+    github_token: ENC[AES256_GCM,data:U5fr+WiDOCofo3lI42SIzclwwyxFywuoeQfBHMcuFMetXVXgsDNv1CCgsqZ6HM/dVcU1qsNv+nfDuYeIOmYMU66fmvsp3bVF4mg891EXY7bCZv5kDuGb0XYjtWj4,iv:S3wGjtf5TDDEOWZBBLEBYw6wzFtkCa0k7lZFDQ95974=,tag:wLo5Ze0Obzlgg5jqGO8L9A==,type:str]
 sops:
-  age:
-    - recipient: age1nsru6fkuqz9ys6z0tpw05psp5paytua6yrykscvn2akh5e4casgs3wnq6w
-      enc: |
-        -----BEGIN AGE ENCRYPTED FILE-----
-        YWdlLWVuY3J5cHRpb24ub3JnL3YxCi0+IFgyNTUxOSBMclFWV20ra2tlR1pMbWRv
-        c0RudHZSOVNjZ09ROEo2aU12ajI4Mkp1UlJjCjRqY3lUMFB4bzBPNDRnTFpqQjRi
-        M2Z3QXFjL1EySnlzUUo0VE9jWmphYTgKLS0tIHRMNG1HNFRWd3pFZzFtNEZLYkts
-        cjc0UVdSZVBYY2dtT1htT0NMSEE5R00KGNQ6CVUtjeXFMwy+pstUSDcXoX0s23tC
-        bHoRtQ6bkklRccUpfBgqoqerIPcyXefGr2EqA4obbzuF672CwrNZSg==
-        -----END AGE ENCRYPTED FILE-----
-  lastmodified: "2026-04-25T17:33:20Z"
-  mac: ENC[AES256_GCM,data:D1WNTlVxmTowGXQIHdgq1riAJiirECQNmxmBanF8yV1bsBduTLLy95US/+DU8P1PK76Os4fN47tzAIA2kGRclYAZZe2NGTPKrmPrFoWuujT/beL0JYF3TxKzHmsD+UtL8Le/H6g+pawyxEgvd8lP0yzPjnbXCd+/rQZxzBAWapg=,iv:06SWMWkPE0MzObCqcReX5jzZsnsnPyJE8VJvODKZONA=,tag:RdKSF2yUlIr1ehKcPEsO6w==,type:str]
-  encrypted_regex: ^(data|stringData)$
-  version: 3.12.2
+    age:
+        - recipient: age1nsru6fkuqz9ys6z0tpw05psp5paytua6yrykscvn2akh5e4casgs3wnq6w
+          enc: |
+            -----BEGIN AGE ENCRYPTED FILE-----
+            YWdlLWVuY3J5cHRpb24ub3JnL3YxCi0+IFgyNTUxOSBMclFWV20ra2tlR1pMbWRv
+            c0RudHZSOVNjZ09ROEo2aU12ajI4Mkp1UlJjCjRqY3lUMFB4bzBPNDRnTFpqQjRi
+            M2Z3QXFjL1EySnlzUUo0VE9jWmphYTgKLS0tIHRMNG1HNFRWd3pFZzFtNEZLYkts
+            cjc0UVdSZVBYY2dtT1htT0NMSEE5R00KGNQ6CVUtjeXFMwy+pstUSDcXoX0s23tC
+            bHoRtQ6bkklRccUpfBgqoqerIPcyXefGr2EqA4obbzuF672CwrNZSg==
+            -----END AGE ENCRYPTED FILE-----
+    lastmodified: "2026-07-25T10:20:51Z"
+    mac: ENC[AES256_GCM,data:SQkict2z0s+XSZiJuU5PBYNq7IvFqCf/SiHBGw3BhluVv/Fr2ndU40wrLTP5F449zN5AAtAj+Wor3Y3+dovvZVsOuwB3y0HaOfpMJdrxfBhQVPOAEBiBpQZjKb3dgYwz6DonsKZ5PSCPRQb4H+1dJhQKNCxoC4hN9eyQ/kuavg0=,iv:lDcQDRyEYO4nlu326i532BOMJoMyrUTycdPYPGC0QOM=,tag:fF5srNG894NlTicUftxJ9A==,type:str]
+    encrypted_regex: ^(data|stringData)$
+    version: 3.12.2
