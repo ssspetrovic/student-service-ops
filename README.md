@@ -5,7 +5,7 @@ GitOps and infrastructure repository for the student-service platform.
 Current state:
 
 - Talos cluster bootstrapped with `1` control plane and `2` workers
-- Talos configuration lives under [talos](/home/spetrovic/dev/student-service-ops/talos/README.md)
+- Talos configuration lives under [talos](talos/README.md)
 - Flux is bootstrapped from `clusters/student-service-cluster`
 - Cilium is deployed as the current CNI
 - cert-manager is deployed as the current certificate controller
@@ -13,12 +13,16 @@ Current state:
 - Actions Runner Controller manifests are present for repository-scoped GitHub Actions runners
 - The GitHub runner scale set is configured for Docker-in-Docker
 - GitHub workflow smoke tests exist for runner scheduling and Harbor image push/pull
+- Backend image CI builds pull requests and publishes commit-SHA and `latest`
+  tags to Harbor after changes reach `main`
 - GitHub CodeQL default setup is enabled in repository security settings; no CodeQL workflow is committed
 - PR-Agent is configured as a self-hosted PR review workflow on the repository runner
-- The Django backend lives under [backend](/home/spetrovic/dev/student-service-ops/backend/README.md)
+- The Django backend lives under [backend](backend/README.md)
 - CNPG/PostgreSQL, frontend manifests, and `apps/student-service/` workload manifests have not been added yet
-- Networking design for Cilium L2 and  Cilium Gateway API is documented under [infra/networking](/home/spetrovic/dev/student-service-ops/infra/networking/README.md)
-- Storage design for Local Path Provisioner is documented under [infra/storage](/home/spetrovic/dev/student-service-ops/infra/storage/README.md)
+- Networking design for Cilium L2 and Cilium Gateway API is documented under
+  [infra/networking](infra/networking/README.md)
+- Storage design for Local Path Provisioner is documented under
+  [infra/storage](infra/storage/README.md)
 - Cilium L2 and Gateway API manifests live under `infra/networking/` and target a shared private ingress IP on `192.168.1.240`
 - Gateway API CRDs are sourced from the official
   `kubernetes-sigs/gateway-api` repository and reconciled before Cilium Gateway
@@ -55,7 +59,7 @@ Detailed progress and setup history live in ignored operator notes under `.codex
 
 This repo uses `SOPS` with `age`.
 
-- Encryption rules are defined in [`.sops.yaml`](/home/spetrovic/dev/student-service-ops/.sops.yaml)
+- Encryption rules are defined in [`.sops.yaml`](.sops.yaml)
 - Encrypted files should use the `.sops.yaml` suffix
 - Plaintext secret material must not be committed
 - Generated Talos render output must not be committed
@@ -63,11 +67,11 @@ This repo uses `SOPS` with `age`.
 
 Current encrypted Talos cluster secrets file:
 
-- [talos/talsecret.sops.yaml](/home/spetrovic/dev/student-service-ops/talos/talsecret.sops.yaml)
+- [talos/talsecret.sops.yaml](talos/talsecret.sops.yaml)
 
 Current encrypted platform secrets:
 
-- [infra/ci/actions-runner-scale-set/github-auth.sops.yaml](/home/spetrovic/dev/student-service-ops/infra/ci/actions-runner-scale-set/github-auth.sops.yaml)
+- [infra/ci/actions-runner-scale-set/github-auth.sops.yaml](infra/ci/actions-runner-scale-set/github-auth.sops.yaml)
 
 Basic local workflow:
 
@@ -92,16 +96,19 @@ sops talos/talsecret.sops.yaml
 
 ## Talos
 
-Talos-specific bootstrap and operator steps are documented in [talos/README.md](/home/spetrovic/dev/student-service-ops/talos/README.md).
+Talos-specific bootstrap and operator steps are documented in
+[talos/README.md](talos/README.md).
 
 ## GitHub Actions Runners
 
-GitHub runner deployment details are documented in [infra/ci/actions-runner-scale-set/README.md](/home/spetrovic/dev/student-service-ops/infra/ci/actions-runner-scale-set/README.md).
+GitHub runner deployment details are documented in
+[infra/ci/actions-runner-scale-set/README.md](infra/ci/actions-runner-scale-set/README.md).
 
 ## PR Review Bot
 
-PR-Agent is configured by [.github/workflows/pr-agent.yml](/home/spetrovic/dev/student-service-ops/.github/workflows/pr-agent.yml)
-and [.pr_agent.toml](/home/spetrovic/dev/student-service-ops/.pr_agent.toml).
+PR-Agent is configured by
+[.github/workflows/pr-agent.yml](.github/workflows/pr-agent.yml) and
+[.pr_agent.toml](.pr_agent.toml).
 It runs on `student-service-runner`, uses `gpt-4o-mini`, and expects a GitHub Actions repository secret named `OPENAI_KEY`.
 Automatic review runs on PR open/reopen/ready-for-review and follow-up commits.
 Automatic description runs only on initial PR lifecycle events to avoid repeatedly rewriting PR bodies.
@@ -117,7 +124,8 @@ The repo is using a monorepo layout:
 
 ## Harbor
 
-Harbor deployment details are documented in [infra/registry/harbor/README.md](/home/spetrovic/dev/student-service-ops/infra/registry/harbor/README.md).
+Harbor deployment details are documented in
+[infra/registry/harbor/README.md](infra/registry/harbor/README.md).
 
 ## Developer Setup
 
