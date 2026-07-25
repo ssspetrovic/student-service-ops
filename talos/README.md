@@ -128,7 +128,7 @@ talosctl -n 192.168.1.52 ls /var/mnt/local-path-provisioner
 - `talosctl`
 - `sops`
 - `age`
-- repo-root [`.sops.yaml`](/home/spetrovic/dev/student-service-ops/.sops.yaml) updated with the correct public key
+- repo-root [`.sops.yaml`](../.sops.yaml) updated with the correct public key
 - local `age` private key available via `SOPS_AGE_KEY_FILE`
 
 ## Generate Encrypted Talos Secrets
