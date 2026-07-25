@@ -1,0 +1,72 @@
+name: Backend Image
+
+on:
+  pull_request:
+    branches:
+      - main
+    paths:
+      - backend/**
+      - mise.toml
+      - mise.lock
+      - .github/workflows/backend-image.yaml
+  push:
+    branches:
+      - main
+    paths:
+      - backend/**
+      - mise.toml
+      - mise.lock
+      - .github/workflows/backend-image.yaml
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: backend-image-${{ github.ref }}
+  cancel-in-progress: true
+
+env:
+  IMAGE: harbor.student-service.internal/student-service/backend
+
+jobs:
+  backend-image:
+    name: Backend image
+    runs-on: student-service-runner
+    timeout-minutes: 30
+    steps:
+      - name: Checkout
+        uses: actions/checkout@d23441a48e516b6c34aea4fa41551a30e30af803 # v6
+        with:
+          persist-credentials: false
+
+      - name: Setup mise
+        uses: jdx/mise-action@9e7f7633ff6f6d6048a9418a68d48f288f50eb14 # v4
+        with:
+          install: true
+          cache: true
+
+      - name: Check backend
+        run: |
+          mise run backend:sync
+          mise run backend:lint
+          mise run backend:test
+          mise run backend:check
+
+      - name: Build image
+        run: docker build --pull -t "$IMAGE:$GITHUB_SHA" backend
+
+      - name: Log in to Harbor
+        if: github.event_name == 'push'
+        uses: docker/login-action@abd2ef45e78c5afb21d64d4ca52ee8550d9572c7 # v4
+        with:
+          registry: harbor.student-service.internal
+          username: ${{ secrets.HARBOR_USERNAME }}
+          password: ${{ secrets.HARBOR_PASSWORD }}
+
+      - name: Push image
+        if: github.event_name == 'push'
+        run: |
+          docker tag "$IMAGE:$GITHUB_SHA" "$IMAGE:latest"
+          docker push "$IMAGE:$GITHUB_SHA"
+          docker push "$IMAGE:latest"
