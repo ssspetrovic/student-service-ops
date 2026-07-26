@@ -1,0 +1,23 @@
+apiVersion: v1
+kind: Secret
+metadata:
+    name: student-service-db-app
+    namespace: student-service
+type: Opaque
+stringData:
+    uri: ENC[AES256_GCM,data:1kTzhwbZJ3IXUgmNRDTh9MRiRqubkyHQvb4oxb0jyKblQJIlr7CbL8PXL3PL0RIzDhzdpyZbOvsoF4rbw7AYJyhNXNN+1UfbJtiaGTcH1ThUFaXX1mPjROlK5+a56vtxuSA7HpXDyz07fal+ApyBr78bIb9J5aQboRvR/0oqNDsECYLcfkLVjnmC6F4RLk6tSp1BVg9KtbAw0daZKSN9UL1OlJDulrQmi3oZN+xYV7CoewE=,iv:01WMCT3prbZeyZHiiD9napxwnnrSKF72Kq9d+07h6TI=,tag:UeyMHk6CfZWf9kIxMKx6pQ==,type:str]
+sops:
+    age:
+        - enc: |
+            -----BEGIN AGE ENCRYPTED FILE-----
+            YWdlLWVuY3J5cHRpb24ub3JnL3YxCi0+IFgyNTUxOSBVMHJ2WjBuL3dLRGJpb3pm
+            ZjNqSWM5LzB2d1EzZ2RwZzNhZ2RMVGxudTFvCjNoOGEzQXMrMjZqUmpRbUU4K0Uv
+            bk4wYXk3eWQzSm1udUp0enB3T24wdmsKLS0tIDNmbWxzMzlkVDV3RjdrRGs1T1Y1
+            V2FIMEU2emhTbnR6UUFaN1Z1NXFyM3MKRSMSY4W5i2rPRIj687gD+ha7vcc2P8bX
+            PLZC0t/uIMDIaeOv/BaZ9ISmj4JY9UdwN6R7WOWWX7ZW7oGmQS999g==
+            -----END AGE ENCRYPTED FILE-----
+          recipient: age1nsru6fkuqz9ys6z0tpw05psp5paytua6yrykscvn2akh5e4casgs3wnq6w
+    encrypted_regex: ^(data|stringData)$
+    lastmodified: "2026-07-26T14:08:53Z"
+    mac: ENC[AES256_GCM,data:RHXZ6RYsYe3QzFhrgyCEKT87UsW6mSJEDT0qBvMhnHMvVd/U4OXWa5CbpG0QQqIQtOWDueoPWkWLf2whqTS7A9UGFVk8iI74ZICWI9i8FLBf7vPyZ+yuw5ZmI8+6zdrG24LwXpHyQbMUx4k6/wfDgTRyvHiocXghxeJRGPh7slw=,iv:DK+9bpOWQ1haZKyXbxyYY97VzDO0eo1aQstlh7h6JEs=,tag:YRo4rk2MNdKTSexwzdMV6A==,type:str]
+    version: 3.13.3
