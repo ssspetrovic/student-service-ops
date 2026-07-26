@@ -24,7 +24,10 @@ from accounts.views import StudentRegistrationView
 
 
 def health(_request):
-    return JsonResponse({"status": "ok"})
+    return JsonResponse(
+        {"status": "ok"},
+        headers={"Cache-Control": "no-store"},
+    )
 
 
 urlpatterns = [
