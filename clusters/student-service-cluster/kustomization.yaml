@@ -16,3 +16,5 @@ resources:
   - harbor-certificates.yaml
   - harbor.yaml
   - student-service-database.yaml
+  - student-service-migrations.yaml
+  - student-service-backend.yaml
