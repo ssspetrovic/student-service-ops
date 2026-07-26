@@ -6,6 +6,7 @@ resources:
   - gateway-api-crds.yaml
   - infra.yaml
   - cert-manager.yaml
+  - cloudnative-pg.yaml
   - cert-manager-issuers.yaml
   - actions-runner-controller.yaml
   - actions-runner-scale-set.yaml
