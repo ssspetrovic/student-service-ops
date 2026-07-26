@@ -109,7 +109,8 @@ GitHub runner deployment details are documented in
 PR-Agent is configured by
 [.github/workflows/pr-agent.yml](.github/workflows/pr-agent.yml) and
 [.pr_agent.toml](.pr_agent.toml).
-It runs on `student-service-runner`, uses `gpt-4o-mini`, and expects a GitHub Actions repository secret named `OPENAI_KEY`.
+It runs on `student-service-runner` and uses `gpt-5.1`. The workflow expects a GitHub Actions repository secret named
+`OPENAI_KEY`.
 Automatic review runs on PR open/reopen/ready-for-review and follow-up commits.
 Automatic description runs only on initial PR lifecycle events to avoid repeatedly rewriting PR bodies.
 Slash commands are gated to repository collaborators.
