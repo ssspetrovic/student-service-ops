@@ -15,3 +15,4 @@ resources:
   - storage.yaml
   - harbor-certificates.yaml
   - harbor.yaml
+  - student-service-database.yaml

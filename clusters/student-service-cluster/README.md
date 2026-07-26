@@ -68,6 +68,7 @@ flux reconcile kustomization cloudnative-pg -n flux-system
 flux reconcile kustomization cert-manager-issuers -n flux-system
 flux reconcile kustomization harbor-certificates -n flux-system
 flux reconcile kustomization harbor -n flux-system
+flux reconcile kustomization student-service-database -n flux-system
 ```
 
 Use only the reconciles needed for the change you merged.
@@ -76,4 +77,34 @@ Verification:
 
 ```bash
 flux get all -A
+```
+
+The application database reconciles from
+`apps/student-service/database` after both `cloudnative-pg` and `storage`.
+Flux decrypts its two SOPS Secrets with `sops-age` and waits for
+`Cluster/student-service-db` to become healthy.
+
+The database endpoint is internal only:
+
+```text
+student-service-db-rw.student-service-database.svc.cluster.local:5432
+```
+
+The database and owner are both `student_service`. Future migration Jobs and
+backend pods must use this label to pass the database ingress policy:
+
+```text
+app.kubernetes.io/name: student-service-backend
+```
+
+After reconciliation, verify metadata without printing secret values:
+
+```bash
+flux get kustomization student-service-database -n flux-system
+kubectl get cluster student-service-db -n student-service-database
+kubectl get pods,pvc,svc -n student-service-database -o wide
+kubectl get secret student-service-db-app -n student-service-database \
+  -o json | jq '{type, keys: (.data | keys)}'
+kubectl get secret student-service-db-app -n student-service \
+  -o json | jq '{type, keys: (.data | keys)}'
 ```
