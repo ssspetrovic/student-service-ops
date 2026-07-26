@@ -114,8 +114,8 @@ jobs:
           add-paths: |
             apps/student-service/migrations/job.yaml
             apps/student-service/backend/deployment.yaml
-          commit-message: "chore(deploy): promote backend image"
-          title: "chore(deploy): promote backend image"
+          commit-message: "chore: auto-promote backend image"
+          title: "chore: auto-promote backend image"
           body: |
             Promote the backend image built from `${{ github.sha }}`:
 
