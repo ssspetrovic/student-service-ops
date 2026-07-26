@@ -50,30 +50,14 @@ Flux reconciles on its own based on the configured intervals.
 
 Run a manual reconcile after a merge to `main` if you want the cluster to pick up changes immediately.
 
-Commands:
+The root reconciliation is normally enough. Flux handles the remaining
+dependencies:
 
 ```bash
-flux reconcile source git flux-system -n flux-system
-flux reconcile kustomization flux-system -n flux-system
-flux reconcile kustomization gateway-api-crds -n flux-system
-flux reconcile kustomization infra -n flux-system
-flux reconcile source git local-path-provisioner -n flux-system
-flux reconcile kustomization storage -n flux-system
-flux reconcile kustomization cilium-l2 -n flux-system
-flux reconcile kustomization gateway-api -n flux-system
-flux reconcile kustomization actions-runner-controller -n flux-system
-flux reconcile kustomization actions-runner-scale-set -n flux-system
-flux reconcile kustomization cert-manager -n flux-system
-flux reconcile kustomization cloudnative-pg -n flux-system
-flux reconcile kustomization cert-manager-issuers -n flux-system
-flux reconcile kustomization harbor-certificates -n flux-system
-flux reconcile kustomization harbor -n flux-system
-flux reconcile kustomization student-service-database -n flux-system
+flux reconcile kustomization flux-system -n flux-system --with-source
 ```
 
-Use only the reconciles needed for the change you merged.
-
-Verification:
+Check the overall state with:
 
 ```bash
 flux get all -A
@@ -108,3 +92,20 @@ kubectl get secret student-service-db-app -n student-service-database \
 kubectl get secret student-service-db-app -n student-service \
   -o json | jq '{type, keys: (.data | keys)}'
 ```
+
+Flux deploys the database first, runs the migration Job, and then deploys the
+backend. If migrations fail, the backend is not deployed.
+
+After merging, use the reconciliation command above and check the workloads:
+
+```bash
+kubectl get jobs,deployments,pods,services -n student-service
+```
+
+The backend is available only inside the cluster:
+
+```text
+http://student-service-backend.student-service.svc.cluster.local:8000
+```
+
+Its health endpoint is `GET /api/health/`.
