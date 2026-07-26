@@ -1,0 +1,23 @@
+apiVersion: v1
+kind: Secret
+metadata:
+    name: harbor-pull
+    namespace: student-service
+type: kubernetes.io/dockerconfigjson
+stringData:
+    .dockerconfigjson: ENC[AES256_GCM,data:+WIKu+9tsf8BJgur0VCt/XU/764XvB8zp4mz7sKmD5ui3d6lCq6gwnetVAnCNxh8fJCdOtjyxnQh5aIzgICcGuYMrWICQMWWldqjGz5IthqS0nmdTc5nzjb2P/idm38boWwRJXIeaRdRBObiNL9r5Ew7/0xGeuJWKzti1jqW/kczbmw38lSITzXiIX68jA0CoGqP6eiR74D8Gc2ER2+UD40HtCAiSxRQvDSRmSaa1SrXn5Dvl3PSrPoiZCjwQVFDuvth5Xv6fu5jZRCflK99MfZB/7VOjhQCCMKgZDXZTD/M41e+9B2/pnjpNhktBXzSdFSWXCGDxC/IC4+KOEytSqjkRst94Z/YRVoSNGK8AWzZoZ6PSWdW,iv:9j94JE8jPbE0UNxqUid7KaqKF3ikzI6zORUN0uVOCcE=,tag:fTVvFLgbn3n7x5WC2ZpvSA==,type:str]
+sops:
+    age:
+        - enc: |
+            -----BEGIN AGE ENCRYPTED FILE-----
+            YWdlLWVuY3J5cHRpb24ub3JnL3YxCi0+IFgyNTUxOSBXVHRkK2R3Y0dkWTRwcUZI
+            aGd2Z2FTZExRNjJRZEduckRadktDdnJTeFFRCjVHUnVRNW8xMFR3YmoyS2lwS1R3
+            YjNiM1AyQmNhcVpJOUNPQ3dOWVgvZlUKLS0tIGkvMUNYTHpBdlgvbml3WTZacnpQ
+            ckdrYjdxZnNzWVc2b0F6WnhkQUUzQmMKmO903I9jwSfM7v6oPzU2BZxsHfdaxZuj
+            VOifKMqJsyyxflt1AUL1tcZwpt6yWsWx0bRgGrjITNouad1UWSEqNA==
+            -----END AGE ENCRYPTED FILE-----
+          recipient: age1nsru6fkuqz9ys6z0tpw05psp5paytua6yrykscvn2akh5e4casgs3wnq6w
+    encrypted_regex: ^(data|stringData)$
+    lastmodified: "2026-07-26T16:26:58Z"
+    mac: ENC[AES256_GCM,data:K1gUL3YY2CzLavM2KxQzT8wv4UBt2k36aKV5dlZHOUCyAbA7q3ZmEY4SXRHpaMNeoRqbe43Jv3BAAZwwYC1vV9t/mFhePvNng5gS9tI194eVxeDLfvznoyAjQP7utvL5Kd+3dGIsoBbJgNbn22tXVot6l6RF6cexKHGvgBQDcpw=,iv:NM/94CdvNrwQtAJTpBuR+HlgJTOZpgwBPxkaFEE8TgY=,tag:lN8sMQyrwvCQUDZJwAU6eg==,type:str]
+    version: 3.13.3
