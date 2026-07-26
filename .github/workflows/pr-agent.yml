@@ -41,8 +41,6 @@ jobs:
         env:
           OPENAI_KEY: ${{ secrets.OPENAI_KEY }}
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-          config.model: gpt-4o-mini
-          config.model_turbo: gpt-4o-mini
           github_action_config.auto_review: "true"
           github_action_config.auto_describe: "false"
           github_action_config.auto_improve: "false"
@@ -64,8 +62,6 @@ jobs:
         env:
           OPENAI_KEY: ${{ secrets.OPENAI_KEY }}
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-          config.model: gpt-4o-mini
-          config.model_turbo: gpt-4o-mini
           github_action_config.auto_review: "false"
           github_action_config.auto_describe: "true"
           github_action_config.auto_improve: "false"
@@ -94,8 +90,6 @@ jobs:
         env:
           OPENAI_KEY: ${{ secrets.OPENAI_KEY }}
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-          config.model: gpt-4o-mini
-          config.model_turbo: gpt-4o-mini
           github_action_config.auto_review: "false"
           github_action_config.auto_describe: "false"
           github_action_config.auto_improve: "false"
