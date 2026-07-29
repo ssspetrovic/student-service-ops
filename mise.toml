@@ -120,6 +120,11 @@ else
 fi
 """
 
+[tasks."frontend:run"]
+description = "Run the frontend development server"
+tools.node = "{{ env.NODE_VERSION }}"
+run = "cd frontend && npm run dev"
+
 [tasks."frontend:lint"]
 description = "Lint frontend code"
 tools.node = "{{ env.NODE_VERSION }}"
