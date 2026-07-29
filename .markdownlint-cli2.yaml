@@ -15,5 +15,5 @@ ignores:
   - ".codex/**"
   - "**/.venv/**"
   - "**/.uv-cache/**"
-  - "node_modules/**"
+  - "**/node_modules/**"
   - "AGENTS.md"
