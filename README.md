@@ -18,7 +18,8 @@ Current state:
 - GitHub CodeQL default setup is enabled in repository security settings; no CodeQL workflow is committed
 - PR-Agent is configured as a self-hosted PR review workflow on the repository runner
 - The Django backend lives under [backend](backend/README.md)
-- CNPG/PostgreSQL, frontend manifests, and `apps/student-service/` workload manifests have not been added yet
+- CNPG/PostgreSQL, database migrations, and the internal backend are deployed
+  through `apps/student-service/`.
 - Networking design for Cilium L2 and Cilium Gateway API is documented under
   [infra/networking](infra/networking/README.md)
 - Storage design for Local Path Provisioner is documented under
@@ -44,7 +45,8 @@ Current nodes:
 - `infra/` holds shared cluster infrastructure managed by Flux
 - `backend/` contains the current Django backend application
 - `frontend/` is reserved for the future React frontend
-- `apps/student-service/` is reserved for future GitOps-managed application manifests
+- `apps/student-service/` contains the database, migration, and backend
+  manifests, with frontend deployment manifests still to come
 - `infra/controllers/` groups shared cluster controllers such as Cilium and Actions Runner Controller
 - `infra/ci/` groups CI runner infrastructure managed by Flux
 - `infra/networking/` groups cluster networking components such as Cilium,
@@ -121,7 +123,7 @@ The repo is using a monorepo layout:
 
 - `backend/` for the Django backend
 - `frontend/` for the React frontend
-- `apps/student-service/` for Kubernetes workload manifests, HTTP routing, and app config
+- `apps/student-service/` for Kubernetes workloads and application config
 
 ## Harbor
 

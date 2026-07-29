@@ -74,8 +74,8 @@ The database endpoint is internal only:
 student-service-db-rw.student-service-database.svc.cluster.local:5432
 ```
 
-The database and owner are both `student_service`. Future migration Jobs and
-backend pods must use this label to pass the database ingress policy:
+The database and owner are both `student_service`. The migration Job and
+backend pods use this label to pass the database ingress policy:
 
 ```text
 app.kubernetes.io/name: student-service-backend
@@ -87,10 +87,8 @@ After reconciliation, verify metadata without printing secret values:
 flux get kustomization student-service-database -n flux-system
 kubectl get cluster student-service-db -n student-service-database
 kubectl get pods,pvc,svc -n student-service-database -o wide
-kubectl get secret student-service-db-app -n student-service-database \
-  -o json | jq '{type, keys: (.data | keys)}'
-kubectl get secret student-service-db-app -n student-service \
-  -o json | jq '{type, keys: (.data | keys)}'
+kubectl get secret student-service-db-app -n student-service-database -o json
+kubectl get secret student-service-db-app -n student-service -o json
 ```
 
 Flux deploys the database first, runs the migration Job, and then deploys the
