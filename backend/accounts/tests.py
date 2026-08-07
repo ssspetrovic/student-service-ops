@@ -3,6 +3,7 @@ from django.test import TestCase
 from django.urls import reverse
 from rest_framework import status
 from rest_framework.test import APIClient
+from rest_framework_simplejwt.tokens import AccessToken
 
 from academics.models import Curriculum, DegreeLevel
 
@@ -51,6 +52,55 @@ class ManagedUserAdminTestCase(TestCase):
         user = User.objects.get(email="admin-form-professor@example.com")
         self.assertEqual(user.role, UserRole.PROFESSOR)
         self.assertEqual(user.professor_profile.employee_no, "ADMIN-FORM-P01")
+
+
+class CurrentUserApiTestCase(TestCase):
+    def setUp(self):
+        self.client = APIClient()
+
+    def test_authenticated_student_receives_email_and_role(self):
+        user = User.objects.create_user(
+            email="student@example.com",
+            password="StrongPassword123!",
+            role=UserRole.STUDENT,
+        )
+        self.client.credentials(HTTP_AUTHORIZATION=f"Bearer {AccessToken.for_user(user)}")
+
+        response = self.client.get(reverse("current-user"))
+
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+        self.assertEqual(response.data, {"email": user.email, "role": UserRole.STUDENT})
+
+    def test_authenticated_professor_receives_email_and_role(self):
+        user = User.objects.create_user(
+            email="professor@example.com",
+            password="StrongPassword123!",
+            role=UserRole.PROFESSOR,
+        )
+        self.client.credentials(HTTP_AUTHORIZATION=f"Bearer {AccessToken.for_user(user)}")
+
+        response = self.client.get(reverse("current-user"))
+
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+        self.assertEqual(response.data, {"email": user.email, "role": UserRole.PROFESSOR})
+
+    def test_authenticated_admin_receives_email_and_role(self):
+        user = User.objects.create_user(
+            email="admin@example.com",
+            password="StrongPassword123!",
+            role=UserRole.ADMIN,
+        )
+        self.client.credentials(HTTP_AUTHORIZATION=f"Bearer {AccessToken.for_user(user)}")
+
+        response = self.client.get(reverse("current-user"))
+
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+        self.assertEqual(response.data, {"email": user.email, "role": UserRole.ADMIN})
+
+    def test_unauthenticated_user_is_rejected(self):
+        response = self.client.get(reverse("current-user"))
+
+        self.assertEqual(response.status_code, status.HTTP_401_UNAUTHORIZED)
 
 
 class StudentRegistrationApiTestCase(TestCase):
