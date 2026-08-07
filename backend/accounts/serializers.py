@@ -8,6 +8,12 @@ from finance.models import Wallet
 from .models import ProfessorProfile, StudentProfile, User, UserRole
 
 
+class CurrentUserSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = User
+        fields = ["email", "role"]
+
+
 class StudentProfileSerializer(serializers.ModelSerializer):
     email = serializers.EmailField(source="user.email")
     role = serializers.CharField(source="user.role")
