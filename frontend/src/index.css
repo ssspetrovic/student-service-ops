@@ -1,0 +1,30 @@
+:root {
+  --bs-primary: #7c3aed;
+  --bs-primary-rgb: 124, 58, 237;
+  --bs-link-color: #7c3aed;
+  --bs-link-hover-color: #6d28d9;
+  --bs-dark: #0f172a;
+  --bs-dark-rgb: 15, 23, 42;
+  --bs-body-bg: #f8fafc;
+  --bs-body-color: #1e293b;
+  --bs-border-color: #e2e8f0;
+  --bs-font-sans-serif:
+    Inter, ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont,
+    "Segoe UI", sans-serif;
+}
+
+body {
+  background-color: var(--bs-body-bg);
+}
+
+.btn-primary {
+  --bs-btn-bg: #7c3aed;
+  --bs-btn-border-color: #7c3aed;
+  --bs-btn-hover-bg: #6d28d9;
+  --bs-btn-hover-border-color: #6d28d9;
+  --bs-btn-active-bg: #5b21b6;
+  --bs-btn-active-border-color: #5b21b6;
+  --bs-btn-focus-shadow-rgb: 124, 58, 237;
+  --bs-btn-disabled-bg: #7c3aed;
+  --bs-btn-disabled-border-color: #7c3aed;
+}
