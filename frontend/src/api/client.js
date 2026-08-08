@@ -21,6 +21,19 @@ export const clearTokens = () => {
   localStorage.removeItem(REFRESH_TOKEN_KEY);
 };
 
+const sessionExpirationListeners = new Set();
+
+export const subscribeToSessionExpiration = (listener) => {
+  sessionExpirationListeners.add(listener);
+
+  return () => sessionExpirationListeners.delete(listener);
+};
+
+const expireSession = () => {
+  clearTokens();
+  sessionExpirationListeners.forEach((listener) => listener());
+};
+
 api.interceptors.request.use((config) => {
   const accessToken = getAccessToken();
 
@@ -46,7 +59,7 @@ api.interceptors.response.use(
     }
 
     if (request._retried) {
-      clearTokens();
+      expireSession();
       return Promise.reject(error);
     }
 
@@ -62,7 +75,7 @@ api.interceptors.response.use(
       request.headers.Authorization = `Bearer ${access}`;
       return api(request);
     } catch (refreshError) {
-      clearTokens();
+      expireSession();
       return Promise.reject(refreshError);
     } finally {
       refreshRequest = undefined;

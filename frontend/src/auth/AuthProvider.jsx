@@ -1,10 +1,25 @@
 import { useEffect, useState } from "react";
-import api, { clearTokens, getAccessToken, storeTokens } from "../api/client";
+import { useNavigate } from "react-router-dom";
+import api, {
+  clearTokens,
+  getAccessToken,
+  storeTokens,
+  subscribeToSessionExpiration,
+} from "../api/client";
 import AuthContext from "./context";
 
 function AuthProvider({ children }) {
   const [user, setUser] = useState(null);
   const [isInitializing, setIsInitializing] = useState(true);
+  const navigate = useNavigate();
+
+  useEffect(() => {
+    return subscribeToSessionExpiration(() => {
+      setUser(null);
+      setIsInitializing(false);
+      navigate("/login", { replace: true });
+    });
+  }, [navigate]);
 
   useEffect(() => {
     let isCurrent = true;
