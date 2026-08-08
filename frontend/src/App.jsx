@@ -1,122 +1,119 @@
-import { useState } from 'react'
-import reactLogo from './assets/react.svg'
-import viteLogo from './assets/vite.svg'
-import heroImg from './assets/hero.png'
-import './App.css'
+import { useState } from "react";
+import api, { clearTokens, storeTokens } from "./client";
 
 function App() {
-  const [count, setCount] = useState(0)
+  const [email, setEmail] = useState("");
+  const [password, setPassword] = useState("");
+  const [user, setUser] = useState(null);
+  const [error, setError] = useState("");
+  const [isSubmitting, setIsSubmitting] = useState(false);
+
+  const handleSubmit = async (event) => {
+    event.preventDefault();
+    setError("");
+    setIsSubmitting(true);
+
+    try {
+      const tokenResponse = await api.post("/auth/token/", { email, password });
+      storeTokens(tokenResponse.data);
+
+      const userResponse = await api.get("/accounts/me/");
+      setUser(userResponse.data);
+      setPassword("");
+    } catch (requestError) {
+      clearTokens();
+      setError(requestError.response?.data?.detail || "Unable to sign in.");
+    } finally {
+      setIsSubmitting(false);
+    }
+  };
+
+  const handleLogout = () => {
+    clearTokens();
+    setUser(null);
+  };
+
+  if (user) {
+    return (
+      <main className="container py-5">
+        <div className="card shadow-sm">
+          <div className="card-body p-4">
+            <p className="text-primary text-uppercase fw-semibold small">
+              Student Service
+            </p>
+            <h1 className="h2">Welcome back</h1>
+            <p className="fs-5 fw-semibold mb-1">
+              {user.first_name} {user.last_name}
+            </p>
+            <p className="text-body-secondary">{user.email}</p>
+            <p className="mb-4">Signed in as {user.role}</p>
+            <button type="button" className="btn btn-outline-secondary" onClick={handleLogout}>
+              Log out
+            </button>
+          </div>
+        </div>
+      </main>
+    );
+  }
 
   return (
-    <>
-      <section id="center">
-        <div className="hero">
-          <img src={heroImg} className="base" width="170" height="179" alt="" />
-          <img src={reactLogo} className="framework" alt="React logo" />
-          <img src={viteLogo} className="vite" alt="Vite logo" />
-        </div>
-        <div>
-          <h1>Get started</h1>
-          <p>
-            Edit <code>src/App.jsx</code> and save to test <code>HMR</code>
-          </p>
-        </div>
-        <button
-          type="button"
-          className="counter"
-          onClick={() => setCount((count) => count + 1)}
-        >
-          Count is {count}
-        </button>
-      </section>
+    <main className="container d-flex align-items-center min-vh-100 py-5">
+      <div className="row justify-content-center w-100">
+        <div className="col-sm-10 col-md-7 col-lg-5">
+          <div className="card shadow-sm">
+            <div className="card-body p-4">
+              <p className="text-primary text-uppercase fw-semibold small">
+                Student Service
+              </p>
+              <h1 className="h2 mb-4">Sign in</h1>
 
-      <div className="ticks"></div>
+              <form onSubmit={handleSubmit}>
+                <div className="mb-3">
+                  <label className="form-label" htmlFor="email">
+                    Email
+                  </label>
+                  <input
+                    className="form-control"
+                    id="email"
+                    type="email"
+                    value={email}
+                    onChange={(event) => setEmail(event.target.value)}
+                    autoComplete="email"
+                    required
+                  />
+                </div>
 
-      <section id="next-steps">
-        <div id="docs">
-          <svg className="icon" role="presentation" aria-hidden="true">
-            <use href="/icons.svg#documentation-icon"></use>
-          </svg>
-          <h2>Documentation</h2>
-          <p>Your questions, answered</p>
-          <ul>
-            <li>
-              <a href="https://vite.dev/" target="_blank">
-                <img className="logo" src={viteLogo} alt="" />
-                Explore Vite
-              </a>
-            </li>
-            <li>
-              <a href="https://react.dev/" target="_blank">
-                <img className="button-icon" src={reactLogo} alt="" />
-                Learn more
-              </a>
-            </li>
-          </ul>
-        </div>
-        <div id="social">
-          <svg className="icon" role="presentation" aria-hidden="true">
-            <use href="/icons.svg#social-icon"></use>
-          </svg>
-          <h2>Connect with us</h2>
-          <p>Join the Vite community</p>
-          <ul>
-            <li>
-              <a href="https://github.com/vitejs/vite" target="_blank">
-                <svg
-                  className="button-icon"
-                  role="presentation"
-                  aria-hidden="true"
-                >
-                  <use href="/icons.svg#github-icon"></use>
-                </svg>
-                GitHub
-              </a>
-            </li>
-            <li>
-              <a href="https://chat.vite.dev/" target="_blank">
-                <svg
-                  className="button-icon"
-                  role="presentation"
-                  aria-hidden="true"
-                >
-                  <use href="/icons.svg#discord-icon"></use>
-                </svg>
-                Discord
-              </a>
-            </li>
-            <li>
-              <a href="https://x.com/vite_js" target="_blank">
-                <svg
-                  className="button-icon"
-                  role="presentation"
-                  aria-hidden="true"
-                >
-                  <use href="/icons.svg#x-icon"></use>
-                </svg>
-                X.com
-              </a>
-            </li>
-            <li>
-              <a href="https://bsky.app/profile/vite.dev" target="_blank">
-                <svg
-                  className="button-icon"
-                  role="presentation"
-                  aria-hidden="true"
-                >
-                  <use href="/icons.svg#bluesky-icon"></use>
-                </svg>
-                Bluesky
-              </a>
-            </li>
-          </ul>
-        </div>
-      </section>
+                <div className="mb-3">
+                  <label className="form-label" htmlFor="password">
+                    Password
+                  </label>
+                  <input
+                    className="form-control"
+                    id="password"
+                    type="password"
+                    value={password}
+                    onChange={(event) => setPassword(event.target.value)}
+                    autoComplete="current-password"
+                    required
+                  />
+                </div>
 
-      <div className="ticks"></div>
-      <section id="spacer"></section>
-    </>
-  )
+                {error && (
+                  <p className="alert alert-danger" role="alert">
+                    {error}
+                  </p>
+                )}
+
+                <button className="btn btn-primary w-100" type="submit" disabled={isSubmitting}>
+                  {isSubmitting ? "Signing in…" : "Sign in"}
+                </button>
+              </form>
+            </div>
+          </div>
+        </div>
+      </div>
+    </main>
+  );
 }
 
-export default App
+export default App;
