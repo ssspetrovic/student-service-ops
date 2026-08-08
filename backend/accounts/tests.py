@@ -58,10 +58,12 @@ class CurrentUserApiTestCase(TestCase):
     def setUp(self):
         self.client = APIClient()
 
-    def test_authenticated_student_receives_email_and_role(self):
+    def test_authenticated_student_receives_identity_and_role(self):
         user = User.objects.create_user(
             email="student@example.com",
             password="StrongPassword123!",
+            first_name="Student",
+            last_name="Example",
             role=UserRole.STUDENT,
         )
         self.client.credentials(HTTP_AUTHORIZATION=f"Bearer {AccessToken.for_user(user)}")
@@ -69,12 +71,22 @@ class CurrentUserApiTestCase(TestCase):
         response = self.client.get(reverse("current-user"))
 
         self.assertEqual(response.status_code, status.HTTP_200_OK)
-        self.assertEqual(response.data, {"email": user.email, "role": UserRole.STUDENT})
+        self.assertEqual(
+            response.data,
+            {
+                "email": user.email,
+                "first_name": user.first_name,
+                "last_name": user.last_name,
+                "role": UserRole.STUDENT,
+            },
+        )
 
-    def test_authenticated_professor_receives_email_and_role(self):
+    def test_authenticated_professor_receives_identity_and_role(self):
         user = User.objects.create_user(
             email="professor@example.com",
             password="StrongPassword123!",
+            first_name="Professor",
+            last_name="Example",
             role=UserRole.PROFESSOR,
         )
         self.client.credentials(HTTP_AUTHORIZATION=f"Bearer {AccessToken.for_user(user)}")
@@ -82,12 +94,22 @@ class CurrentUserApiTestCase(TestCase):
         response = self.client.get(reverse("current-user"))
 
         self.assertEqual(response.status_code, status.HTTP_200_OK)
-        self.assertEqual(response.data, {"email": user.email, "role": UserRole.PROFESSOR})
+        self.assertEqual(
+            response.data,
+            {
+                "email": user.email,
+                "first_name": user.first_name,
+                "last_name": user.last_name,
+                "role": UserRole.PROFESSOR,
+            },
+        )
 
-    def test_authenticated_admin_receives_email_and_role(self):
+    def test_authenticated_admin_receives_identity_and_role(self):
         user = User.objects.create_user(
             email="admin@example.com",
             password="StrongPassword123!",
+            first_name="Admin",
+            last_name="Example",
             role=UserRole.ADMIN,
         )
         self.client.credentials(HTTP_AUTHORIZATION=f"Bearer {AccessToken.for_user(user)}")
@@ -95,7 +117,15 @@ class CurrentUserApiTestCase(TestCase):
         response = self.client.get(reverse("current-user"))
 
         self.assertEqual(response.status_code, status.HTTP_200_OK)
-        self.assertEqual(response.data, {"email": user.email, "role": UserRole.ADMIN})
+        self.assertEqual(
+            response.data,
+            {
+                "email": user.email,
+                "first_name": user.first_name,
+                "last_name": user.last_name,
+                "role": UserRole.ADMIN,
+            },
+        )
 
     def test_unauthenticated_user_is_rejected(self):
         response = self.client.get(reverse("current-user"))
