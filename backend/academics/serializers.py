@@ -18,6 +18,33 @@ class CurriculumSerializer(serializers.ModelSerializer):
         fields = ["code", "name", "degree_level", "duration"]
 
 
+class StudentCurriculumCourseSerializer(serializers.ModelSerializer):
+    code = serializers.CharField(source="course.code")
+    name = serializers.CharField(source="course.name")
+    espb = serializers.IntegerField(source="course.espb")
+    professor_email = serializers.CharField(source="course.professor.user.email")
+
+    class Meta:
+        model = CurriculumCourse
+        fields = [
+            "code",
+            "name",
+            "espb",
+            "professor_email",
+            "semester",
+            "is_mandatory",
+            "school_year",
+        ]
+
+
+class StudentCurriculumSerializer(serializers.ModelSerializer):
+    courses = StudentCurriculumCourseSerializer(source="curriculum_courses", many=True)
+
+    class Meta:
+        model = Curriculum
+        fields = ["code", "name", "degree_level", "duration", "courses"]
+
+
 class CurriculumCourseSerializer(serializers.ModelSerializer):
     curriculum_code = serializers.CharField(source="curriculum.code")
     curriculum_name = serializers.CharField(source="curriculum.name")
