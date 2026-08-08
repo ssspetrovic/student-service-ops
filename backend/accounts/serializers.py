@@ -11,7 +11,7 @@ from .models import ProfessorProfile, StudentProfile, User, UserRole
 class CurrentUserSerializer(serializers.ModelSerializer):
     class Meta:
         model = User
-        fields = ["email", "role"]
+        fields = ["email", "first_name", "last_name", "role"]
 
 
 class StudentProfileSerializer(serializers.ModelSerializer):
