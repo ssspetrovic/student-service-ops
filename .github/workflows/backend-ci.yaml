@@ -4,11 +4,6 @@ on:
   pull_request:
     branches:
       - main
-    paths:
-      - backend/**
-      - mise.toml
-      - mise.lock
-      - .github/workflows/backend-ci.yaml
   push:
     branches:
       - main

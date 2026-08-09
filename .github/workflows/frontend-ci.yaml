@@ -4,11 +4,6 @@ on:
   pull_request:
     branches:
       - main
-    paths:
-      - frontend/**
-      - mise.toml
-      - mise.lock
-      - .github/workflows/frontend-ci.yaml
   push:
     branches:
       - main
