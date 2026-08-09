@@ -111,6 +111,18 @@ class CurrentProfessorCourseApiTestCase(TestCase):
         self.course = Course.objects.create(
             code="MINE01", name="My Course", espb=6, professor=self.professor
         )
+        curriculum = Curriculum.objects.create(
+            code="PROF-BSC",
+            name="Professor Curriculum",
+            degree_level=DegreeLevel.BACHELOR,
+            duration=4,
+        )
+        CurriculumCourse.objects.create(
+            curriculum=curriculum,
+            course=self.course,
+            semester=2,
+            school_year="2026/2027",
+        )
         Course.objects.create(
             code="OTHER01", name="Other Course", espb=5, professor=other_professor
         )
@@ -133,6 +145,7 @@ class CurrentProfessorCourseApiTestCase(TestCase):
                     "espb": self.course.espb,
                     "professor_email": self.professor_user.email,
                     "professor_employee_no": self.professor.employee_no,
+                    "semesters": [2],
                 }
             ],
         )

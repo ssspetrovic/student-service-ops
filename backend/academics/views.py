@@ -11,6 +11,7 @@ from .serializers import (
     CourseSerializer,
     CurriculumSerializer,
     EnrollmentSerializer,
+    ProfessorCourseSerializer,
     StudentCurriculumSerializer,
 )
 
@@ -23,14 +24,17 @@ class CourseListView(ListAPIView):
 
 
 class CurrentProfessorCourseListView(ListAPIView):
-    serializer_class = CourseSerializer
+    serializer_class = ProfessorCourseSerializer
     permission_classes = [IsProfessor]
 
     def get_queryset(self):
         professor = get_object_or_404(ProfessorProfile, user=self.request.user)
-        return Course.objects.select_related("professor__user").filter(
-            professor=professor
-        ).order_by("code")
+        return (
+            Course.objects.select_related("professor__user")
+            .prefetch_related("curriculum_courses")
+            .filter(professor=professor)
+            .order_by("code")
+        )
 
 
 class CurriculumListView(ListAPIView):

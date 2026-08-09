@@ -12,6 +12,16 @@ class CourseSerializer(serializers.ModelSerializer):
         fields = ["code", "name", "espb", "professor_email", "professor_employee_no"]
 
 
+class ProfessorCourseSerializer(CourseSerializer):
+    semesters = serializers.SerializerMethodField()
+
+    class Meta(CourseSerializer.Meta):
+        fields = [*CourseSerializer.Meta.fields, "semesters"]
+
+    def get_semesters(self, course):
+        return sorted({item.semester for item in course.curriculum_courses.all()})
+
+
 class CurriculumSerializer(serializers.ModelSerializer):
     class Meta:
         model = Curriculum
