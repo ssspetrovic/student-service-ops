@@ -37,7 +37,8 @@ jobs:
       }}
     steps:
       - name: Run PR-Agent review
-        uses: docker://pragent/pr-agent:0.35.0-github_action
+        # 0.35.0-github_action
+        uses: docker://pragent/pr-agent@sha256:70e78800a3ee94ee31a25e43d3b8ef25e8e8fda7ccacfd765f911c9f66b6b048
         env:
           OPENAI_KEY: ${{ secrets.OPENAI_KEY }}
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
@@ -58,7 +59,8 @@ jobs:
       }}
     steps:
       - name: Run PR-Agent describe
-        uses: docker://pragent/pr-agent:0.35.0-github_action
+        # 0.35.0-github_action
+        uses: docker://pragent/pr-agent@sha256:70e78800a3ee94ee31a25e43d3b8ef25e8e8fda7ccacfd765f911c9f66b6b048
         env:
           OPENAI_KEY: ${{ secrets.OPENAI_KEY }}
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
@@ -86,7 +88,8 @@ jobs:
       }}
     steps:
       - name: Run PR-Agent command
-        uses: docker://pragent/pr-agent:0.35.0-github_action
+        # 0.35.0-github_action
+        uses: docker://pragent/pr-agent@sha256:70e78800a3ee94ee31a25e43d3b8ef25e8e8fda7ccacfd765f911c9f66b6b048
         env:
           OPENAI_KEY: ${{ secrets.OPENAI_KEY }}
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
