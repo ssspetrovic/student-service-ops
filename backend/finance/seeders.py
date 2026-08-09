@@ -2,7 +2,8 @@ from dataclasses import dataclass
 
 from accounts.models import StudentProfile
 from finance.management.test_data import TEST_WALLETS
-from finance.models import Wallet
+from finance.models import TransactionCause, Wallet
+from finance.services import credit_wallet
 
 
 @dataclass
@@ -16,11 +17,11 @@ def seed_finance(students: list[StudentProfile]) -> FinanceSeedData:
 
     for wallet_data in TEST_WALLETS:
         student = students_by_email[wallet_data["student_email"]]
-        wallet, _ = Wallet.objects.update_or_create(
+        wallet = Wallet.objects.create(student=student)
+        credit_wallet(
             student=student,
-            defaults={
-                "balance": wallet_data["balance"],
-            },
+            amount=wallet_data["deposit"],
+            cause=TransactionCause.DEPOSIT,
         )
         wallets.append(wallet)
 

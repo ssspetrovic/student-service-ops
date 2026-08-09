@@ -8,7 +8,7 @@ from finance.seeders import seed_finance
 
 
 class Command(BaseCommand):
-    help = "Create or update all local test data."
+    help = "Create local demo data. Run it on a fresh local database."
 
     @transaction.atomic
     def handle(self, *args, **options):
@@ -17,11 +17,8 @@ class Command(BaseCommand):
             students=accounts.students,
             professors=accounts.professors,
         )
-        exams = seed_exams(
-            courses=academics.courses,
-            students=accounts.students,
-        )
         finance = seed_finance(students=accounts.students)
+        exams = seed_exams(courses=academics.courses, students=accounts.students)
 
         self.stdout.write(
             self.style.SUCCESS(
@@ -30,6 +27,7 @@ class Command(BaseCommand):
                 f"{len(accounts.professors)} professors, "
                 f"{len(academics.courses)} courses, "
                 f"{len(exams.exams)} exams, "
+                f"{len(exams.registrations)} registrations, "
                 f"{len(finance.wallets)} wallets."
             )
         )

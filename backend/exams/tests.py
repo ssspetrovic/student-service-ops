@@ -98,7 +98,7 @@ class ExamApiTestCase(TestCase):
             ).exists()
         )
 
-    def test_registration_with_insufficient_funds_changes_nothing(self):
+    def test_insufficient_funds(self):
         exam = self.create_exam()
         self.wallet.balance = Decimal("100.00")
         self.wallet.save(update_fields=["balance"])
@@ -112,7 +112,7 @@ class ExamApiTestCase(TestCase):
         self.assertFalse(ExamRegistration.objects.filter(exam=exam).exists())
         self.assertFalse(Transaction.objects.exists())
 
-    def test_student_can_cancel_registration_and_receive_refund(self):
+    def test_cancel_refunds(self):
         registration = self.create_paid_registration()
         self.client.force_authenticate(user=self.student_user)
 
@@ -131,7 +131,7 @@ class ExamApiTestCase(TestCase):
         self.assertEqual(self.wallet.balance, Decimal("500.00"))
         self.assertEqual(refund.amount, Decimal("200.00"))
 
-    def test_student_can_reregister_after_canceling_and_cancel_again(self):
+    def test_reregister_after_cancel(self):
         exam = self.create_exam()
         self.client.force_authenticate(user=self.student_user)
 
@@ -262,7 +262,7 @@ class ExamApiTestCase(TestCase):
 
         self.assertEqual(response.status_code, status.HTTP_400_BAD_REQUEST)
 
-    def test_professor_cannot_grade_another_professors_exam(self):
+    def test_other_professor_cannot_grade(self):
         other_user = User.objects.create_user(
             email="other-professor@example.com",
             password="professor123",
@@ -317,6 +317,52 @@ class ExamApiTestCase(TestCase):
         exam = Exam.objects.get(pk=response.data["id"])
         self.assertEqual(exam.course, self.course)
         self.assertEqual(exam.professor, self.professor)
+
+    def test_professor_exams(self):
+        own_exam = self.create_exam(days_from_now=20)
+        other_user = User.objects.create_user(
+            email="other-professor@example.com",
+            password="professor123",
+            role=UserRole.PROFESSOR,
+        )
+        other_professor = ProfessorProfile.objects.create(
+            user=other_user,
+            employee_no="PROF-002",
+        )
+        other_course = Course.objects.create(
+            code="COURSE-002", name="Other Course", espb=6, professor=other_professor
+        )
+        Exam.objects.create(
+            course=other_course,
+            professor=other_professor,
+            date=timezone.now() + timedelta(days=21),
+        )
+        self.client.force_authenticate(user=self.professor_user)
+
+        response = self.client.get(reverse("current-professor-exams"))
+
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+        self.assertEqual(
+            response.data,
+            [
+                {
+                    "id": own_exam.id,
+                    "date": own_exam.date.isoformat().replace("+00:00", "Z"),
+                    "room": "",
+                    "course_code": self.course.code,
+                    "course_name": self.course.name,
+                    "professor_employee_no": self.professor.employee_no,
+                    "professor_email": self.professor_user.email,
+                }
+            ],
+        )
+
+    def test_student_is_rejected_from_professor_exams(self):
+        self.client.force_authenticate(user=self.student_user)
+
+        response = self.client.get(reverse("current-professor-exams"))
+
+        self.assertEqual(response.status_code, status.HTTP_403_FORBIDDEN)
 
     def test_student_exam_overview(self):
         now = timezone.now()
