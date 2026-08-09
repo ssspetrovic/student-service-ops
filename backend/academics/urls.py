@@ -1,6 +1,11 @@
 from django.urls import path
 
-from .views import CourseListView, CurriculumListView, CurrentStudentEnrollmentListView
+from .views import (
+    CourseListView,
+    CurriculumListView,
+    CurrentStudentCurriculumView,
+    CurrentStudentEnrollmentListView,
+)
 
 urlpatterns = [
     path("courses/", CourseListView.as_view(), name="courses"),
@@ -9,5 +14,10 @@ urlpatterns = [
         "enrollments/",
         CurrentStudentEnrollmentListView.as_view(),
         name="current-student-enrollments",
+    ),
+    path(
+        "my-curriculum/",
+        CurrentStudentCurriculumView.as_view(),
+        name="current-student-curriculum",
     ),
 ]
