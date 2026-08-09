@@ -91,3 +91,55 @@ class CurrentStudentCurriculumApiTestCase(TestCase):
         ):
             self.client.force_authenticate(user=user)
             self.assertEqual(self.client.get(url).status_code, expected_status)
+
+
+class CurrentProfessorCourseApiTestCase(TestCase):
+    def setUp(self):
+        self.client = APIClient()
+        self.professor_user = User.objects.create_user(
+            email="professor@example.com", password="professor123", role=UserRole.PROFESSOR
+        )
+        self.professor = ProfessorProfile.objects.create(
+            user=self.professor_user, employee_no="PROF-001"
+        )
+        other_user = User.objects.create_user(
+            email="other@example.com", password="professor123", role=UserRole.PROFESSOR
+        )
+        other_professor = ProfessorProfile.objects.create(
+            user=other_user, employee_no="PROF-002"
+        )
+        self.course = Course.objects.create(
+            code="MINE01", name="My Course", espb=6, professor=self.professor
+        )
+        Course.objects.create(
+            code="OTHER01", name="Other Course", espb=5, professor=other_professor
+        )
+        self.student_user = User.objects.create_user(
+            email="student@example.com", password="student123", role=UserRole.STUDENT
+        )
+
+    def test_professor_courses(self):
+        self.client.force_authenticate(user=self.professor_user)
+
+        response = self.client.get(reverse("current-professor-courses"))
+
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+        self.assertEqual(
+            response.data,
+            [
+                {
+                    "code": self.course.code,
+                    "name": self.course.name,
+                    "espb": self.course.espb,
+                    "professor_email": self.professor_user.email,
+                    "professor_employee_no": self.professor.employee_no,
+                }
+            ],
+        )
+
+    def test_student_is_rejected(self):
+        self.client.force_authenticate(user=self.student_user)
+
+        response = self.client.get(reverse("current-professor-courses"))
+
+        self.assertEqual(response.status_code, status.HTTP_403_FORBIDDEN)

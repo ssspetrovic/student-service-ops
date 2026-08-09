@@ -1,19 +1,50 @@
 from dataclasses import dataclass
 
+from django.db.models import Q
+
 from accounts.management.test_data import TEST_PROFESSORS, TEST_STUDENTS
 from accounts.models import ProfessorProfile, StudentProfile, User, UserRole
 from academics.management.test_data import (
     CURRICULUM_CODE,
     CURRICULUM_DURATION,
     CURRICULUM_NAME,
+    TEST_COURSES,
 )
 from academics.models import Curriculum, DegreeLevel
+from academics.models import Course, CurriculumCourse, Enrollment
+from exams.models import Exam, ExamRegistration
+from finance.models import Transaction, Wallet
 
 
 @dataclass
 class AccountSeedData:
     students: list[StudentProfile]
     professors: list[ProfessorProfile]
+
+
+def clear_demo() -> None:
+    """Remove only records owned by the local demo users or demo courses."""
+    demo_emails = [student["email"] for student in TEST_STUDENTS] + [
+        professor["email"] for professor in TEST_PROFESSORS
+    ]
+    demo_course_codes = [course["code"] for course in TEST_COURSES]
+    registrations = ExamRegistration.objects.filter(
+        Q(student__user__email__in=demo_emails) | Q(exam__course__code__in=demo_course_codes)
+    )
+    registration_ids = list(registrations.values_list("pk", flat=True))
+
+    Transaction.objects.filter(
+        Q(student__user__email__in=demo_emails) | Q(exam_registration_id__in=registration_ids)
+    ).delete()
+    registrations.delete()
+    Wallet.objects.filter(student__user__email__in=demo_emails).delete()
+    Enrollment.objects.filter(
+        Q(student__user__email__in=demo_emails) | Q(course__code__in=demo_course_codes)
+    ).delete()
+    Exam.objects.filter(course__code__in=demo_course_codes).delete()
+    CurriculumCourse.objects.filter(course__code__in=demo_course_codes).delete()
+    Course.objects.filter(code__in=demo_course_codes).delete()
+    User.objects.filter(email__in=demo_emails).delete()
 
 
 def seed_accounts() -> AccountSeedData:

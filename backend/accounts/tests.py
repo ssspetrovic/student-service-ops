@@ -28,7 +28,7 @@ class UserCreationTestCase(TestCase):
 
 
 class ManagedUserAdminTestCase(TestCase):
-    def test_admin_form_creates_professor_without_offering_admin_role(self):
+    def test_admin_creates_professor(self):
         self.assertNotIn(
             UserRole.ADMIN,
             dict(ManagedUserCreationForm.base_fields["role"].choices),
@@ -58,7 +58,7 @@ class CurrentUserApiTestCase(TestCase):
     def setUp(self):
         self.client = APIClient()
 
-    def test_authenticated_student_receives_identity_and_role(self):
+    def test_student_identity(self):
         user = User.objects.create_user(
             email="student@example.com",
             password="StrongPassword123!",
@@ -81,7 +81,7 @@ class CurrentUserApiTestCase(TestCase):
             },
         )
 
-    def test_authenticated_professor_receives_identity_and_role(self):
+    def test_professor_identity(self):
         user = User.objects.create_user(
             email="professor@example.com",
             password="StrongPassword123!",
@@ -104,7 +104,7 @@ class CurrentUserApiTestCase(TestCase):
             },
         )
 
-    def test_authenticated_admin_receives_identity_and_role(self):
+    def test_admin_identity(self):
         user = User.objects.create_user(
             email="admin@example.com",
             password="StrongPassword123!",
@@ -152,7 +152,7 @@ class StudentRegistrationApiTestCase(TestCase):
             "curriculum_code": self.curriculum.code,
         }
 
-    def test_public_registration_creates_complete_student_account(self):
+    def test_student_registration(self):
         payload = {
             **self.payload,
             "role": UserRole.ADMIN,

@@ -28,7 +28,7 @@ class StudentFinanceApiTestCase(TestCase):
         )
         Wallet.objects.create(student=self.student)
 
-    def test_student_sees_only_own_transactions_newest_first(self):
+    def test_own_transactions(self):
         other_user = User.objects.create_user(
             email="other-finance-student@example.com",
             password="student123",
@@ -63,7 +63,7 @@ class StudentFinanceApiTestCase(TestCase):
         self.assertEqual(response.status_code, status.HTTP_200_OK)
         self.assertEqual([item["id"] for item in response.data], [newer.pk, older.pk])
 
-    def test_valid_deposit_creates_transaction_and_updates_balance(self):
+    def test_deposit_updates_wallet(self):
         self.client.force_authenticate(user=self.student_user)
 
         response = self.client.post(
