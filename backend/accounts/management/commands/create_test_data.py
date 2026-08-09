@@ -2,17 +2,16 @@ from django.core.management.base import BaseCommand
 from django.db import transaction
 
 from academics.seeders import seed_academics
-from accounts.seeders import clear_demo, seed_accounts
+from accounts.seeders import seed_accounts
 from exams.seeders import seed_exams
 from finance.seeders import seed_finance
 
 
 class Command(BaseCommand):
-    help = "Refresh all local demo data, discarding manual activity for demo accounts."
+    help = "Create local demo data. Run it on a fresh local database."
 
     @transaction.atomic
     def handle(self, *args, **options):
-        clear_demo()
         accounts = seed_accounts()
         academics = seed_academics(
             students=accounts.students,
