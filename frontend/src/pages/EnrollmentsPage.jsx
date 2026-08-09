@@ -40,17 +40,17 @@ function EnrollmentsPage() {
           <table className="table table-striped align-middle">
             <thead>
               <tr>
-                <th>Course</th>
+                <th className="ps-3">Course</th>
                 <th>ESPB</th>
                 <th>Semester</th>
                 <th>School year</th>
-                <th>Status</th>
+                <th className="pe-3">Status</th>
               </tr>
             </thead>
             <tbody>
               {enrollments.map((enrollment) => (
                 <tr key={`${enrollment.course_code}-${enrollment.school_year}`}>
-                  <td>
+                  <td className="ps-3">
                     <strong>{enrollment.course_code}</strong>
                     <br />
                     <span className="text-body-secondary">
@@ -60,7 +60,7 @@ function EnrollmentsPage() {
                   <td>{enrollment.course_espb}</td>
                   <td>{enrollment.semester}</td>
                   <td>{enrollment.school_year}</td>
-                  <td className="text-capitalize">{enrollment.status}</td>
+                  <td className="pe-3 text-capitalize">{enrollment.status}</td>
                 </tr>
               ))}
             </tbody>
