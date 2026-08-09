@@ -11,12 +11,29 @@ const studentLinks = [
   ["/wallet", "Wallet"],
 ];
 
+const professorLinks = [
+  ["/professor/exams", "My exams"],
+  ["/professor/exams/new", "Schedule exam"],
+];
+
+const linksByRole = {
+  student: studentLinks,
+  professor: professorLinks,
+};
+
+const profilePathByRole = {
+  student: "/profile",
+  professor: "/professor/profile",
+};
+
 function AppNavbar() {
   const { user, logout } = useAuth();
   const navigate = useNavigate();
   const [isOpen, setIsOpen] = useState(false);
   const [isAccountMenuOpen, setIsAccountMenuOpen] = useState(false);
   const accountMenuRef = useRef(null);
+  const links = linksByRole[user?.role] ?? [];
+  const profilePath = profilePathByRole[user?.role];
 
   useEffect(() => {
     const closeAccountMenu = (event) => {
@@ -54,10 +71,7 @@ function AppNavbar() {
   return (
     <nav className="navbar navbar-expand-lg navbar-dark bg-primary shadow-sm sticky-top">
       <div className="container-fluid px-4">
-        <Link
-          className="navbar-brand"
-          to={user?.role === "student" ? "/profile" : "/"}
-        >
+        <Link className="navbar-brand" to={profilePath ?? "/"}>
           Student Service
         </Link>
         <button
@@ -79,19 +93,18 @@ function AppNavbar() {
         >
           {user ? (
             <div className="navbar-nav ms-lg-3 me-auto">
-              {user.role === "student" &&
-                studentLinks.map(([to, label]) => (
-                  <NavLink
-                    className={({ isActive }) =>
-                      `nav-link${isActive ? " active" : ""}`
-                    }
-                    key={to}
-                    onClick={closeMenus}
-                    to={to}
-                  >
-                    {label}
-                  </NavLink>
-                ))}
+              {links.map(([to, label]) => (
+                <NavLink
+                  className={({ isActive }) =>
+                    `nav-link${isActive ? " active" : ""}`
+                  }
+                  key={to}
+                  onClick={closeMenus}
+                  to={to}
+                >
+                  {label}
+                </NavLink>
+              ))}
             </div>
           ) : (
             <div className="navbar-nav ms-lg-auto">
@@ -114,11 +127,11 @@ function AppNavbar() {
               <div
                 className={`dropdown-menu dropdown-menu-end${isAccountMenuOpen ? " show" : ""}`}
               >
-                {user.role === "student" && (
+                {profilePath && (
                   <NavLink
                     className="dropdown-item"
                     onClick={closeMenus}
-                    to="/profile"
+                    to={profilePath}
                   >
                     Profile
                   </NavLink>

@@ -9,6 +9,10 @@ import LoginPage from "./pages/LoginPage";
 import NotFoundPage from "./pages/NotFoundPage";
 import RegistrationsPage from "./pages/RegistrationsPage";
 import ResultsPage from "./pages/ResultsPage";
+import ProfessorExamCreatePage from "./pages/ProfessorExamCreatePage";
+import ProfessorExamListPage from "./pages/ProfessorExamListPage";
+import ProfessorExamRegistrationsPage from "./pages/ProfessorExamRegistrationsPage";
+import ProfessorProfilePage from "./pages/ProfessorProfilePage";
 import StudentProfilePage from "./pages/StudentProfilePage";
 import WalletPage from "./pages/WalletPage";
 
@@ -20,6 +24,42 @@ function App() {
         <Route path="/" element={<HomePage />} />
         <Route path="/login" element={<LoginPage />} />
         <Route path="/student" element={<Navigate to="/profile" replace />} />
+        <Route
+          path="/professor"
+          element={<Navigate to="/professor/profile" replace />}
+        />
+        <Route
+          path="/professor/profile"
+          element={
+            <ProtectedRoute allowedRoles={["professor"]}>
+              <ProfessorProfilePage />
+            </ProtectedRoute>
+          }
+        />
+        <Route
+          path="/professor/exams"
+          element={
+            <ProtectedRoute allowedRoles={["professor"]}>
+              <ProfessorExamListPage />
+            </ProtectedRoute>
+          }
+        />
+        <Route
+          path="/professor/exams/new"
+          element={
+            <ProtectedRoute allowedRoles={["professor"]}>
+              <ProfessorExamCreatePage />
+            </ProtectedRoute>
+          }
+        />
+        <Route
+          path="/professor/exams/:examId/registrations"
+          element={
+            <ProtectedRoute allowedRoles={["professor"]}>
+              <ProfessorExamRegistrationsPage />
+            </ProtectedRoute>
+          }
+        />
         <Route
           path="/profile"
           element={
