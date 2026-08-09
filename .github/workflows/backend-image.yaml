@@ -97,9 +97,12 @@ jobs:
 
   promote-backend:
     name: Promote backend image
-    if: github.event_name == 'push'
     needs:
       - backend-image
+    if: >-
+      always() &&
+      github.event_name == 'push' &&
+      needs.backend-image.result == 'success'
     runs-on: student-service-runner
     timeout-minutes: 10
     steps:
