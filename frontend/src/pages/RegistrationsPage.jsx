@@ -7,10 +7,7 @@ import {
   LoadingState,
   SuccessNotification,
 } from "../components/PageStates";
-
-function formatDate(date) {
-  return new Date(date).toLocaleString();
-}
+import { formatDate } from "../utils/date";
 
 function RegistrationsPage() {
   const [registrations, setRegistrations] = useState(null);
