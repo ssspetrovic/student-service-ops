@@ -28,10 +28,12 @@ function CurriculumPage() {
     };
   }, []);
 
-  const courses = curriculum?.courses.filter(
-    (course) =>
-      selectedSemester === "all" || course.semester === Number(selectedSemester),
-  );
+  const courses =
+    curriculum?.courses?.filter(
+      (course) =>
+        selectedSemester === "all" ||
+        course.semester === Number(selectedSemester),
+    ) ?? [];
   const semesters = curriculum
     ? Array.from({ length: curriculum.duration * 2 }, (_, index) => index + 1)
     : [];

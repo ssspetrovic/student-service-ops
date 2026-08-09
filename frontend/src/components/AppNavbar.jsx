@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { Link, NavLink, useNavigate } from "react-router-dom";
 import useAuth from "../auth/useAuth";
 
@@ -16,6 +16,29 @@ function AppNavbar() {
   const navigate = useNavigate();
   const [isOpen, setIsOpen] = useState(false);
   const [isAccountMenuOpen, setIsAccountMenuOpen] = useState(false);
+  const accountMenuRef = useRef(null);
+
+  useEffect(() => {
+    const closeAccountMenu = (event) => {
+      if (!accountMenuRef.current?.contains(event.target)) {
+        setIsAccountMenuOpen(false);
+      }
+    };
+
+    const closeOnEscape = (event) => {
+      if (event.key === "Escape") {
+        setIsAccountMenuOpen(false);
+      }
+    };
+
+    document.addEventListener("mousedown", closeAccountMenu);
+    document.addEventListener("keydown", closeOnEscape);
+
+    return () => {
+      document.removeEventListener("mousedown", closeAccountMenu);
+      document.removeEventListener("keydown", closeOnEscape);
+    };
+  }, []);
 
   const closeMenus = () => {
     setIsOpen(false);
@@ -42,7 +65,10 @@ function AppNavbar() {
           aria-expanded={isOpen}
           aria-label="Toggle navigation"
           className="navbar-toggler"
-          onClick={() => setIsOpen((open) => !open)}
+          onClick={() => {
+            setIsOpen((open) => !open);
+            setIsAccountMenuOpen(false);
+          }}
           type="button"
         >
           <span className="navbar-toggler-icon" />
@@ -75,9 +101,10 @@ function AppNavbar() {
             </div>
           )}
           {user && (
-            <div className="dropdown ms-lg-auto">
+            <div className="dropdown ms-lg-auto" ref={accountMenuRef}>
               <button
                 aria-expanded={isAccountMenuOpen}
+                aria-haspopup="true"
                 className="btn btn-link nav-link dropdown-toggle text-white"
                 onClick={() => setIsAccountMenuOpen((open) => !open)}
                 type="button"
