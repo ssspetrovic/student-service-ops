@@ -5,6 +5,7 @@ from .views import (
     CancellableExamRegistrationListView,
     CurrentStudentExamRegistrationListView,
     CurrentStudentExamResultView,
+    CurrentProfessorExamListView,
     ExamListView,
     ExamRegistrationCancelView,
     ExamRegistrationGradeView,
@@ -14,6 +15,7 @@ from .views import (
 
 urlpatterns = [
     path("", ExamListView.as_view(), name="exams"),
+    path("mine/", CurrentProfessorExamListView.as_view(), name="current-professor-exams"),
     path("available/", AvailableExamListView.as_view(), name="available-exams"),
     path("results/", CurrentStudentExamResultView.as_view(), name="current-student-results"),
     path(

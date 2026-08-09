@@ -3,7 +3,8 @@ from django.shortcuts import get_object_or_404
 from rest_framework.generics import ListAPIView, RetrieveAPIView
 from rest_framework.permissions import IsAuthenticated
 
-from accounts.permissions import IsStudent
+from accounts.models import ProfessorProfile
+from accounts.permissions import IsProfessor, IsStudent
 
 from .models import Course, Curriculum, CurriculumCourse, Enrollment
 from .serializers import (
@@ -19,6 +20,17 @@ class CourseListView(ListAPIView):
     queryset = Course.objects.select_related("professor__user").order_by("code")
     serializer_class = CourseSerializer
     permission_classes = [IsAuthenticated]
+
+
+class CurrentProfessorCourseListView(ListAPIView):
+    serializer_class = CourseSerializer
+    permission_classes = [IsProfessor]
+
+    def get_queryset(self):
+        professor = get_object_or_404(ProfessorProfile, user=self.request.user)
+        return Course.objects.select_related("professor__user").filter(
+            professor=professor
+        ).order_by("code")
 
 
 class CurriculumListView(ListAPIView):
