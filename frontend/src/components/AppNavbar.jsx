@@ -1,42 +1,110 @@
-import { Link, useNavigate } from "react-router-dom";
+import { useState } from "react";
+import { Link, NavLink, useNavigate } from "react-router-dom";
 import useAuth from "../auth/useAuth";
+
+const studentLinks = [
+  ["/exams/available", "Available exams"],
+  ["/curriculum", "Curriculum"],
+  ["/enrollments", "Enrollments"],
+  ["/registrations", "Registrations"],
+  ["/results", "Results"],
+  ["/wallet", "Wallet"],
+];
 
 function AppNavbar() {
   const { user, logout } = useAuth();
   const navigate = useNavigate();
+  const [isOpen, setIsOpen] = useState(false);
+  const [isAccountMenuOpen, setIsAccountMenuOpen] = useState(false);
+
+  const closeMenus = () => {
+    setIsOpen(false);
+    setIsAccountMenuOpen(false);
+  };
 
   const handleLogout = () => {
     logout();
+    closeMenus();
     navigate("/login");
   };
 
   return (
-    <nav className="navbar navbar-dark bg-dark">
+    <nav className="navbar navbar-expand-lg navbar-dark bg-primary shadow-sm sticky-top">
       <div className="container-fluid px-4">
-        <Link className="navbar-brand" to="/">
+        <Link
+          className="navbar-brand"
+          to={user?.role === "student" ? "/profile" : "/"}
+        >
           Student Service
         </Link>
-        <div className="d-flex align-items-center gap-3">
-          {user?.role === "student" && (
-            <Link className="link-light" to="/exams/available">
-              Available exams
-            </Link>
-          )}
+        <button
+          aria-controls="main-navigation"
+          aria-expanded={isOpen}
+          aria-label="Toggle navigation"
+          className="navbar-toggler"
+          onClick={() => setIsOpen((open) => !open)}
+          type="button"
+        >
+          <span className="navbar-toggler-icon" />
+        </button>
+        <div
+          className={`collapse navbar-collapse${isOpen ? " show" : ""}`}
+          id="main-navigation"
+        >
           {user ? (
-            <>
-              <span className="text-white-50 small">{user.email}</span>
-              <button
-                className="btn btn-primary btn-sm"
-                type="button"
-                onClick={handleLogout}
-              >
-                Log out
-              </button>
-            </>
+            <div className="navbar-nav ms-lg-3 me-auto">
+              {user.role === "student" &&
+                studentLinks.map(([to, label]) => (
+                  <NavLink
+                    className={({ isActive }) =>
+                      `nav-link${isActive ? " active" : ""}`
+                    }
+                    key={to}
+                    onClick={closeMenus}
+                    to={to}
+                  >
+                    {label}
+                  </NavLink>
+                ))}
+            </div>
           ) : (
-            <Link className="btn btn-primary btn-sm" to="/login">
-              Log in
-            </Link>
+            <div className="navbar-nav ms-lg-auto">
+              <Link className="nav-link" onClick={closeMenus} to="/login">
+                Log in
+              </Link>
+            </div>
+          )}
+          {user && (
+            <div className="dropdown ms-lg-auto">
+              <button
+                aria-expanded={isAccountMenuOpen}
+                className="btn btn-link nav-link dropdown-toggle text-white"
+                onClick={() => setIsAccountMenuOpen((open) => !open)}
+                type="button"
+              >
+                {user.email}
+              </button>
+              <div
+                className={`dropdown-menu dropdown-menu-end${isAccountMenuOpen ? " show" : ""}`}
+              >
+                {user.role === "student" && (
+                  <NavLink
+                    className="dropdown-item"
+                    onClick={closeMenus}
+                    to="/profile"
+                  >
+                    Profile
+                  </NavLink>
+                )}
+                <button
+                  className="dropdown-item"
+                  onClick={handleLogout}
+                  type="button"
+                >
+                  Log out
+                </button>
+              </div>
+            </div>
           )}
         </div>
       </div>

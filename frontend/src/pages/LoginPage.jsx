@@ -1,5 +1,6 @@
 import { useState } from "react";
 import { Navigate, useLocation, useNavigate } from "react-router-dom";
+import { getErrorMessage } from "../api/errorMessage";
 import useAuth from "../auth/useAuth";
 
 function LoginPage() {
@@ -24,7 +25,7 @@ function LoginPage() {
       await login(email, password);
       navigate(location.state?.from?.pathname || "/", { replace: true });
     } catch (requestError) {
-      setError(requestError.response?.data?.detail || "Unable to sign in.");
+      setError(getErrorMessage(requestError, "Unable to log in."));
     } finally {
       setIsSubmitting(false);
     }
@@ -39,7 +40,7 @@ function LoginPage() {
               <p className="text-primary text-uppercase fw-semibold small">
                 Student Service
               </p>
-              <h1 className="h2 mb-4">Sign in</h1>
+              <h1 className="h2 mb-4">Log in</h1>
 
               <form onSubmit={handleSubmit}>
                 <div className="mb-3">
@@ -83,7 +84,7 @@ function LoginPage() {
                   type="submit"
                   disabled={isSubmitting}
                 >
-                  {isSubmitting ? "Signing in…" : "Sign in"}
+                  {isSubmitting ? "Logging in…" : "Log in"}
                 </button>
               </form>
             </div>

@@ -1,5 +1,7 @@
 import { useEffect, useState } from "react";
 import api from "../api/client";
+import { getErrorMessage } from "../api/errorMessage";
+import { ErrorState, LoadingState } from "../components/PageStates";
 
 function formatExamDate(date) {
   return new Date(date).toLocaleString();
@@ -22,10 +24,7 @@ function AvailableExamsPage() {
         }
       } catch (requestError) {
         if (isCurrent) {
-          setError(
-            requestError.response?.data?.detail ||
-              "Unable to load available exams.",
-          );
+          setError(getErrorMessage(requestError, "Unable to load available exams."));
         }
       } finally {
         if (isCurrent) {
@@ -46,17 +45,11 @@ function AvailableExamsPage() {
       <h1 className="h2 mb-4">Available exams</h1>
 
       {isLoading && (
-        <div className="d-flex justify-content-center py-5">
-          <div className="spinner-border text-primary" role="status">
-            <span className="visually-hidden">Loading available exams</span>
-          </div>
-        </div>
+        <LoadingState label="available exams" />
       )}
 
       {error && (
-        <p className="alert alert-danger" role="alert">
-          {error}
-        </p>
+        <ErrorState message={error} />
       )}
 
       {!isLoading && !error && exams.length === 0 && (
