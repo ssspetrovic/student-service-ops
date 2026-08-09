@@ -1,4 +1,5 @@
 import { useEffect, useState } from "react";
+import { Link } from "react-router-dom";
 import api from "../api/client";
 import { getErrorMessage } from "../api/errorMessage";
 import {
@@ -243,7 +244,8 @@ function AvailableExamsPage() {
                   walletBalance !== null &&
                   !canAffordRegistration && (
                     <p className="alert alert-warning mb-0 mt-3" role="alert">
-                      Your current balance does not cover this registration fee.
+                      Your current balance does not cover this registration fee. {" "}
+                      <Link to="/wallet">Add funds</Link> in your wallet.
                     </p>
                   )}
                 {registrationError && (
