@@ -23,3 +23,22 @@ export function EmptyState({ children }) {
     </p>
   );
 }
+
+export function SuccessNotification({ message, onDismiss }) {
+  if (!message) return null;
+
+  return (
+    <div
+      className="alert alert-success alert-dismissible bottom-0 end-0 m-4 position-fixed z-3"
+      role="status"
+    >
+      {message}
+      <button
+        aria-label="Close"
+        className="btn-close small"
+        onClick={onDismiss}
+        type="button"
+      />
+    </div>
+  );
+}

@@ -51,15 +51,15 @@ function ResultsPage() {
               <table className="table table-striped align-middle">
                 <thead>
                   <tr>
-                    <th>Course</th>
+                    <th className="ps-3">Course</th>
                     <th>Exam date</th>
-                    <th>Grade</th>
+                    <th className="pe-3">Grade</th>
                   </tr>
                 </thead>
                 <tbody>
                   {resultData.results.map((result) => (
                     <tr key={result.id}>
-                      <td>
+                      <td className="ps-3">
                         <strong>{result.exam_course_code}</strong>
                         <br />
                         <span className="text-body-secondary">
@@ -67,7 +67,7 @@ function ResultsPage() {
                         </span>
                       </td>
                       <td>{formatDate(result.exam_date)}</td>
-                      <td>{result.grade}</td>
+                      <td className="pe-3">{result.grade}</td>
                     </tr>
                   ))}
                 </tbody>
