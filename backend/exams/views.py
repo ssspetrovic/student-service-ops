@@ -79,6 +79,17 @@ class ExamListView(ListAPIView):
         return Response(ExamSerializer(exam).data, status=status.HTTP_201_CREATED)
 
 
+class CurrentProfessorExamListView(ListAPIView):
+    serializer_class = ExamSerializer
+    permission_classes = [IsProfessor]
+
+    def get_queryset(self):
+        professor = get_object_or_404(ProfessorProfile, user=self.request.user)
+        return Exam.objects.select_related("course", "professor__user").filter(
+            professor=professor
+        ).order_by("date", "course__code")
+
+
 class CurrentStudentExamRegistrationListView(ListAPIView):
     serializer_class = ExamRegistrationSerializer
     permission_classes = [IsStudent]
