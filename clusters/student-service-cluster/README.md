@@ -1,6 +1,8 @@
 # Flux Bootstrap
 
-Flux watches `clusters/student-service-cluster` and applies merged Git changes.
+Flux watches `clusters/student-service-cluster` and applies merged git changes.
+
+Before bootstrapping flux, complete the Cilium bootstrap mentioned in [README.md](../../infra/controllers/cilium/README.md).
 
 ## Bootstrap
 
@@ -11,7 +13,7 @@ flux bootstrap github --token-auth=true --owner=ssspetrovic \
   --path=clusters/student-service-cluster --personal
 ```
 
-Create the Flux SOPS key after bootstrap:
+Create the flux SOPS key after bootstrap:
 
 ```bash
 kubectl -n flux-system create secret generic sops-age --from-file=age.agekey="$SOPS_AGE_KEY_FILE"
@@ -22,4 +24,15 @@ kubectl -n flux-system create secret generic sops-age --from-file=age.agekey="$S
 ```bash
 flux check
 flux get all -A
+```
+
+## Reconcile changes
+
+Merge manifest changes to `main`. After thatm flux deploys shared infrastructure from `infra/`
+before the actual workloads from `apps/student-service/`.
+
+To apply a merged change now:
+
+```bash
+flux reconcile kustomization flux-system -n flux-system --with-source
 ```
