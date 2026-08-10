@@ -148,7 +148,6 @@ class StudentRegistrationApiTestCase(TestCase):
             "first_name": "New",
             "last_name": "Student",
             "index_no": "REG-001",
-            "current_year_of_study": 1,
             "curriculum_code": self.curriculum.code,
         }
 
@@ -158,6 +157,7 @@ class StudentRegistrationApiTestCase(TestCase):
             "role": UserRole.ADMIN,
             "is_staff": True,
             "balance": "999.00",
+            "current_year_of_study": 8,
         }
         response = self.client.post(reverse("student-registration"), payload, format="json")
 
@@ -168,6 +168,7 @@ class StudentRegistrationApiTestCase(TestCase):
         self.assertEqual(user.role, UserRole.STUDENT)
         self.assertFalse(user.is_staff)
         self.assertEqual(user.student_profile.wallet.balance, 0)
+        self.assertEqual(user.student_profile.current_year_of_study, 1)
         self.client.force_authenticate(user=user)
 
         profile_response = self.client.get(reverse("student-profile"))
