@@ -14,6 +14,7 @@ import ProfessorExamListPage from "./pages/ProfessorExamListPage";
 import ProfessorExamRegistrationsPage from "./pages/ProfessorExamRegistrationsPage";
 import ProfessorProfilePage from "./pages/ProfessorProfilePage";
 import StudentProfilePage from "./pages/StudentProfilePage";
+import StudentRegistrationPage from "./pages/StudentRegistrationPage";
 import WalletPage from "./pages/WalletPage";
 
 function App() {
@@ -23,6 +24,7 @@ function App() {
       <Routes>
         <Route path="/" element={<HomePage />} />
         <Route path="/login" element={<LoginPage />} />
+        <Route path="/register" element={<StudentRegistrationPage />} />
         <Route path="/student" element={<Navigate to="/profile" replace />} />
         <Route
           path="/professor"

@@ -2,7 +2,7 @@ from django.contrib.auth.password_validation import validate_password
 from django.db import transaction
 from rest_framework import serializers
 
-from academics.models import Curriculum
+from academics.models import Curriculum, Enrollment
 from finance.models import Wallet
 
 from .models import ProfessorProfile, StudentProfile, User, UserRole
@@ -53,7 +53,6 @@ class StudentRegistrationSerializer(serializers.Serializer):
     first_name = serializers.CharField(max_length=150, allow_blank=False)
     last_name = serializers.CharField(max_length=150, allow_blank=False)
     index_no = serializers.CharField(max_length=30)
-    current_year_of_study = serializers.IntegerField(min_value=1, max_value=8)
     curriculum_code = serializers.SlugRelatedField(
         slug_field="code",
         queryset=Curriculum.objects.all(),
@@ -93,8 +92,24 @@ class StudentRegistrationSerializer(serializers.Serializer):
         profile = StudentProfile.objects.create(
             user=user,
             index_no=validated_data["index_no"],
-            current_year_of_study=validated_data["current_year_of_study"],
+            current_year_of_study=1,
             curriculum=curriculum,
         )
+        first_semester_courses = curriculum.curriculum_courses.filter(
+            semester=1,
+            is_mandatory=True,
+        ).order_by("-school_year")
+        latest_course = first_semester_courses.first()
+
+        if latest_course:
+            for curriculum_course in first_semester_courses.filter(
+                school_year=latest_course.school_year
+            ):
+                Enrollment.objects.create(
+                    student=profile,
+                    course=curriculum_course.course,
+                    school_year=curriculum_course.school_year,
+                    semester=curriculum_course.semester,
+                )
         Wallet.objects.create(student=profile)
         return profile

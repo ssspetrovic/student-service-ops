@@ -1,7 +1,7 @@
 from django.db.models import Prefetch
 from django.shortcuts import get_object_or_404
 from rest_framework.generics import ListAPIView, RetrieveAPIView
-from rest_framework.permissions import IsAuthenticated
+from rest_framework.permissions import AllowAny, IsAuthenticated
 
 from accounts.models import ProfessorProfile
 from accounts.permissions import IsProfessor, IsStudent
@@ -40,7 +40,7 @@ class CurrentProfessorCourseListView(ListAPIView):
 class CurriculumListView(ListAPIView):
     queryset = Curriculum.objects.order_by("code")
     serializer_class = CurriculumSerializer
-    permission_classes = [IsAuthenticated]
+    permission_classes = [AllowAny]
 
 
 class CurrentStudentEnrollmentListView(ListAPIView):

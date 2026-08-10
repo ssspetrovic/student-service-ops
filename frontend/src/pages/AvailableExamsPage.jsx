@@ -244,8 +244,8 @@ function AvailableExamsPage() {
                   walletBalance !== null &&
                   !canAffordRegistration && (
                     <p className="alert alert-warning mb-0 mt-3" role="alert">
-                      Your current balance does not cover this registration fee. {" "}
-                      <Link to="/wallet">Add funds</Link> in your wallet.
+                      Insufficient funds. You can{" "}
+                      <Link to="/wallet">add funds</Link> in your wallet.
                     </p>
                   )}
                 {registrationError && (

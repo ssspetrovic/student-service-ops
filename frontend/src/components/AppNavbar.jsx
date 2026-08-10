@@ -111,6 +111,9 @@ function AppNavbar() {
               <Link className="nav-link" onClick={closeMenus} to="/login">
                 Log in
               </Link>
+              <Link className="nav-link" onClick={closeMenus} to="/register">
+                Register
+              </Link>
             </div>
           )}
           {user && (

@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { Navigate, useLocation, useNavigate } from "react-router-dom";
+import { Link, Navigate, useLocation, useNavigate } from "react-router-dom";
 import { getErrorMessage } from "../api/errorMessage";
 import useAuth from "../auth/useAuth";
 
@@ -86,6 +86,9 @@ function LoginPage() {
                 >
                   {isSubmitting ? "Logging in…" : "Log in"}
                 </button>
+                <p className="mb-0 mt-3 text-center">
+                  Need an account? <Link to="/register">Register</Link>
+                </p>
               </form>
             </div>
           </div>
