@@ -1,187 +1,59 @@
 # student-service-ops
 
-GitOps and infrastructure repository for the student-service platform.
+This repository manages Student Service infrastucture and Kubernetes depoyments. Flux applies changes merged to `main`.
 
-Current state:
+The cluster has one Talos control-plane node and two workers. Services are avaliable from the home LAN or VPN.
 
-- Talos cluster bootstrapped with `1` control plane and `2` workers
-- Talos configuration lives under [talos](talos/README.md)
-- Flux is bootstrapped from `clusters/student-service-cluster`
-- Cilium is deployed as the current CNI
-- cert-manager is deployed as the current certificate controller
-- Local Path Provisioner is deployed as the current storage backend
-- Actions Runner Controller manifests are present for repository-scoped GitHub Actions runners
-- The GitHub runner scale set is configured for Docker-in-Docker
-- GitHub workflow smoke tests exist for runner scheduling and Harbor image push/pull
-- Backend image CI builds pull requests and publishes commit-SHA and `latest`
-  tags to Harbor after changes reach `main`
-- GitHub CodeQL default setup is enabled in repository security settings; no CodeQL workflow is committed
-- PR-Agent is configured as a self-hosted PR review workflow on the repository runner
-- The Django backend lives under [backend](backend/README.md)
-- CNPG/PostgreSQL, database migrations, and the internal backend are deployed
-  through `apps/student-service/`.
-- Networking design for Cilium L2 and Cilium Gateway API is documented under
-  [infra/networking](infra/networking/README.md)
-- Storage design for Local Path Provisioner is documented under
-  [infra/storage](infra/storage/README.md)
-- Cilium L2 and Gateway API manifests live under `infra/networking/` and target a shared private ingress IP on `192.168.1.240`
-- Gateway API CRDs are sourced from the official
-  `kubernetes-sigs/gateway-api` repository and reconciled before Cilium Gateway
-  API is enabled
-- `local-path` is the current default `StorageClass`
+## Main areass
 
-Current nodes:
+- `talos/`: Talos cluster setup.
+- `clusters/`: Flux bootstrap and entrypoints.
+- `infra/`: shared cluser services.
+- `apps/student-service/`: deployed aplication workloads.
+- `backend/` and `frontend/`: application source.
 
-| Node   | Role          | IP             |
-| ------ | ------------- | -------------- |
-| `cp01` | control plane | `192.168.1.50` |
-| `wn01` | worker        | `192.168.1.51` |
-| `wn02` | worker        | `192.168.1.52` |
+## Prerequisits
 
-## Repository Scope
-
-- `talos/` contains the Talos cluster definition and bootstrap workflow
-- `clusters/` contains Flux bootstrap output and cluster entrypoints
-- `infra/` holds shared cluster infrastructure managed by Flux
-- `backend/` contains the current Django backend application
-- `frontend/` is reserved for the future React frontend
-- `apps/student-service/` contains the database, migration, and backend
-  manifests, with frontend deployment manifests still to come
-- `infra/controllers/` groups shared cluster controllers such as Cilium and Actions Runner Controller
-- `infra/ci/` groups CI runner infrastructure managed by Flux
-- `infra/networking/` groups cluster networking components such as Cilium,
-  Cilium L2, and Gateway API
-- `infra/storage/` groups shared storage sources and notes
-
-## Active Plan Notes
-
-Detailed progress and setup history live in ignored operator notes under `.codex/notes/`.
-
-## Secrets
-
-This repo uses `SOPS` with `age`.
-
-- Encryption rules are defined in [`.sops.yaml`](.sops.yaml)
-- Encrypted files should use the `.sops.yaml` suffix
-- Plaintext secret material must not be committed
-- Generated Talos render output must not be committed
-- `SOPS_AGE_KEY_FILE` should point to your local `age` private key before working with encrypted files
-
-Current encrypted Talos cluster secrets file:
-
-- [talos/talsecret.sops.yaml](talos/talsecret.sops.yaml)
-
-Current encrypted platform secrets:
-
-- [infra/ci/actions-runner-scale-set/github-auth.sops.yaml](infra/ci/actions-runner-scale-set/github-auth.sops.yaml)
-
-Basic local workflow:
-
-```bash
-export SOPS_AGE_KEY_FILE=/path/to/age.key
-```
-
-Create or regenerate the Talos secrets file:
-
-```bash
-talhelper gensecret > talos/talsecret.sops.yaml
-sops -e -i talos/talsecret.sops.yaml
-```
-
-Edit an existing encrypted secret file:
-
-```bash
-sops talos/talsecret.sops.yaml
-```
-
-`sops <file>` opens the encrypted file for editing and writes it back encrypted on save.
-
-## Talos
-
-Talos-specific bootstrap and operator steps are documented in
-[talos/README.md](talos/README.md).
-
-## GitHub Actions Runners
-
-GitHub runner deployment details are documented in
-[infra/ci/actions-runner-scale-set/README.md](infra/ci/actions-runner-scale-set/README.md).
-
-## PR Review Bot
-
-PR-Agent is configured by
-[.github/workflows/pr-agent.yml](.github/workflows/pr-agent.yml) and
-[.pr_agent.toml](.pr_agent.toml).
-It runs on `student-service-runner` and uses `gpt-5.1`. The workflow expects a GitHub Actions repository secret named
-`OPENAI_KEY`.
-Automatic review runs on PR open/reopen/ready-for-review and follow-up commits.
-Automatic description runs only on initial PR lifecycle events to avoid repeatedly rewriting PR bodies.
-Slash commands are gated to repository collaborators.
-
-## Application Workloads
-
-The repo is using a monorepo layout:
-
-- `backend/` for the Django backend
-- `frontend/` for the React frontend
-- `apps/student-service/` for Kubernetes workloads and application config
-
-## Harbor
-
-Harbor deployment details are documented in
-[infra/registry/harbor/README.md](infra/registry/harbor/README.md).
-
-## Developer Setup
-
-This repo uses `mise` as the local entry point for operator tooling and validation tasks.
-
-Install the pinned toolchain:
+Instal the pined tools with `mise`:
 
 ```bash
 mise install
 ```
 
-Install and run the repo pre-commit hook:
+This installs `kubectl`, `helm`, `flux`, `sops`, and `talosctl`. You also neeed:
+
+- `talhelper` to generate Talos config.
+- `age` and the private key used for SOPS.
+- A GitHub PAT for flux bootstrap.
+
+## Recreate the cluser
+
+1. Check the node interface and disks, then create the Talos config and bootstap the control plane and workers.
+   See [talos/README.md](talos/README.md).
+2. Complete the [Cilium initial bootstrap](infra/controllers/cilium/README.md).
+3. Fetch the kubeconfig, then bootstrap Flux and create its SOPS key.
+   See [clusters/student-service-cluster/README.md](clusters/student-service-cluster/README.md).
+4. Flux deploys shared infrastucture from `infra/`, then workloads from `apps/student-service/`.
+
+For later chagnes, edit the manifests, merge to `main`, and let flux reconcile.
+To apply a change imediately, run:
 
 ```bash
-mise run pre-commit:install
-mise run pre-commit:run
+flux reconcile kustomization flux-system -n flux-system --with-source
 ```
 
-Common validation commands:
+## Secrets
+
+Secrets use SOPS with age. Set `SOPS_AGE_KEY_FILE` before editing one. Keep sensitive files encrytped.
 
 ```bash
+export SOPS_AGE_KEY_FILE=/path/to/age.key
+sops talos/talsecret.sops.yaml
+```
+
+## Local checks
+
+```bash
+mise install
 mise run lint
-mise run lint:fix
-mise run lint:yaml
-mise run lint:fix:yaml
-mise run lint:markdown
-mise run lint:fix:markdown
-mise run lint:sh
-mise run lint:fix:sh
-mise run lint:actions
-mise run lint:kubernetes
 ```
-
-If you want only the fix/format step for a single category, use the task-specific commands directly,
-for example `mise run lint:fix:yaml`, `mise run lint:fix:markdown`, or `mise run lint:fix:sh`.
-
-Current validation scope:
-
-- `yamllint` for YAML structure and style
-- `yamlfmt` for YAML formatting fixes
-- `markdownlint-cli2` for Markdown linting and Markdown auto-fixes
-- `shellcheck` for shell linting
-- `shfmt` for shell formatting fixes
-- `actionlint` for GitHub Actions workflows
-- `kubeconform` for built-in Kubernetes schema validation
-- `gitleaks` for secret scanning in local pre-commit hooks and GitHub Actions
-- `Trivy` for dependency vulnerability and configuration misconfiguration scanning in GitHub Actions
-- GitHub CodeQL default setup for code scanning, managed in repository security settings rather than a workflow file
-
-`mise run lint:fix` currently applies:
-
-- YAML formatting fixes through `yamlfmt`
-- auto-fixable Markdown rules through `markdownlint-cli2`
-- shell formatting fixes through `shfmt`
-
-GitHub Actions, Kubernetes, and `shellcheck` findings remain report-only.

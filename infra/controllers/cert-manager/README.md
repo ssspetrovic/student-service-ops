@@ -1,35 +1,10 @@
 # cert-manager
 
-Managed by Flux from `infra/controllers/cert-manager/`.
+`cert-manager` issues certificates for cluster services.
 
-Current paths:
-
-- `infra/controllers/cert-manager/`
-- `clusters/student-service-cluster/cert-manager.yaml`
-
-Flux ownership:
-
-- `cert-manager` reconciles `./infra/controllers/cert-manager`
-
-Current settings:
-
-- chart: `cert-manager`
-- version: `1.20.2`
-- namespace: `cert-manager`
-- source: `https://charts.jetstack.io`
-- CRDs are installed through the chart with `crds.enabled: true`
-
-Current responsibility:
-
-- installs the cert-manager controllers and CRDs
-- provides the shared certificate management layer for cluster services
-- does not define service-specific certificates directly
-
-Verification:
+## Check state
 
 ```bash
-flux get kustomizations -A
-flux get helmreleases -A
 kubectl get pods -n cert-manager
 kubectl get crds | grep cert-manager.io
 ```
