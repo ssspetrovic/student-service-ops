@@ -1,0 +1,12 @@
+# Existing workflows intentionally use release tags instead of SHA pins for now.
+# Keep this list narrow so new unpinned action references still get reviewed.
+rules:
+  unpinned-uses:
+    ignore:
+      - gitleaks.yaml:21
+      - gitleaks.yaml:26
+      - harbor-image-smoke.yaml:19
+      - lint.yaml:20
+      - lint.yaml:23
+      - trivy.yaml:20
+      - trivy.yaml:23

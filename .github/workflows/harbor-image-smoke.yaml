@@ -3,6 +3,8 @@ name: Harbor Image Smoke Test
 on:
   workflow_dispatch:
 
+permissions: {}
+
 jobs:
   image-smoke:
     runs-on: student-service-runner

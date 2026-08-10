@@ -159,6 +159,7 @@ mise run lint:fix:markdown
 mise run lint:sh
 mise run lint:fix:sh
 mise run lint:actions
+mise run lint:zizmor
 mise run lint:kubernetes
 ```
 
@@ -173,6 +174,7 @@ Current validation scope:
 - `shellcheck` for shell linting
 - `shfmt` for shell formatting fixes
 - `actionlint` for GitHub Actions workflows
+- `zizmor` for GitHub Actions workflow security linting
 - `kubeconform` for built-in Kubernetes schema validation
 - `gitleaks` for secret scanning in local pre-commit hooks and GitHub Actions
 - `Trivy` for dependency vulnerability and configuration misconfiguration scanning in GitHub Actions
