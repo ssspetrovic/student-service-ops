@@ -2,10 +2,7 @@ import { useEffect, useState } from "react";
 import api from "../api/client";
 import { getErrorMessage } from "../api/errorMessage";
 import { EmptyState, ErrorState, LoadingState } from "../components/PageStates";
-
-function formatDate(date) {
-  return new Date(date).toLocaleString();
-}
+import { formatDate } from "../utils/date";
 
 function ResultsPage() {
   const [resultData, setResultData] = useState(null);
