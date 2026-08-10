@@ -1,22 +1,10 @@
-# Registry Certificates
+# Harbor Certificate
 
-Managed by Flux from `infra/registry/certificates/`.
+Creates Harbor's TLS certificate from the internal CA.
 
-Current settings:
-
-- `Certificate` file: `harbor.yaml`
-- `Certificate` name: `harbor-tls`
-- Secret name: `harbor-tls`
-- issuer: `student-service-ca`
-- DNS name: `harbor.student-service.internal`
-
-This path contains service certificates for the registry tier.
-The CA bootstrap and shared issuer are documented under `infra/controllers/cert-manager/issuers/`.
-
-Verification:
+## Check state
 
 ```bash
-flux get kustomizations -A
 kubectl get certificate -n harbor
 kubectl get secret -n harbor harbor-tls
 ```
