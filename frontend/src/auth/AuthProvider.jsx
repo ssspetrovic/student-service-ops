@@ -1,9 +1,9 @@
 import { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import api, {
-  clearTokens,
-  getAccessToken,
-  storeTokens,
+  clearAccessToken,
+  refreshAccessToken,
+  storeAccessToken,
   subscribeToSessionExpiration,
 } from "../api/client";
 import AuthContext from "./context";
@@ -25,19 +25,18 @@ function AuthProvider({ children }) {
     let isCurrent = true;
 
     const restoreSession = async () => {
-      if (!getAccessToken()) {
-        setIsInitializing(false);
-        return;
-      }
-
       try {
+        await api.get("/auth/csrf/");
+        await refreshAccessToken();
         const response = await api.get("/accounts/me/");
 
         if (isCurrent) {
           setUser(response.data);
         }
       } catch {
-        clearTokens();
+        if (isCurrent) {
+          clearAccessToken();
+        }
       } finally {
         if (isCurrent) {
           setIsInitializing(false);
@@ -55,20 +54,25 @@ function AuthProvider({ children }) {
   const login = async (email, password) => {
     try {
       const tokenResponse = await api.post("/auth/token/", { email, password });
-      storeTokens(tokenResponse.data);
+      storeAccessToken(tokenResponse.data.access);
 
       const userResponse = await api.get("/accounts/me/");
       setUser(userResponse.data);
       return userResponse.data;
     } catch (error) {
-      clearTokens();
+      clearAccessToken();
       throw error;
     }
   };
 
-  const logout = () => {
-    clearTokens();
-    setUser(null);
+  const logout = async () => {
+    try {
+      await api.get("/auth/csrf/");
+      await api.post("/auth/logout/");
+    } finally {
+      clearAccessToken();
+      setUser(null);
+    }
   };
 
   return (

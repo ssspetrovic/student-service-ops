@@ -1,24 +1,22 @@
 import axios from "axios";
 
-const ACCESS_TOKEN_KEY = "student_service_access";
-const REFRESH_TOKEN_KEY = "student_service_refresh";
-
 const api = axios.create({
   baseURL: "/api",
+  withCredentials: true,
+  xsrfCookieName: "csrftoken",
+  xsrfHeaderName: "X-CSRFToken",
 });
 
-export const getAccessToken = () => localStorage.getItem(ACCESS_TOKEN_KEY);
+let accessToken = null;
 
-export const getRefreshToken = () => localStorage.getItem(REFRESH_TOKEN_KEY);
+export const getAccessToken = () => accessToken;
 
-export const storeTokens = ({ access, refresh }) => {
-  localStorage.setItem(ACCESS_TOKEN_KEY, access);
-  localStorage.setItem(REFRESH_TOKEN_KEY, refresh);
+export const storeAccessToken = (access) => {
+  accessToken = access;
 };
 
-export const clearTokens = () => {
-  localStorage.removeItem(ACCESS_TOKEN_KEY);
-  localStorage.removeItem(REFRESH_TOKEN_KEY);
+export const clearAccessToken = () => {
+  accessToken = null;
 };
 
 const sessionExpirationListeners = new Set();
@@ -30,31 +28,46 @@ export const subscribeToSessionExpiration = (listener) => {
 };
 
 const expireSession = () => {
-  clearTokens();
+  clearAccessToken();
   sessionExpirationListeners.forEach((listener) => listener());
 };
 
-api.interceptors.request.use((config) => {
-  const accessToken = getAccessToken();
+let refreshRequest;
 
+export const refreshAccessToken = async () => {
+  refreshRequest ??= api
+    .post("/auth/token/refresh/")
+    .then(({ data }) => {
+      storeAccessToken(data.access);
+      return data.access;
+    })
+    .finally(() => {
+      refreshRequest = undefined;
+    });
+
+  return refreshRequest;
+};
+
+api.interceptors.request.use((config) => {
   if (accessToken) {
+    config.headers ??= {};
     config.headers.Authorization = `Bearer ${accessToken}`;
   }
 
   return config;
 });
 
-let refreshRequest;
-
 api.interceptors.response.use(
   (response) => response,
   async (error) => {
     const request = error.config;
-    const isTokenRequest =
-      request?.url === "/auth/token/" ||
-      request?.url === "/auth/token/refresh/";
+    const isAuthRequest = [
+      "/auth/token/",
+      "/auth/token/refresh/",
+      "/auth/logout/",
+    ].includes(request?.url);
 
-    if (error.response?.status !== 401 || !request || isTokenRequest) {
+    if (error.response?.status !== 401 || !request || isAuthRequest) {
       return Promise.reject(error);
     }
 
@@ -66,19 +79,13 @@ api.interceptors.response.use(
     request._retried = true;
 
     try {
-      refreshRequest ??= axios.post("/api/auth/token/refresh/", {
-        refresh: getRefreshToken(),
-      });
-      const { access } = (await refreshRequest).data;
-
-      localStorage.setItem(ACCESS_TOKEN_KEY, access);
+      const access = await refreshAccessToken();
+      request.headers ??= {};
       request.headers.Authorization = `Bearer ${access}`;
       return api(request);
     } catch (refreshError) {
       expireSession();
       return Promise.reject(refreshError);
-    } finally {
-      refreshRequest = undefined;
     }
   },
 );

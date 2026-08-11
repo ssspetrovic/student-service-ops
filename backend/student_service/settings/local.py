@@ -6,3 +6,6 @@ ALLOWED_HOSTS = env.list(
     "DJANGO_ALLOWED_HOSTS",
     default=["localhost", "127.0.0.1"],
 )
+
+JWT_REFRESH_COOKIE_SECURE = env.bool("DJANGO_JWT_REFRESH_COOKIE_SECURE", default=False)
+CSRF_COOKIE_SECURE = env.bool("DJANGO_CSRF_COOKIE_SECURE", default=False)

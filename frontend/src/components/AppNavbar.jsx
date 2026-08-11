@@ -62,8 +62,8 @@ function AppNavbar() {
     setIsAccountMenuOpen(false);
   };
 
-  const handleLogout = () => {
-    logout();
+  const handleLogout = async () => {
+    await logout();
     closeMenus();
     navigate("/login");
   };

@@ -18,9 +18,8 @@ Including another URLconf
 from django.contrib import admin
 from django.http import JsonResponse
 from django.urls import include, path
-from rest_framework_simplejwt.views import TokenObtainPairView, TokenRefreshView
-
 from accounts.views import StudentRegistrationView
+from student_service.auth_views import CsrfCookieView, LoginView, LogoutView, RefreshView
 
 
 def health(_request):
@@ -35,8 +34,10 @@ urlpatterns = [
     path("api/health/", health, name="health"),
     path("api/accounts/", include("accounts.urls")),
     path("api/academics/", include("academics.urls")),
-    path("api/auth/token/", TokenObtainPairView.as_view(), name="token_obtain_pair"),
-    path("api/auth/token/refresh/", TokenRefreshView.as_view(), name="token_refresh"),
+    path("api/auth/csrf/", CsrfCookieView.as_view(), name="csrf-cookie"),
+    path("api/auth/token/", LoginView.as_view(), name="token_obtain_pair"),
+    path("api/auth/token/refresh/", RefreshView.as_view(), name="token_refresh"),
+    path("api/auth/logout/", LogoutView.as_view(), name="token_logout"),
     path("api/auth/register/", StudentRegistrationView.as_view(), name="student-registration"),
     path("api/exams/", include("exams.urls")),
     path("api/finance/", include("finance.urls")),

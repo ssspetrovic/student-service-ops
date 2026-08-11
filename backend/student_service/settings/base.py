@@ -5,6 +5,7 @@ Generated from the Django scaffold and split so local development and
 production can set different safety defaults.
 """
 
+from datetime import timedelta
 from pathlib import Path
 
 import environ
@@ -120,3 +121,17 @@ REST_FRAMEWORK = {
         "rest_framework.permissions.IsAuthenticated",
     ],
 }
+
+SIMPLE_JWT = {
+    "ACCESS_TOKEN_LIFETIME": timedelta(minutes=5),
+    "REFRESH_TOKEN_LIFETIME": timedelta(days=1),
+}
+
+JWT_REFRESH_COOKIE_NAME = "student_service_refresh"
+JWT_REFRESH_COOKIE_PATH = "/api/auth/"
+JWT_REFRESH_COOKIE_MAX_AGE = 60 * 60 * 24  # 24 hours
+JWT_REFRESH_COOKIE_SECURE = env.bool("DJANGO_JWT_REFRESH_COOKIE_SECURE", default=not DEBUG)
+JWT_REFRESH_COOKIE_SAMESITE = "Strict"
+
+CSRF_COOKIE_SECURE = env.bool("DJANGO_CSRF_COOKIE_SECURE", default=not DEBUG)
+CSRF_COOKIE_SAMESITE = "Strict"

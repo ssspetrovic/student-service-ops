@@ -4,13 +4,23 @@ import { getErrorMessage } from "../api/errorMessage";
 import useAuth from "../auth/useAuth";
 
 function LoginPage() {
-  const { user, login } = useAuth();
+  const { user, isInitializing, login } = useAuth();
   const location = useLocation();
   const navigate = useNavigate();
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [error, setError] = useState("");
   const [isSubmitting, setIsSubmitting] = useState(false);
+
+  if (isInitializing) {
+    return (
+      <main className="container d-flex align-items-center justify-content-center min-vh-100">
+        <div className="spinner-border text-primary" role="status">
+          <span className="visually-hidden">Loading session</span>
+        </div>
+      </main>
+    );
+  }
 
   if (user) {
     return <Navigate to="/" replace />;
