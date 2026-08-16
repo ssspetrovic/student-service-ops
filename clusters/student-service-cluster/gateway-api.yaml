@@ -7,6 +7,7 @@ spec:
   dependsOn:
     - name: infra
     - name: cilium-l2
+    - name: cert-manager-issuers
   interval: 10m
   path: ./infra/networking/gateway-api
   prune: true
