@@ -12,7 +12,7 @@ spec:
       namespace: gateway-system
       sectionName: http
   hostnames:
-    - ingress.student-service.internal
+    - student-service.internal
   rules:
     - matches:
         - path:
