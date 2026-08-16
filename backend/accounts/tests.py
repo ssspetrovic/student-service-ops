@@ -214,6 +214,27 @@ class AdministratorApiTestCase(TestCase):
     def authenticate_admin(self):
         self.client.force_authenticate(user=self.admin)
 
+    def create_professor(self, employee_no, *, is_active=True):
+        user = User.objects.create_user(
+            email=f"{employee_no.lower()}@example.com",
+            password="StrongPassword123!",
+            role=UserRole.PROFESSOR,
+            is_active=is_active,
+        )
+        return ProfessorProfile.objects.create(user=user, employee_no=employee_no)
+
+    def course_payload(self, professor, **overrides):
+        return {
+            "code": "ADMIN102",
+            "name": "Course Creation",
+            "espb": 6,
+            "professor_id": professor.pk,
+            "curriculum_code": self.curriculum.code,
+            "semester": 1,
+            "is_mandatory": True,
+            **overrides,
+        }
+
     def test_non_admin_is_rejected(self):
         student = User.objects.create_user(
             email="student@example.com", password="StrongPassword123!", role=UserRole.STUDENT
@@ -222,6 +243,62 @@ class AdministratorApiTestCase(TestCase):
         self.assertEqual(
             self.client.get(reverse("admin-users")).status_code, status.HTTP_403_FORBIDDEN
         )
+        self.assertEqual(
+            self.client.post(reverse("admin-courses"), {}, format="json").status_code,
+            status.HTTP_403_FORBIDDEN,
+        )
+
+    def test_admin_creates_course_with_curriculum_relationship(self):
+        professor = self.create_professor("ADMIN-P02")
+        self.authenticate_admin()
+
+        response = self.client.post(
+            reverse("admin-courses"),
+            self.course_payload(professor, semester=2, is_mandatory=False),
+            format="json",
+        )
+
+        self.assertEqual(response.status_code, status.HTTP_201_CREATED)
+        course = Course.objects.get(code=response.data["code"])
+        self.assertEqual(course.professor, professor)
+        self.assertTrue(
+            CurriculumCourse.objects.filter(
+                curriculum=self.curriculum,
+                course=course,
+                semester=2,
+                is_mandatory=False,
+            ).exists()
+        )
+
+    def test_course_creation_rejects_invalid_input(self):
+        professor = self.create_professor("ADMIN-P04")
+        inactive_professor = self.create_professor("ADMIN-P05", is_active=False)
+        payload = self.course_payload(professor, code="ADMIN103", name="Validation")
+        self.authenticate_admin()
+
+        for field, value in (
+            ("professor_id", inactive_professor.pk),
+            ("curriculum_code", "MISSING"),
+            ("semester", 13),
+            ("espb", 0),
+        ):
+            with self.subTest(field=field, value=value):
+                invalid_payload = {**payload, field: value}
+                response = self.client.post(
+                    reverse("admin-courses"), invalid_payload, format="json"
+                )
+                self.assertEqual(response.status_code, status.HTTP_400_BAD_REQUEST)
+
+        Course.objects.create(
+            code=payload["code"],
+            name="Existing course",
+            espb=payload["espb"],
+            professor=professor,
+        )
+        response = self.client.post(reverse("admin-courses"), payload, format="json")
+
+        self.assertEqual(response.status_code, status.HTTP_400_BAD_REQUEST)
+        self.assertEqual(CurriculumCourse.objects.count(), 0)
 
     def test_admin_manages_users_curricula_and_courses(self):
         self.authenticate_admin()
@@ -272,9 +349,7 @@ class AdministratorApiTestCase(TestCase):
             },
             format="json",
         )
-        deactivate = self.client.post(
-            reverse("admin-user-deactivate", kwargs={"pk": student.pk})
-        )
+        deactivate = self.client.post(reverse("admin-user-deactivate", kwargs={"pk": student.pk}))
         repeated_deactivate = self.client.post(
             reverse("admin-user-deactivate", kwargs={"pk": student.pk})
         )
