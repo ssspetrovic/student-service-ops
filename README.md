@@ -12,7 +12,7 @@ The cluster has one Talos control-plane node and two workers. Services are avali
 - `apps/student-service/`: deployed aplication workloads.
 - `backend/` and `frontend/`: application source.
 
-## Prerequisits
+## Prerequisites
 
 Instal the pined tools with `mise`:
 
@@ -26,7 +26,7 @@ This installs `kubectl`, `helm`, `flux`, `sops`, and `talosctl`. You also neeed:
 - `age` and the private key used for SOPS.
 - A GitHub PAT for flux bootstrap.
 
-## Recreate the cluser
+## Recreate the cluster
 
 1. Check the node interface and disks, then create the Talos config and bootstap the control plane and workers.
    See [talos/README.md](talos/README.md).
