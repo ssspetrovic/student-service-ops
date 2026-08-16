@@ -16,14 +16,28 @@ const professorLinks = [
   ["/professor/exams/new", "Schedule exam"],
 ];
 
+const adminLinks = [
+  ["/admin", "Dashboard"],
+  ["/admin/users", "Users"],
+  ["/admin/programs", "Curricula"],
+  ["/admin/courses", "Courses"],
+];
+
 const linksByRole = {
   student: studentLinks,
   professor: professorLinks,
+  admin: adminLinks,
 };
 
 const profilePathByRole = {
   student: "/profile",
   professor: "/professor/profile",
+};
+
+const brandPathByRole = {
+  student: "/profile",
+  professor: "/professor/profile",
+  admin: "/admin",
 };
 
 function AppNavbar() {
@@ -34,6 +48,7 @@ function AppNavbar() {
   const accountMenuRef = useRef(null);
   const links = linksByRole[user?.role] ?? [];
   const profilePath = profilePathByRole[user?.role];
+  const brandPath = brandPathByRole[user?.role] ?? "/login";
 
   useEffect(() => {
     const closeAccountMenu = (event) => {
@@ -71,7 +86,7 @@ function AppNavbar() {
   return (
     <nav className="navbar navbar-expand-lg navbar-dark bg-primary shadow-sm sticky-top">
       <div className="container-fluid px-4">
-        <Link className="navbar-brand" to={profilePath ?? "/"}>
+        <Link className="navbar-brand" to={brandPath}>
           Student Service
         </Link>
         <button
@@ -98,6 +113,7 @@ function AppNavbar() {
                   className={({ isActive }) =>
                     `nav-link${isActive ? " active" : ""}`
                   }
+                  end={to === "/admin"}
                   key={to}
                   onClick={closeMenus}
                   to={to}
