@@ -4,7 +4,7 @@ This repository manages Student Service infrastucture and Kubernetes depoyments.
 
 The cluster has one Talos control-plane node and two workers. Services are avaliable from the home LAN or VPN.
 
-## Main areass
+## Main areas
 
 - `talos/`: Talos cluster setup.
 - `clusters/`: Flux bootstrap and entrypoints.
