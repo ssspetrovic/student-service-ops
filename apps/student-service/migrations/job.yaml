@@ -33,7 +33,7 @@ spec:
           type: RuntimeDefault
       containers:
         - name: migrations
-          image: harbor.student-service.internal/student-service/backend:b1a235111b9190fed9c023be7e576888a38ec3f4
+          image: harbor.student-service.internal/student-service/backend:3904100a2a9e85e0471877be66c161035d05cd2d
           imagePullPolicy: IfNotPresent
           command:
             - .venv/bin/python
