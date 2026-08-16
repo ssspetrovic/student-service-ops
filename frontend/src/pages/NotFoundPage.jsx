@@ -1,6 +1,13 @@
-import { Link } from "react-router-dom";
+import { Link, Navigate } from "react-router-dom";
+import useAuth from "../auth/useAuth";
 
 function NotFoundPage() {
+  const { user } = useAuth();
+
+  if (!user) {
+    return <Navigate to="/login" replace />;
+  }
+
   return (
     <main className="container d-flex align-items-center justify-content-center min-vh-100 py-5 text-center">
       <div>

@@ -2,6 +2,11 @@ import { Navigate, Route, Routes } from "react-router-dom";
 import AppNavbar from "./components/AppNavbar";
 import ProtectedRoute from "./components/ProtectedRoute";
 import AvailableExamsPage from "./pages/AvailableExamsPage";
+import AdminCoursesPage from "./pages/AdminCoursesPage";
+import AdminDashboardPage from "./pages/AdminDashboardPage";
+import AdminProgramsPage from "./pages/AdminProgramsPage";
+import AdminUserFormPage from "./pages/AdminUserFormPage";
+import AdminUsersPage from "./pages/AdminUsersPage";
 import CurriculumPage from "./pages/CurriculumPage";
 import EnrollmentsPage from "./pages/EnrollmentsPage";
 import HomePage from "./pages/HomePage";
@@ -26,6 +31,54 @@ function App() {
         <Route path="/login" element={<LoginPage />} />
         <Route path="/register" element={<StudentRegistrationPage />} />
         <Route path="/student" element={<Navigate to="/profile" replace />} />
+        <Route
+          path="/admin"
+          element={
+            <ProtectedRoute allowedRoles={["admin"]}>
+              <AdminDashboardPage />
+            </ProtectedRoute>
+          }
+        />
+        <Route
+          path="/admin/users"
+          element={
+            <ProtectedRoute allowedRoles={["admin"]}>
+              <AdminUsersPage />
+            </ProtectedRoute>
+          }
+        />
+        <Route
+          path="/admin/users/new"
+          element={
+            <ProtectedRoute allowedRoles={["admin"]}>
+              <AdminUserFormPage />
+            </ProtectedRoute>
+          }
+        />
+        <Route
+          path="/admin/users/:id/edit"
+          element={
+            <ProtectedRoute allowedRoles={["admin"]}>
+              <AdminUserFormPage />
+            </ProtectedRoute>
+          }
+        />
+        <Route
+          path="/admin/programs"
+          element={
+            <ProtectedRoute allowedRoles={["admin"]}>
+              <AdminProgramsPage />
+            </ProtectedRoute>
+          }
+        />
+        <Route
+          path="/admin/courses"
+          element={
+            <ProtectedRoute allowedRoles={["admin"]}>
+              <AdminCoursesPage />
+            </ProtectedRoute>
+          }
+        />
         <Route
           path="/professor"
           element={<Navigate to="/professor/profile" replace />}

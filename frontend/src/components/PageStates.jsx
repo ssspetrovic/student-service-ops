@@ -1,3 +1,5 @@
+import { useEffect } from "react";
+
 export function LoadingState({ label }) {
   return (
     <div className="d-flex justify-content-center py-5">
@@ -25,7 +27,19 @@ export function EmptyState({ children }) {
 }
 
 export function SuccessNotification({ message, onDismiss }) {
-  if (!message) return null;
+  useEffect(() => {
+    if (!message) {
+      return undefined;
+    }
+
+    const timeout = window.setTimeout(onDismiss, 3000);
+
+    return () => window.clearTimeout(timeout);
+  }, [message, onDismiss]);
+
+  if (!message) {
+    return null;
+  }
 
   return (
     <div

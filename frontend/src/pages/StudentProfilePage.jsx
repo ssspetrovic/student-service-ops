@@ -10,12 +10,16 @@ function StudentProfilePage() {
   useEffect(() => {
     let isCurrent = true;
 
-    api.get("/accounts/student-profile/")
+    api
+      .get("/accounts/student-profile/")
       .then((response) => {
         if (isCurrent) setProfile(response.data);
       })
       .catch((requestError) => {
-        if (isCurrent) setError(getErrorMessage(requestError, "Unable to load your profile."));
+        if (isCurrent)
+          setError(
+            getErrorMessage(requestError, "Unable to load your profile."),
+          );
       });
 
     return () => {
@@ -32,15 +36,19 @@ function StudentProfilePage() {
         <div className="card shadow-sm">
           <dl className="row card-body mb-0">
             <dt className="col-sm-4">Name</dt>
-            <dd className="col-sm-8">{profile.first_name} {profile.last_name}</dd>
+            <dd className="col-sm-8">
+              {profile.first_name} {profile.last_name}
+            </dd>
             <dt className="col-sm-4">Email</dt>
             <dd className="col-sm-8">{profile.email}</dd>
             <dt className="col-sm-4">Index number</dt>
             <dd className="col-sm-8">{profile.index_no}</dd>
             <dt className="col-sm-4">Year of study</dt>
             <dd className="col-sm-8">{profile.current_year_of_study}</dd>
-            <dt className="col-sm-4">Programme</dt>
-            <dd className="col-sm-8">{profile.curriculum_name} ({profile.curriculum_code})</dd>
+            <dt className="col-sm-4">Curriculum</dt>
+            <dd className="col-sm-8">
+              {profile.curriculum_name} ({profile.curriculum_code})
+            </dd>
           </dl>
         </div>
       )}
