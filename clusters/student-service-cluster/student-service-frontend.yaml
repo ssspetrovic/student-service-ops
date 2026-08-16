@@ -6,6 +6,7 @@ metadata:
 spec:
   dependsOn:
     - name: student-service-backend
+    - name: gateway-api
   interval: 10m
   path: ./apps/student-service/frontend
   prune: true
