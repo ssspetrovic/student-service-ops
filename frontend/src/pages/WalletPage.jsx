@@ -74,7 +74,9 @@ function WalletPage() {
       setSuccessMessage("Funds deposited.");
       await loadWallet();
     } catch (requestError) {
-      setDepositError(getErrorMessage(requestError, "Unable to deposit funds."));
+      setDepositError(
+        getErrorMessage(requestError, "Unable to deposit funds."),
+      );
     } finally {
       setIsDepositing(false);
     }

@@ -22,9 +22,7 @@ function StudentRegistrationPage() {
       })
       .catch((requestError) => {
         if (isCurrent) {
-          setError(
-            getErrorMessage(requestError, "Unable to load curricula."),
-          );
+          setError(getErrorMessage(requestError, "Unable to load curricula."));
         }
       });
 

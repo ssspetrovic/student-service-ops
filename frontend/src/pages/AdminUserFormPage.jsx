@@ -178,7 +178,7 @@ function AdminUserFormPage() {
                 />
               </div>
               <div className="col-md-6">
-            <label className="form-label">Curriculum</label>
+                <label className="form-label">Curriculum</label>
                 <select
                   className="form-select"
                   name="curriculum_code"
@@ -186,7 +186,7 @@ function AdminUserFormPage() {
                   required
                   value={form.curriculum_code ?? ""}
                 >
-              <option value="">Select a curriculum</option>
+                  <option value="">Select a curriculum</option>
                   {curricula?.map((program) => (
                     <option key={program.code} value={program.code}>
                       {program.code} — {program.name}
