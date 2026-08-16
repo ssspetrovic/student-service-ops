@@ -4,6 +4,9 @@ metadata:
     name: coredns
     namespace: kube-system
 data:
+    student-service.hosts: |
+        192.168.1.240 student-service.internal
+        192.168.1.241 harbor.student-service.internal
     Corefile: |
         .:53 {
             errors
@@ -21,9 +24,7 @@ data:
                 fallthrough in-addr.arpa ip6.arpa
                 ttl 30
             }
-            hosts {
-                192.168.1.240 student-service.internal
-                192.168.1.241 harbor.student-service.internal
+            hosts /etc/coredns/student-service.hosts {
                 fallthrough
             }
             forward . /etc/resolv.conf {
@@ -36,4 +37,17 @@ data:
             loop
             reload
             loadbalance
+        }
+    TailnetCorefile: |
+        student-service.internal:53 {
+            errors
+            health :8080 {
+                lameduck 5s
+            }
+            ready :8181
+            hosts /etc/coredns/tailnet/student-service.hosts {
+                ttl 60
+                no_reverse
+            }
+            reload
         }

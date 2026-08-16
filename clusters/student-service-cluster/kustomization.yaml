@@ -11,6 +11,7 @@ resources:
   - actions-runner-controller.yaml
   - actions-runner-scale-set.yaml
   - cilium-l2.yaml
+  - tailnet-dns.yaml
   - gateway-api.yaml
   - storage.yaml
   - harbor-certificates.yaml
