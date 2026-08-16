@@ -1,0 +1,18 @@
+apiVersion: v1
+kind: Service
+metadata:
+  name: student-service-frontend
+  namespace: student-service
+  labels:
+    app.kubernetes.io/name: student-service-frontend
+    app.kubernetes.io/component: web
+spec:
+  type: ClusterIP
+  selector:
+    app.kubernetes.io/name: student-service-frontend
+    app.kubernetes.io/component: web
+  ports:
+    - name: http
+      port: 80
+      targetPort: http
+      protocol: TCP

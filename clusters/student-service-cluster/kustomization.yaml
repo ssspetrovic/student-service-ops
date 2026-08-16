@@ -18,3 +18,4 @@ resources:
   - student-service-database.yaml
   - student-service-migrations.yaml
   - student-service-backend.yaml
+  - student-service-frontend.yaml
