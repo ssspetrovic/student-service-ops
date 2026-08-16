@@ -94,7 +94,7 @@ function ProfessorExamRegistrationsPage() {
       );
       setRegistrations(registrationResponse.data);
       setRegistrationToGrade(null);
-      setSuccessMessage("Grade saved successfully.");
+      setSuccessMessage("Grade saved.");
     } catch (requestError) {
       setGradeError(
         getErrorMessage(requestError, "Unable to save this grade."),

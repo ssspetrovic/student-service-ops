@@ -5,11 +5,11 @@ from rest_framework import status
 from rest_framework.test import APIClient
 from rest_framework_simplejwt.tokens import AccessToken
 
-from academics.models import Curriculum, DegreeLevel
+from academics.models import Course, Curriculum, DegreeLevel
 
 from .admin import CustomUserAdmin
 from .forms import ManagedUserCreationForm
-from .models import User, UserRole
+from .models import ProfessorProfile, StudentProfile, User, UserRole
 
 
 # Create your tests here.
@@ -175,3 +175,129 @@ class StudentRegistrationApiTestCase(TestCase):
 
         self.assertEqual(profile_response.data["last_name"], "Student")
         self.assertEqual(profile_response.data["curriculum_name"], self.curriculum.name)
+
+
+class AdministratorApiTestCase(TestCase):
+    def setUp(self):
+        self.client = APIClient()
+        self.admin = User.objects.create_user(
+            email="admin@example.com", password="StrongPassword123!", role=UserRole.ADMIN
+        )
+        self.curriculum = Curriculum.objects.create(
+            code="ADMIN-BSC", name="Admin Curriculum", degree_level=DegreeLevel.BACHELOR, duration=4
+        )
+
+    def authenticate_admin(self):
+        self.client.force_authenticate(user=self.admin)
+
+    def test_non_admin_is_rejected(self):
+        student = User.objects.create_user(
+            email="student@example.com", password="StrongPassword123!", role=UserRole.STUDENT
+        )
+        self.client.force_authenticate(user=student)
+        self.assertEqual(
+            self.client.get(reverse("admin-users")).status_code, status.HTTP_403_FORBIDDEN
+        )
+
+    def test_admin_manages_users_curricula_and_courses(self):
+        self.authenticate_admin()
+        student_response = self.client.post(
+            reverse("admin-users"),
+            {
+                "email": "new-student@example.com",
+                "password": "StrongPassword123!",
+                "first_name": "New",
+                "last_name": "Student",
+                "role": UserRole.STUDENT,
+                "index_no": "ADMIN-001",
+                "curriculum_code": self.curriculum.code,
+                "current_year_of_study": 2,
+            },
+            format="json",
+        )
+        professor_response = self.client.post(
+            reverse("admin-users"),
+            {
+                "email": "new-professor@example.com",
+                "password": "StrongPassword123!",
+                "first_name": "New",
+                "last_name": "Professor",
+                "role": UserRole.PROFESSOR,
+                "employee_no": "ADMIN-P01",
+            },
+            format="json",
+        )
+
+        self.assertEqual(student_response.status_code, status.HTTP_201_CREATED)
+        self.assertEqual(professor_response.status_code, status.HTTP_201_CREATED)
+        self.assertEqual(
+            StudentProfile.objects.get(index_no="ADMIN-001").curriculum, self.curriculum
+        )
+        self.assertEqual(
+            ProfessorProfile.objects.get(employee_no="ADMIN-P01").user.role, UserRole.PROFESSOR
+        )
+
+        student = User.objects.get(email="new-student@example.com")
+
+        update = self.client.patch(
+            reverse("admin-user", kwargs={"pk": student.pk}),
+            {
+                "email": "updated@example.com",
+                "first_name": "Updated",
+                "current_year_of_study": 3,
+            },
+            format="json",
+        )
+        deactivate = self.client.post(
+            reverse("admin-user-deactivate", kwargs={"pk": student.pk})
+        )
+        repeated_deactivate = self.client.post(
+            reverse("admin-user-deactivate", kwargs={"pk": student.pk})
+        )
+
+        self.assertEqual(update.status_code, status.HTTP_200_OK)
+        self.assertEqual(update.data["email"], "updated@example.com")
+        self.assertEqual(update.data["first_name"], "Updated")
+        self.assertEqual(update.data["current_year_of_study"], 3)
+        self.assertEqual(deactivate.status_code, status.HTTP_200_OK)
+        self.assertEqual(repeated_deactivate.status_code, status.HTTP_400_BAD_REQUEST)
+        student.refresh_from_db()
+        self.assertFalse(student.is_active)
+
+        first_professor = ProfessorProfile.objects.get(employee_no="ADMIN-P01")
+        course = Course.objects.create(
+            code="ADMIN101",
+            name="Administration",
+            espb=6,
+            professor=first_professor,
+        )
+        replacement_user = User.objects.create_user(
+            email="replacement@example.com",
+            password="StrongPassword123!",
+            role=UserRole.PROFESSOR,
+        )
+        replacement_professor = ProfessorProfile.objects.create(
+            user=replacement_user,
+            employee_no="ADMIN-P03",
+        )
+
+        program_response = self.client.post(
+            reverse("admin-programs"),
+            {
+                "code": "ADMIN-MSC",
+                "name": "Admin Master",
+                "degree_level": DegreeLevel.MASTER,
+                "duration": 1,
+            },
+            format="json",
+        )
+        course_response = self.client.patch(
+            reverse("admin-course", kwargs={"pk": course.pk}),
+            {"professor_id": replacement_professor.pk},
+            format="json",
+        )
+
+        self.assertEqual(program_response.status_code, status.HTTP_201_CREATED)
+        self.assertEqual(course_response.status_code, status.HTTP_200_OK)
+        course.refresh_from_db()
+        self.assertEqual(course.professor, replacement_professor)

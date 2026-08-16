@@ -52,7 +52,7 @@ function ProfessorExamCreatePage() {
         room,
       });
       navigate("/professor/exams", {
-        state: { successMessage: "Exam scheduled successfully." },
+        state: { successMessage: "Exam scheduled." },
       });
     } catch (requestError) {
       setSubmitError(
