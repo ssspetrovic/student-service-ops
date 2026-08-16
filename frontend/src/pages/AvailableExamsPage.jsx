@@ -96,7 +96,7 @@ function AvailableExamsPage() {
     try {
       await api.post(`/exams/${examToRegister.id}/register/`);
       setExamToRegister(null);
-      setSuccessMessage("Exam registration completed successfully.");
+      setSuccessMessage("Exam registered.");
       await loadExams();
     } catch (requestError) {
       setRegistrationError(
@@ -245,7 +245,7 @@ function AvailableExamsPage() {
                   !canAffordRegistration && (
                     <p className="alert alert-warning mb-0 mt-3" role="alert">
                       Insufficient funds. You can{" "}
-                      <Link to="/wallet">add funds</Link> in your wallet.
+                      <Link to="/wallet">deposit funds</Link> in your wallet.
                     </p>
                   )}
                 {registrationError && (

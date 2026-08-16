@@ -71,10 +71,10 @@ function WalletPage() {
     try {
       await api.post("/finance/deposit/", { amount });
       setAmount("");
-      setSuccessMessage("Deposit completed successfully.");
+      setSuccessMessage("Funds deposited.");
       await loadWallet();
     } catch (requestError) {
-      setDepositError(getErrorMessage(requestError, "Unable to add funds."));
+      setDepositError(getErrorMessage(requestError, "Unable to deposit funds."));
     } finally {
       setIsDepositing(false);
     }
@@ -98,7 +98,7 @@ function WalletPage() {
           </div>
           <div className="card shadow-sm mb-4">
             <div className="card-body">
-              <h2 className="h5">Add funds</h2>
+              <h2 className="h5">Deposit funds</h2>
               <form
                 className="row gy-3 align-items-end"
                 onSubmit={handleDeposit}
@@ -131,10 +131,10 @@ function WalletPage() {
                           aria-hidden="true"
                           className="spinner-border spinner-border-sm me-2"
                         />
-                        Adding funds
+                        Depositing funds
                       </>
                     ) : (
-                      "Add funds"
+                      "Deposit funds"
                     )}
                   </button>
                 </div>

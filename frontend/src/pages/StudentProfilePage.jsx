@@ -39,7 +39,7 @@ function StudentProfilePage() {
             <dd className="col-sm-8">{profile.index_no}</dd>
             <dt className="col-sm-4">Year of study</dt>
             <dd className="col-sm-8">{profile.current_year_of_study}</dd>
-            <dt className="col-sm-4">Programme</dt>
+            <dt className="col-sm-4">Curriculum</dt>
             <dd className="col-sm-8">{profile.curriculum_name} ({profile.curriculum_code})</dd>
           </dl>
         </div>
