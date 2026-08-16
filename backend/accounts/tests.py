@@ -5,7 +5,7 @@ from rest_framework import status
 from rest_framework.test import APIClient
 from rest_framework_simplejwt.tokens import AccessToken
 
-from academics.models import Course, Curriculum, DegreeLevel
+from academics.models import Course, Curriculum, CurriculumCourse, DegreeLevel, Enrollment
 
 from .admin import CustomUserAdmin
 from .forms import ManagedUserCreationForm
@@ -151,6 +151,24 @@ class StudentRegistrationApiTestCase(TestCase):
             "curriculum_code": self.curriculum.code,
         }
 
+        professor = User.objects.create_user(
+            email="registration-professor@example.com",
+            password="StrongPassword123!",
+            role=UserRole.PROFESSOR,
+        )
+        self.course = Course.objects.create(
+            code="REG101",
+            name="Registration Course",
+            espb=6,
+            professor=ProfessorProfile.objects.create(user=professor, employee_no="REG-P01"),
+        )
+        CurriculumCourse.objects.create(
+            curriculum=self.curriculum,
+            course=self.course,
+            semester=1,
+            is_mandatory=True,
+        )
+
     def test_student_registration(self):
         payload = {
             **self.payload,
@@ -169,6 +187,12 @@ class StudentRegistrationApiTestCase(TestCase):
         self.assertFalse(user.is_staff)
         self.assertEqual(user.student_profile.wallet.balance, 0)
         self.assertEqual(user.student_profile.current_year_of_study, 1)
+        self.assertTrue(
+            Enrollment.objects.filter(
+                student=user.student_profile,
+                course=self.course,
+            ).exists()
+        )
         self.client.force_authenticate(user=user)
 
         profile_response = self.client.get(reverse("student-profile"))

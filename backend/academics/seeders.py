@@ -42,7 +42,6 @@ def seed_academics(
         CurriculumCourse.objects.update_or_create(
             curriculum=curriculum,
             course=course,
-            school_year=SCHOOL_YEAR,
             defaults={
                 "semester": course_data["semester"],
                 "is_mandatory": course_data["is_mandatory"],
