@@ -13,18 +13,28 @@ from .permissions import IsAdmin
 
 
 class AdminUserSerializer(serializers.ModelSerializer):
-    index_no = serializers.CharField(source="student_profile.index_no")
+    index_no = serializers.CharField(source="student_profile.index_no", allow_null=True)
     current_year_of_study = serializers.IntegerField(
-        source="student_profile.current_year_of_study"
+        source="student_profile.current_year_of_study", allow_null=True
     )
-    curriculum_code = serializers.CharField(source="student_profile.curriculum.code")
-    employee_no = serializers.CharField(source="professor_profile.employee_no")
+    curriculum_code = serializers.CharField(
+        source="student_profile.curriculum.code", allow_null=True
+    )
+    employee_no = serializers.CharField(source="professor_profile.employee_no", allow_null=True)
 
     class Meta:
         model = User
         fields = [
-            "id", "email", "first_name", "last_name", "role", "is_active", "index_no",
-            "current_year_of_study", "curriculum_code", "employee_no",
+            "id",
+            "email",
+            "first_name",
+            "last_name",
+            "role",
+            "is_active",
+            "index_no",
+            "current_year_of_study",
+            "curriculum_code",
+            "employee_no",
         ]
 
 
@@ -94,9 +104,9 @@ class AdminUserWriteSerializer(serializers.Serializer):
                             {field: "This field is required for students."}
                         )
             if "employee_no" in attrs:
-                    raise serializers.ValidationError(
-                        {"employee_no": "Only professors have an employee number."}
-                    )
+                raise serializers.ValidationError(
+                    {"employee_no": "Only professors have an employee number."}
+                )
             return
 
         if role == UserRole.PROFESSOR:
@@ -139,19 +149,26 @@ class AdminUserWriteSerializer(serializers.Serializer):
     @transaction.atomic
     def update(self, instance, validated_data):
         if instance.role == UserRole.STUDENT:
-            profile = instance.student_profile
+            profile_fields = ("index_no", "curriculum_code", "current_year_of_study")
+            if any(field in validated_data for field in profile_fields):
+                profile = getattr(instance, "student_profile", None)
+                if profile is None:
+                    raise serializers.ValidationError({"profile": "Student profile is missing."})
             if "index_no" in validated_data:
                 profile.index_no = validated_data["index_no"]
             if "curriculum_code" in validated_data:
                 profile.curriculum = validated_data["curriculum_code"]
             if "current_year_of_study" in validated_data:
                 profile.current_year_of_study = validated_data["current_year_of_study"]
-            profile.save()
+            if any(field in validated_data for field in profile_fields):
+                profile.save()
         else:
-            profile = instance.professor_profile
+            profile = getattr(instance, "professor_profile", None)
             if "employee_no" in validated_data:
+                if profile is None:
+                    raise serializers.ValidationError({"profile": "Professor profile is missing."})
                 profile.employee_no = validated_data["employee_no"]
-            profile.save()
+                profile.save()
 
         if "email" in validated_data:
             instance.email = validated_data["email"]
@@ -236,7 +253,11 @@ class AdminProfessorSerializer(serializers.ModelSerializer):
 
 
 class AdminProfessorListView(ListAPIView):
-    queryset = ProfessorProfile.objects.select_related("user").order_by("user__last_name", "user__first_name")
+    queryset = (
+        ProfessorProfile.objects.filter(user__is_active=True)
+        .select_related("user")
+        .order_by("user__last_name", "user__first_name")
+    )
     serializer_class = AdminProfessorSerializer
     permission_classes = [IsAdmin]
 
@@ -252,7 +273,17 @@ class AdminCourseSerializer(serializers.ModelSerializer):
 
 
 class AdminCourseUpdateSerializer(serializers.Serializer):
-    professor_id = serializers.PrimaryKeyRelatedField(queryset=ProfessorProfile.objects.all(), source="professor")
+    professor_id = serializers.PrimaryKeyRelatedField(
+        queryset=ProfessorProfile.objects.filter(user__is_active=True), source="professor"
+    )
+
+    def validate(self, attrs):
+        professor = attrs["professor"]
+        if self.instance.professor_id != professor.pk and self.instance.exams.exists():
+            raise serializers.ValidationError(
+                {"professor_id": "Courses with exam terms cannot be reassigned."}
+            )
+        return attrs
 
     def update(self, instance, validated_data):
         instance.professor = validated_data["professor"]
