@@ -2,6 +2,7 @@ from django.contrib.auth.password_validation import validate_password
 from django.db import transaction
 from rest_framework import serializers
 
+from academics.academic_year import current_school_year
 from academics.models import Curriculum, Enrollment
 from finance.models import Wallet
 
@@ -95,21 +96,15 @@ class StudentRegistrationSerializer(serializers.Serializer):
             current_year_of_study=1,
             curriculum=curriculum,
         )
-        first_semester_courses = curriculum.curriculum_courses.filter(
+        for curriculum_course in curriculum.curriculum_courses.filter(
             semester=1,
             is_mandatory=True,
-        ).order_by("-school_year")
-        latest_course = first_semester_courses.first()
-
-        if latest_course:
-            for curriculum_course in first_semester_courses.filter(
-                school_year=latest_course.school_year
-            ):
-                Enrollment.objects.create(
-                    student=profile,
-                    course=curriculum_course.course,
-                    school_year=curriculum_course.school_year,
-                    semester=curriculum_course.semester,
-                )
+        ):
+            Enrollment.objects.create(
+                student=profile,
+                course=curriculum_course.course,
+                school_year=current_school_year(),
+                semester=curriculum_course.semester,
+            )
         Wallet.objects.create(student=profile)
         return profile

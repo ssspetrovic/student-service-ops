@@ -43,7 +43,6 @@ class StudentCurriculumCourseSerializer(serializers.ModelSerializer):
             "professor_email",
             "semester",
             "is_mandatory",
-            "school_year",
         ]
 
 
@@ -70,7 +69,6 @@ class CurriculumCourseSerializer(serializers.ModelSerializer):
             "course_name",
             "semester",
             "is_mandatory",
-            "school_year",
         ]
 
 

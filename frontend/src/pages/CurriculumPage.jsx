@@ -87,13 +87,12 @@ function CurriculumPage() {
                     <th>Course</th>
                     <th>ESPB</th>
                     <th>Professor</th>
-                    <th>Type</th>
-                    <th className="pe-3">School year</th>
+                    <th className="pe-3">Type</th>
                   </tr>
                 </thead>
                 <tbody>
                   {courses.map((course) => (
-                    <tr key={`${course.code}-${course.school_year}`}>
+                    <tr key={course.code}>
                       <td className="ps-3">{course.semester}</td>
                       <td>
                         <strong>{course.code}</strong>
@@ -104,8 +103,9 @@ function CurriculumPage() {
                       </td>
                       <td>{course.espb}</td>
                       <td>{course.professor_email}</td>
-                      <td>{course.is_mandatory ? "Mandatory" : "Elective"}</td>
-                      <td className="pe-3">{course.school_year}</td>
+                      <td className="pe-3">
+                        {course.is_mandatory ? "Mandatory" : "Elective"}
+                      </td>
                     </tr>
                   ))}
                 </tbody>

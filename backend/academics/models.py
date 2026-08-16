@@ -77,13 +77,12 @@ class CurriculumCourse(models.Model):
         validators=[MinValueValidator(1), MaxValueValidator(12)]
     )
     is_mandatory = models.BooleanField(default=True)
-    school_year = models.CharField(max_length=9, validators=[school_year_validator])  # YYYY/YYYY
 
     class Meta:
         constraints = [
             models.UniqueConstraint(
-                fields=["curriculum", "course", "school_year"],
-                name="uq_curriculum_course_school_year",
+                fields=["curriculum", "course"],
+                name="uq_curriculum_course",
             ),
             models.CheckConstraint(
                 condition=models.Q(semester__gte=1) & models.Q(semester__lte=12),
@@ -92,7 +91,7 @@ class CurriculumCourse(models.Model):
         ]
 
     def __str__(self):
-        return f"{self.curriculum} - {self.course} ({self.school_year})"
+        return f"{self.curriculum} - {self.course}"
 
 
 class EnrollmentStatus(models.TextChoices):

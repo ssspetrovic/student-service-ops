@@ -6,7 +6,7 @@ from rest_framework.generics import ListCreateAPIView, ListAPIView, UpdateAPIVie
 from rest_framework.response import Response
 from rest_framework.views import APIView
 
-from academics.models import Course, Curriculum
+from academics.models import Course, Curriculum, CurriculumCourse
 
 from .models import ProfessorProfile, StudentProfile, User, UserRole
 from .permissions import IsAdmin
@@ -291,10 +291,57 @@ class AdminCourseUpdateSerializer(serializers.Serializer):
         return instance
 
 
-class AdminCourseListView(ListAPIView):
+class AdminCourseCreateSerializer(serializers.ModelSerializer):
+    professor_id = serializers.PrimaryKeyRelatedField(
+        queryset=ProfessorProfile.objects.filter(user__is_active=True), source="professor"
+    )
+    curriculum_code = serializers.SlugRelatedField(
+        slug_field="code", queryset=Curriculum.objects.all(), source="curriculum"
+    )
+    semester = serializers.IntegerField(min_value=1, max_value=12)
+    is_mandatory = serializers.BooleanField(default=True)
+
+    class Meta:
+        model = Course
+        fields = [
+            "code",
+            "name",
+            "espb",
+            "professor_id",
+            "curriculum_code",
+            "semester",
+            "is_mandatory",
+        ]
+
+    @transaction.atomic
+    def create(self, validated_data):
+        curriculum = validated_data.pop("curriculum")
+        semester = validated_data.pop("semester")
+        is_mandatory = validated_data.pop("is_mandatory")
+        course = Course.objects.create(**validated_data)
+        CurriculumCourse.objects.create(
+            curriculum=curriculum,
+            course=course,
+            semester=semester,
+            is_mandatory=is_mandatory,
+        )
+        return course
+
+
+class AdminCourseListView(ListCreateAPIView):
     queryset = Course.objects.select_related("professor__user").order_by("code")
-    serializer_class = AdminCourseSerializer
     permission_classes = [IsAdmin]
+
+    def get_serializer_class(self):
+        return (
+            AdminCourseSerializer if self.request.method == "GET" else AdminCourseCreateSerializer
+        )
+
+    def create(self, request, *args, **kwargs):
+        serializer = self.get_serializer(data=request.data)
+        serializer.is_valid(raise_exception=True)
+        course = serializer.save()
+        return Response(AdminCourseSerializer(course).data, status=status.HTTP_201_CREATED)
 
 
 class AdminCourseUpdateView(UpdateAPIView):
