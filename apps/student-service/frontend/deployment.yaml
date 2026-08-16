@@ -36,7 +36,7 @@ spec:
           type: RuntimeDefault
       containers:
         - name: frontend
-          image: harbor.student-service.internal/student-service/frontend:e755ff60f1e29d2ba830465133e84381119b3c87
+          image: harbor.student-service.internal/student-service/frontend:3904100a2a9e85e0471877be66c161035d05cd2d
           imagePullPolicy: IfNotPresent
           ports:
             - name: http
