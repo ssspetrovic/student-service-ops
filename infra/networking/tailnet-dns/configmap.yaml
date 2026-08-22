@@ -19,6 +19,7 @@ data:
     }
   db.student-service.internal: |
     $ORIGIN student-service.internal.
-    @ 60 IN SOA . . 2026082201 3600 600 86400 60
+    @ 60 IN SOA . . 2026082202 3600 600 86400 60
     @ 60 IN A 192.168.1.240
+    grafana 60 IN A 192.168.1.240
     harbor 60 IN A 192.168.1.241

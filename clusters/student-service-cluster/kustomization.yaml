@@ -20,3 +20,4 @@ resources:
   - student-service-migrations.yaml
   - student-service-backend.yaml
   - student-service-frontend.yaml
+  - kube-prometheus-stack.yaml
