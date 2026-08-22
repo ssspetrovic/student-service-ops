@@ -1,6 +1,9 @@
 # CoreDNS
 
-Adds private hostnames to cluster DNS.
+Kubernetes CoreDNS keeps these records inline:
+
+- `student-service.internal -> 192.168.1.240`
+- `harbor.student-service.internal -> 192.168.1.241`
 
 ## Check state
 
