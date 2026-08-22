@@ -5,7 +5,7 @@ metadata:
   namespace: flux-system
 spec:
   interval: 24h
-  path: ./config/crd/standard
+  path: ./config/crd/experimental
   prune: true
   wait: true
   timeout: 10m
