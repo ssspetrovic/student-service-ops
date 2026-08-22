@@ -1,0 +1,90 @@
+apiVersion: helm.toolkit.fluxcd.io/v2
+kind: HelmRelease
+metadata:
+  name: kube-prometheus-stack
+  namespace: monitoring
+spec:
+  interval: 30m
+  chartRef:
+    kind: OCIRepository
+    name: kube-prometheus-stack
+    namespace: flux-system
+  install:
+    crds: Create
+    remediation:
+      retries: 3
+  upgrade:
+    crds: CreateReplace
+    remediation:
+      retries: 3
+  driftDetection:
+    mode: enabled
+    ignore:
+      - paths:
+          - /metadata/annotations/prometheus-operator-validated
+        target:
+          kind: PrometheusRule
+  values:
+    alertmanager:
+      enabled: false
+    defaultRules:
+      create: true
+      disabled:
+        PrometheusErrorSendingAlertsToAnyAlertmanager: true
+        PrometheusErrorSendingAlertsToSomeAlertmanagers: true
+        PrometheusNotConnectedToAlertmanagers: true
+      rules:
+        alertmanager: false
+        etcd: false
+        kubeControllerManager: false
+        kubeProxy: false
+        kubeSchedulerAlerting: false
+        kubeSchedulerRecording: false
+        windows: false
+    grafana:
+      enabled: true
+      defaultDashboardsEnabled: true
+      admin:
+        existingSecret: kube-prometheus-stack-grafana-admin
+        userKey: admin-user
+        passwordKey: admin-password
+      sidecar:
+        datasources:
+          alertmanager:
+            enabled: false
+      service:
+        type: ClusterIP
+    kubeControllerManager:
+      enabled: false
+    kubeEtcd:
+      enabled: false
+    kubeProxy:
+      enabled: false
+    kubeScheduler:
+      enabled: false
+    kubeStateMetrics:
+      enabled: true
+    nodeExporter:
+      enabled: true
+      operatingSystems:
+        aix:
+          enabled: false
+        darwin:
+          enabled: false
+        linux:
+          enabled: true
+    prometheus:
+      enabled: true
+      prometheusSpec:
+        replicas: 1
+        retention: 24h
+        resources:
+          requests:
+            cpu: 200m
+            memory: 200Mi
+        storageSpec:
+          emptyDir: {}
+    prometheusOperator:
+      enabled: true
+    windowsMonitoring:
+      enabled: false

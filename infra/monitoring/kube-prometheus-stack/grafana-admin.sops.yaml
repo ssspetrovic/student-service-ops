@@ -1,0 +1,24 @@
+apiVersion: v1
+kind: Secret
+metadata:
+    name: kube-prometheus-stack-grafana-admin
+    namespace: monitoring
+type: Opaque
+stringData:
+    admin-user: ENC[AES256_GCM,data:qrhbJOk=,iv:0r3cqtHNyBtppaCSBrfjKN8P3hJSdRiGldFY3b6qwEM=,tag:jh5QMt3RziiD67QXlSLpsQ==,type:str]
+    admin-password: ENC[AES256_GCM,data:Jnis8w1gPEvl6aVg4D9JDN97+X/inC3S8sb50z+ZuJKJuFG0ChQ3asEAgfcbDErZ,iv:74KzPhubhn/k8zc3Rgi0FERA7TiyjmHPmD61LPP+ITU=,tag:MORz0SHWir06I01Tzlh/1w==,type:str]
+sops:
+    age:
+        - enc: |
+            -----BEGIN AGE ENCRYPTED FILE-----
+            YWdlLWVuY3J5cHRpb24ub3JnL3YxCi0+IFgyNTUxOSBSQ01lcWMwKzZmOWo2Z0cv
+            OWRVNkhtaENoTXdhc0UweC9FNWI5TXNvcERJCnpWUmMwS3gydWV0TFRYckZYU1hu
+            TVZ3T2VmckxhUDRHVVdWMC9xcEdSdGsKLS0tIDFYK2EyOCtrRUFKRDUxNmt1Njhn
+            TTR3eUNHeWRIN1BMY3B6UXEyZzQ3aE0KjZCpNRC9RbS/2JydUNzDIgWiSQXUJi06
+            n6/r9lhOErRfM196Jlk+QxWqojJIV22sWdBUFP4o2++tI2I/claMxQ==
+            -----END AGE ENCRYPTED FILE-----
+          recipient: age1nsru6fkuqz9ys6z0tpw05psp5paytua6yrykscvn2akh5e4casgs3wnq6w
+    encrypted_regex: ^(data|stringData)$
+    lastmodified: "2026-08-22T21:47:22Z"
+    mac: ENC[AES256_GCM,data:e7cJyyCwlR5JuvnZsliGUzR46RTlUAr+MeVqBRpAYZZwtmmUyVU/qAhYBbS7q8Zx0S94yHsbaruMEViWDoXX5zYhgBVpaBUKR3LoK55m0U/BPX7o9qzR5vGZS9NhAx1LWhyECalHOK0uSk3s5OD4foe06lkfkRZuktXZlTAN8k4=,iv:ez15TC2utygKu2lAajibg6QW7ny8r0RYG7He9gPI64w=,tag:FB99BKb9RVfBPUukSXDMgQ==,type:str]
+    version: 3.13.3
