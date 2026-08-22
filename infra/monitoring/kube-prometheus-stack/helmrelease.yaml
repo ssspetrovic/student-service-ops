@@ -73,6 +73,8 @@ spec:
           enabled: false
         linux:
           enabled: true
+    prometheus-node-exporter:
+      namespaceOverride: monitoring-node-exporter
     prometheus:
       enabled: true
       prometheusSpec:
