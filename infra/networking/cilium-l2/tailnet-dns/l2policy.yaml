@@ -9,4 +9,4 @@ spec:
   serviceSelector:
     matchLabels:
       io.kubernetes.service.name: student-service-dns
-      io.kubernetes.service.namespace: kube-system
+      io.kubernetes.service.namespace: tailnet-dns

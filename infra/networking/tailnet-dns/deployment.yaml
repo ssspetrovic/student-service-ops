@@ -2,7 +2,7 @@ apiVersion: apps/v1
 kind: Deployment
 metadata:
   name: student-service-dns
-  namespace: kube-system
+  namespace: tailnet-dns
   labels:
     app.kubernetes.io/name: student-service-dns
     app.kubernetes.io/component: dns
@@ -34,7 +34,6 @@ spec:
         runAsNonRoot: true
         runAsUser: 65532
         runAsGroup: 65532
-        fsGroup: 65532
         seccompProfile:
           type: RuntimeDefault
       containers:
@@ -43,7 +42,7 @@ spec:
           imagePullPolicy: IfNotPresent
           args:
             - -conf
-            - /etc/coredns/tailnet/Corefile
+            - /etc/coredns/Corefile
           ports:
             - name: dns-udp
               containerPort: 53
@@ -89,14 +88,9 @@ spec:
                 - NET_BIND_SERVICE
           volumeMounts:
             - name: config
-              mountPath: /etc/coredns/tailnet
+              mountPath: /etc/coredns
               readOnly: true
       volumes:
         - name: config
           configMap:
-            name: coredns
-            items:
-              - key: TailnetCorefile
-                path: Corefile
-              - key: student-service.hosts
-                path: student-service.hosts
+            name: student-service-dns
