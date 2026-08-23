@@ -5,11 +5,13 @@ lockfile = true
 NODE_VERSION = "24.16.0"
 
 [tools]
+age = "1.3.1"
 flux2 = "2.8.5"
 helm = "3.20.2"
 jq = "1.8.1"
 pre-commit = "4.6.0"
 python = "3.14.5"
+talhelper = "3.1.15"
 talosctl = "1.12.6"
 kubectl = "1.36.0"
 sops = "3.12.2"
