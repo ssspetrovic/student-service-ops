@@ -4,12 +4,14 @@ on:
   pull_request:
     branches:
       - main
+    paths:
+      - frontend/**
+      - .github/workflows/frontend-image.yaml
   push:
     branches:
       - main
     paths:
       - frontend/**
-      - scripts/update-frontend-image.sh
       - .github/workflows/frontend-image.yaml
   workflow_dispatch:
 
@@ -24,41 +26,8 @@ env:
   IMAGE: harbor.student-service.internal/student-service/frontend
 
 jobs:
-  changes:
-    name: Frontend image changes
-    if: github.event_name == 'pull_request'
-    runs-on: student-service-runner
-    outputs:
-      frontend: ${{ steps.diff.outputs.frontend }}
-    steps:
-      - name: Checkout
-        uses: actions/checkout@d23441a48e516b6c34aea4fa41551a30e30af803 # v6
-        with:
-          fetch-depth: 0
-          persist-credentials: false
-
-      - id: diff
-        name: Check changed paths
-        run: |
-          if git diff --quiet "origin/${{ github.base_ref }}"...HEAD -- \
-            frontend/ \
-            scripts/update-frontend-image.sh \
-            .github/workflows/frontend-image.yaml
-          then
-            echo "frontend=false" >> "$GITHUB_OUTPUT"
-          else
-            echo "frontend=true" >> "$GITHUB_OUTPUT"
-          fi
-
   frontend-image:
     name: Frontend image
-    needs: changes
-    if: >-
-      always() &&
-      (
-        github.event_name != 'pull_request' ||
-        (needs.changes.result == 'success' && needs.changes.outputs.frontend == 'true')
-      )
     runs-on: student-service-runner
     timeout-minutes: 30
     steps:
@@ -105,6 +74,7 @@ jobs:
         uses: jdx/mise-action@9e7f7633ff6f6d6048a9418a68d48f288f50eb14 # v4
         with:
           install: true
+          install_args: yq
           cache: true
 
       - name: Check deployment token

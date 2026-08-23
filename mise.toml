@@ -20,7 +20,14 @@ yq = "4.49.2"
 
 [tasks.lint]
 description = "Run the baseline repo validation suite"
-depends = ["lint:yaml", "lint:markdown", "lint:sh", "lint:actions", "lint:kubernetes"]
+depends = [
+  "lint:yaml",
+  "lint:markdown",
+  "lint:sh",
+  "lint:actions",
+  "lint:kubernetes",
+  "test:image-promotion",
+]
 
 [tasks."lint:fix"]
 description = "Apply available lint fixes, then rerun the baseline lint suite"
@@ -67,6 +74,10 @@ run = "./scripts/lint-shell.sh --fix"
 description = "Validate built-in Kubernetes manifests with kubeconform"
 tools.kubeconform = "0.6.7"
 run = "./scripts/lint-kubernetes.sh"
+
+[tasks."test:image-promotion"]
+description = "Test image promotion scripts against temporary manifests"
+run = "./scripts/test-image-promotion.sh"
 
 [tasks."pre-commit:install"]
 description = "Install the repo pre-commit hook"

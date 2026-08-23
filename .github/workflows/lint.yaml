@@ -34,6 +34,9 @@ jobs:
       - name: Run shell lint
         run: mise run lint:sh
 
+      - name: Test image promotion scripts
+        run: mise run test:image-promotion
+
       - name: Run actionlint
         run: mise run lint:actions
 

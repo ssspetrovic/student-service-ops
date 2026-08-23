@@ -9,9 +9,6 @@ on:
       - main
     paths:
       - backend/**
-      - scripts/update-backend-image.sh
-      - mise.toml
-      - mise.lock
       - .github/workflows/backend-image.yaml
   workflow_dispatch:
 
@@ -44,9 +41,6 @@ jobs:
         run: |
           if git diff --quiet "origin/${{ github.base_ref }}"...HEAD -- \
             backend/ \
-            scripts/update-backend-image.sh \
-            mise.toml \
-            mise.lock \
             .github/workflows/backend-image.yaml
           then
             echo "backend=false" >> "$GITHUB_OUTPUT"
@@ -70,12 +64,6 @@ jobs:
         uses: actions/checkout@d23441a48e516b6c34aea4fa41551a30e30af803 # v6
         with:
           persist-credentials: false
-
-      - name: Setup mise
-        uses: jdx/mise-action@9e7f7633ff6f6d6048a9418a68d48f288f50eb14 # v4
-        with:
-          install: true
-          cache: true
 
       - name: Build image
         run: docker build --pull -t "$IMAGE:$GITHUB_SHA" backend
@@ -115,6 +103,7 @@ jobs:
         uses: jdx/mise-action@9e7f7633ff6f6d6048a9418a68d48f288f50eb14 # v4
         with:
           install: true
+          install_args: yq
           cache: true
 
       - name: Check deployment token
