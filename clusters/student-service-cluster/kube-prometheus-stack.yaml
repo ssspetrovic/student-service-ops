@@ -5,7 +5,8 @@ metadata:
   namespace: flux-system
 spec:
   dependsOn:
-    - name: gateway-api
+    - name: cert-manager-issuers
+    - name: cilium-l2
     - name: tailnet-dns
   decryption:
     provider: sops

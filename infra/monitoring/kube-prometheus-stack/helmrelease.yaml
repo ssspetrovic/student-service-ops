@@ -48,12 +48,66 @@ spec:
         existingSecret: kube-prometheus-stack-grafana-admin
         userKey: admin-user
         passwordKey: admin-password
+      extraSecretMounts:
+        - name: grafana-tls
+          secretName: grafana-tls
+          mountPath: /etc/grafana/tls
+          readOnly: true
+      grafana.ini:
+        server:
+          protocol: https
+          domain: grafana.student-service.internal
+          root_url: https://grafana.student-service.internal
+          cert_file: /etc/grafana/tls/tls.crt
+          cert_key: /etc/grafana/tls/tls.key
+      readinessProbe:
+        httpGet:
+          path: /api/health
+          port: grafana
+          scheme: HTTPS
+      livenessProbe:
+        httpGet:
+          path: /api/health
+          port: grafana
+          scheme: HTTPS
+        initialDelaySeconds: 60
+        timeoutSeconds: 30
+        failureThreshold: 10
       sidecar:
+        dashboards:
+          reloadURL: https://127.0.0.1:3000/api/admin/provisioning/dashboards/reload
+          env:
+            REQUESTS_CA_BUNDLE: /etc/grafana/tls/ca.crt
+          extraMounts:
+            - name: grafana-tls
+              mountPath: /etc/grafana/tls
+              readOnly: true
         datasources:
+          reloadURL: https://127.0.0.1:3000/api/admin/provisioning/datasources/reload
+          env:
+            REQUESTS_CA_BUNDLE: /etc/grafana/tls/ca.crt
+          extraMounts:
+            - name: grafana-tls
+              mountPath: /etc/grafana/tls
+              readOnly: true
           alertmanager:
             enabled: false
       service:
-        type: ClusterIP
+        type: LoadBalancer
+        port: 443
+        targetPort: 3000
+        portName: https-web
+        appProtocol: https
+        annotations:
+          lbipam.cilium.io/ips: 192.168.1.243
+      serviceMonitor:
+        scheme: https
+        tlsConfig:
+          ca:
+            secret:
+              name: grafana-tls
+              key: ca.crt
+          serverName: grafana.student-service.internal
     kubeControllerManager:
       enabled: false
     kubeEtcd:

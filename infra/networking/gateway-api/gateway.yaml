@@ -27,15 +27,3 @@ spec:
       allowedRoutes:
         namespaces:
           from: All
-    - name: grafana-https
-      hostname: grafana.student-service.internal
-      protocol: HTTPS
-      port: 443
-      tls:
-        mode: Terminate
-        certificateRefs:
-          - kind: Secret
-            name: grafana-tls
-      allowedRoutes:
-        namespaces:
-          from: All
