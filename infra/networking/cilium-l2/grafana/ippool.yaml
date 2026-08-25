@@ -1,0 +1,12 @@
+apiVersion: cilium.io/v2
+kind: CiliumLoadBalancerIPPool
+metadata:
+  name: grafana-pool
+spec:
+  blocks:
+    - start: 192.168.1.243
+      stop: 192.168.1.243
+  serviceSelector:
+    matchLabels:
+      io.kubernetes.service.name: kube-prometheus-stack-grafana
+      io.kubernetes.service.namespace: monitoring

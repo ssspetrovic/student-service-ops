@@ -1,0 +1,12 @@
+apiVersion: cilium.io/v2alpha1
+kind: CiliumL2AnnouncementPolicy
+metadata:
+  name: grafana-l2
+spec:
+  loadBalancerIPs: true
+  interfaces:
+    - ^eth[0-9]+
+  serviceSelector:
+    matchLabels:
+      io.kubernetes.service.name: kube-prometheus-stack-grafana
+      io.kubernetes.service.namespace: monitoring

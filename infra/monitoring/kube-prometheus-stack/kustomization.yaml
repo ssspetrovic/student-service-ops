@@ -4,7 +4,6 @@ resources:
   - namespace.yaml
   - node-exporter-namespace.yaml
   - grafana-admin.sops.yaml
+  - grafana-certificate.yaml
   - ocirepository.yaml
   - helmrelease.yaml
-  - http-redirect.yaml
-  - httproute.yaml
