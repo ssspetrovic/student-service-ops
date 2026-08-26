@@ -2,8 +2,6 @@ apiVersion: kustomize.config.k8s.io/v1beta1
 kind: Kustomization
 resources:
   - flux-system
-  - gateway-api-source.yaml
-  - gateway-api-crds.yaml
   - infra.yaml
   - cert-manager.yaml
   - cloudnative-pg.yaml
@@ -12,7 +10,6 @@ resources:
   - actions-runner-scale-set.yaml
   - cilium-l2.yaml
   - tailnet-dns.yaml
-  - gateway-api.yaml
   - storage.yaml
   - harbor-certificates.yaml
   - harbor.yaml

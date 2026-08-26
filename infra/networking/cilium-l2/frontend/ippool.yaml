@@ -1,14 +1,12 @@
 apiVersion: cilium.io/v2
 kind: CiliumLoadBalancerIPPool
 metadata:
-  name: gateway-pool
+  name: frontend-pool
 spec:
   blocks:
     - start: 192.168.1.240
       stop: 192.168.1.240
   serviceSelector:
-    matchExpressions:
-      - key: io.kubernetes.service.namespace
-        operator: In
-        values:
-          - gateway-system
+    matchLabels:
+      io.kubernetes.service.name: student-service-frontend
+      io.kubernetes.service.namespace: student-service
