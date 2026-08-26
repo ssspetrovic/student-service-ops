@@ -1,6 +1,6 @@
 # Cilium
 
-Cilium provides cluster networking and Gateway API support.
+Cilium provides cluster networking, Kubernetes Service forwarding, LoadBalancer IP allocation, and L2 announcements.
 
 ## Initial bootstrap
 
@@ -32,5 +32,6 @@ kubectl get nodes --watch
 
 ```bash
 kubectl -n kube-system get pods -l app.kubernetes.io/name=cilium
-kubectl get gatewayclass
+kubectl get ciliumloadbalancerippools
+kubectl get ciliuml2announcementpolicies
 ```

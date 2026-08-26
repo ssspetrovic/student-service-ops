@@ -1,6 +1,7 @@
 # Cilium L2
 
-Gives the shared Gateway a LAN address through Cilium L2.
+Gives the frontend, Harbor, tailnet DNS, and Grafana LoadBalancer Services their reserved LAN addresses through
+Cilium L2 announcements.
 
 ## Check state
 

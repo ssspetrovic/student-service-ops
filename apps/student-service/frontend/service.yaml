@@ -3,16 +3,22 @@ kind: Service
 metadata:
   name: student-service-frontend
   namespace: student-service
+  annotations:
+    lbipam.cilium.io/ips: 192.168.1.240
   labels:
     app.kubernetes.io/name: student-service-frontend
     app.kubernetes.io/component: web
 spec:
-  type: ClusterIP
+  type: LoadBalancer
   selector:
     app.kubernetes.io/name: student-service-frontend
     app.kubernetes.io/component: web
   ports:
     - name: http
       port: 80
-      targetPort: http
+      targetPort: http-redirect
+      protocol: TCP
+    - name: https
+      port: 443
+      targetPort: https
       protocol: TCP

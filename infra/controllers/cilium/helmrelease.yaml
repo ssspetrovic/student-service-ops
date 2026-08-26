@@ -19,11 +19,11 @@ spec:
     crds: CreateReplace
   values:
     envoyConfig:
-      enabled: true
+      enabled: false
+    envoy:
+      enabled: false
     gatewayAPI:
-      enabled: true
-      gatewayClass:
-        create: "true"
+      enabled: false
     ipam:
       mode: kubernetes
     l2announcements:
