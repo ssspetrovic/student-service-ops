@@ -15,4 +15,4 @@ COPY --from=build /app/dist /usr/share/nginx/html
 
 USER 101
 
-EXPOSE 8080
+EXPOSE 8080 8081 8443

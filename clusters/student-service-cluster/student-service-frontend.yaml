@@ -5,6 +5,7 @@ metadata:
   namespace: flux-system
 spec:
   dependsOn:
+    - name: cert-manager-issuers
     - name: student-service-backend
     - name: gateway-api
   interval: 10m
