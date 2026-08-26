@@ -42,6 +42,12 @@ spec:
             - name: http
               containerPort: 8080
               protocol: TCP
+            - name: http-redirect
+              containerPort: 8081
+              protocol: TCP
+            - name: https
+              containerPort: 8443
+              protocol: TCP
           readinessProbe:
             httpGet:
               path: /healthz
@@ -66,6 +72,9 @@ spec:
               cpu: 100m
               memory: 128Mi
           volumeMounts:
+            - name: tls
+              mountPath: /etc/nginx/tls
+              readOnly: true
             - name: tmp
               mountPath: /tmp
           securityContext:
@@ -75,6 +84,9 @@ spec:
               drop:
                 - ALL
       volumes:
+        - name: tls
+          secret:
+            secretName: student-service-tls
         - name: tmp
           emptyDir:
             sizeLimit: 32Mi
