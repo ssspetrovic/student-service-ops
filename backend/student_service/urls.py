@@ -16,6 +16,7 @@ Including another URLconf
 """
 
 from django.contrib import admin
+from django.db import DatabaseError, connection
 from django.http import JsonResponse
 from django.urls import include, path
 from rest_framework_simplejwt.views import TokenObtainPairView, TokenRefreshView
@@ -30,9 +31,27 @@ def health(_request):
     )
 
 
+def ready(_request):
+    try:
+        with connection.cursor() as cursor:
+            cursor.execute("SELECT 1")
+    except DatabaseError:
+        return JsonResponse(
+            {"status": "unavailable"},
+            status=503,
+            headers={"Cache-Control": "no-store"},
+        )
+
+    return JsonResponse(
+        {"status": "ok"},
+        headers={"Cache-Control": "no-store"},
+    )
+
+
 urlpatterns = [
     path("admin/", admin.site.urls),
     path("api/health/", health, name="health"),
+    path("api/ready/", ready, name="ready"),
     path("api/accounts/", include("accounts.urls")),
     path("api/admin/", include("accounts.admin_urls")),
     path("api/academics/", include("academics.urls")),
