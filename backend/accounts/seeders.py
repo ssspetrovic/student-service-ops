@@ -73,11 +73,9 @@ def create_or_update_user(
     user, _ = User.objects.get_or_create(
         email=email,
         defaults={
-            "username": email,
             "role": role,
         },
     )
-    user.username = email
     user.role = role
     user.first_name = first_name
     user.last_name = last_name

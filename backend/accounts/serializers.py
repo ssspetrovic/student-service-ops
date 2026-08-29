@@ -2,11 +2,10 @@ from django.contrib.auth.password_validation import validate_password
 from django.db import transaction
 from rest_framework import serializers
 
-from academics.academic_year import current_school_year
-from academics.models import Curriculum, Enrollment
-from finance.models import Wallet
+from academics.models import Curriculum
 
 from .models import ProfessorProfile, StudentProfile, User, UserRole
+from .services import provision_student_profile
 
 
 class CurrentUserSerializer(serializers.ModelSerializer):
@@ -73,7 +72,6 @@ class StudentRegistrationSerializer(serializers.Serializer):
     def validate(self, attrs):
         user = User(
             email=attrs["email"],
-            username=attrs["email"],
             first_name=attrs["first_name"],
             last_name=attrs["last_name"],
         )
@@ -90,21 +88,9 @@ class StudentRegistrationSerializer(serializers.Serializer):
             last_name=validated_data["last_name"],
             role=UserRole.STUDENT,
         )
-        profile = StudentProfile.objects.create(
+        return provision_student_profile(
             user=user,
             index_no=validated_data["index_no"],
             current_year_of_study=1,
             curriculum=curriculum,
         )
-        for curriculum_course in curriculum.curriculum_courses.filter(
-            semester=1,
-            is_mandatory=True,
-        ):
-            Enrollment.objects.create(
-                student=profile,
-                course=curriculum_course.course,
-                school_year=current_school_year(),
-                semester=curriculum_course.semester,
-            )
-        Wallet.objects.create(student=profile)
-        return profile
