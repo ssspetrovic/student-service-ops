@@ -57,7 +57,7 @@ spec:
                   key: DJANGO_SECRET_KEY
           readinessProbe:
             httpGet:
-              path: /api/health/
+              path: /api/ready/
               port: http
               httpHeaders:
                 - name: Host
