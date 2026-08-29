@@ -1,6 +1,8 @@
 from django.contrib.auth.password_validation import validate_password
 from django.db import transaction
+from django.db.models import Q
 from django.shortcuts import get_object_or_404
+from django.utils import timezone
 from rest_framework import serializers, status
 from rest_framework.generics import ListCreateAPIView, ListAPIView, UpdateAPIView
 from rest_framework.response import Response
@@ -10,6 +12,7 @@ from academics.models import Course, Curriculum, CurriculumCourse
 
 from .models import ProfessorProfile, StudentProfile, User, UserRole
 from .permissions import IsAdmin
+from .services import provision_student_profile, update_student_profile
 
 
 class AdminUserSerializer(serializers.ModelSerializer):
@@ -58,6 +61,24 @@ class AdminUserWriteSerializer(serializers.Serializer):
             queryset = queryset.exclude(pk=self.instance.pk)
         if queryset.exists():
             raise serializers.ValidationError("A user with this email already exists.")
+        return value
+
+    def validate_index_no(self, value):
+        queryset = StudentProfile.objects.filter(index_no=value)
+        if self.instance:
+            queryset = queryset.exclude(user=self.instance)
+        if queryset.exists():
+            raise serializers.ValidationError("A student with this index number already exists.")
+        return value
+
+    def validate_employee_no(self, value):
+        queryset = ProfessorProfile.objects.filter(employee_no=value)
+        if self.instance:
+            queryset = queryset.exclude(user=self.instance)
+        if queryset.exists():
+            raise serializers.ValidationError(
+                "A professor with this employee number already exists."
+            )
         return value
 
     def validate(self, attrs):
@@ -132,7 +153,7 @@ class AdminUserWriteSerializer(serializers.Serializer):
         )
 
         if role == UserRole.STUDENT:
-            StudentProfile.objects.create(
+            provision_student_profile(
                 user=user,
                 index_no=validated_data["index_no"],
                 curriculum=validated_data["curriculum_code"],
@@ -154,14 +175,13 @@ class AdminUserWriteSerializer(serializers.Serializer):
                 profile = getattr(instance, "student_profile", None)
                 if profile is None:
                     raise serializers.ValidationError({"profile": "Student profile is missing."})
-            if "index_no" in validated_data:
-                profile.index_no = validated_data["index_no"]
-            if "curriculum_code" in validated_data:
-                profile.curriculum = validated_data["curriculum_code"]
-            if "current_year_of_study" in validated_data:
-                profile.current_year_of_study = validated_data["current_year_of_study"]
             if any(field in validated_data for field in profile_fields):
-                profile.save()
+                update_student_profile(
+                    profile,
+                    index_no=validated_data.get("index_no"),
+                    curriculum=validated_data.get("curriculum_code"),
+                    current_year_of_study=validated_data.get("current_year_of_study"),
+                )
         else:
             profile = getattr(instance, "professor_profile", None)
             if "employee_no" in validated_data:
@@ -224,6 +244,22 @@ class AdminUserDeactivateView(APIView):
                 {"detail": "Only active users can be deactivated."},
                 status=status.HTTP_400_BAD_REQUEST,
             )
+        if user.role == UserRole.PROFESSOR:
+            professor = getattr(user, "professor_profile", None)
+            if professor and (
+                professor.courses.exists()
+                or professor.exams.filter(
+                    Q(date__gte=timezone.now()) | Q(registrations__status="active")
+                ).exists()
+            ):
+                return Response(
+                    {
+                        "detail": (
+                            "Reassign this professor's courses and pending exams deactivating the account."
+                        )
+                    },
+                    status=status.HTTP_400_BAD_REQUEST,
+                )
         user.is_active = False
         user.save(update_fields=["is_active"])
         return Response(AdminUserSerializer(user).data)
@@ -277,17 +313,13 @@ class AdminCourseUpdateSerializer(serializers.Serializer):
         queryset=ProfessorProfile.objects.filter(user__is_active=True), source="professor"
     )
 
-    def validate(self, attrs):
-        professor = attrs["professor"]
-        if self.instance.professor_id != professor.pk and self.instance.exams.exists():
-            raise serializers.ValidationError(
-                {"professor_id": "Courses with exam terms cannot be reassigned."}
-            )
-        return attrs
-
+    @transaction.atomic
     def update(self, instance, validated_data):
         instance.professor = validated_data["professor"]
         instance.save(update_fields=["professor"])
+        instance.exams.filter(
+            Q(date__gte=timezone.now()) | Q(registrations__status="active")
+        ).update(professor=instance.professor)
         return instance
 
 

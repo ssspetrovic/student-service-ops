@@ -19,7 +19,7 @@ class UserManager(BaseUserManager):
             raise ValueError("The email address must be specified.")
 
         email = self.normalize_email(email)
-        user = self.model(email=email, username=email, **extra_fields)
+        user = self.model(email=email, **extra_fields)
         user.set_password(password)
         user.save(using=self._db)
         return user
@@ -40,7 +40,7 @@ class UserManager(BaseUserManager):
 
 
 class User(AbstractUser):
-    username = models.CharField(max_length=150, unique=True, editable=False)
+    username = None
     email = models.EmailField(unique=True)
     role = models.CharField(
         max_length=20,

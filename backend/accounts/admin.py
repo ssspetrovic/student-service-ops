@@ -1,10 +1,9 @@
 from django.contrib import admin
 from django.contrib.auth.admin import UserAdmin
 
-from finance.models import Wallet
-
 from .forms import ManagedUserChangeForm, ManagedUserCreationForm
 from .models import ProfessorProfile, StudentProfile, User, UserRole
+from .services import provision_student_profile
 
 
 # Register your models here.
@@ -56,16 +55,14 @@ class CustomUserAdmin(UserAdmin):
     )
 
     def save_model(self, request, obj, form, change):
-        obj.username = obj.email
         super().save_model(request, obj, form, change)
         if not change and obj.role == UserRole.STUDENT:
-            profile = StudentProfile.objects.create(
+            provision_student_profile(
                 user=obj,
                 index_no=form.cleaned_data["index_no"],
                 current_year_of_study=form.cleaned_data["current_year_of_study"],
                 curriculum=form.cleaned_data["curriculum"],
             )
-            Wallet.objects.create(student=profile)
         elif not change and obj.role == UserRole.PROFESSOR:
             ProfessorProfile.objects.create(
                 user=obj,
