@@ -6,6 +6,10 @@ metadata:
 spec:
   dependsOn:
     - name: cert-manager
+  decryption:
+    provider: sops
+    secretRef:
+      name: sops-age
   interval: 10m
   path: ./infra/controllers/cert-manager/issuers
   prune: true

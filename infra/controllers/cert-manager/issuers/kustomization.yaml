@@ -1,6 +1,5 @@
 apiVersion: kustomize.config.k8s.io/v1beta1
 kind: Kustomization
 resources:
-  - selfsigned-clusterissuer.yaml
-  - ca-certificate.yaml
+  - student-service-root-ca.sops.yaml
   - ca-clusterissuer.yaml
