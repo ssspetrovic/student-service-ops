@@ -8,6 +8,13 @@ endpoint: https://192.168.1.50:6443
 cniConfig:
   name: none
 
+# Cilium handles Kubernetes Service forwarding; do not deploy kube-proxy.
+patches:
+  - |-
+    cluster:
+      proxy:
+        disabled: true
+
 controlPlane:
   talosImageURL: factory.talos.dev/nocloud-installer/376567988ad370138ad8b2698212367b8edcb69b5fd68c80be1f2ec7d603b4ba
 
