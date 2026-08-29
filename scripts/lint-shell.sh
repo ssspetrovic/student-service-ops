@@ -7,7 +7,10 @@ if [[ "${1:-}" == "--fix" ]]; then
 	fix_mode=true
 fi
 
-mapfile -d '' files < <(
+files=()
+while IFS= read -r -d '' file; do
+	files+=("$file")
+done < <(
 	find . \
 		-type f \
 		-name '*.sh' \
