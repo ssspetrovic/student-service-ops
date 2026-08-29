@@ -107,6 +107,14 @@ run = "cd backend && uv run pytest"
 description = "Run Django system checks with local settings"
 run = "cd backend && uv run python manage.py check"
 
+[tasks."backend:shell"]
+description = "Open a Django shell"
+run = "cd backend && uv run python manage.py shell"
+
+[tasks."backend:createsuperuser"]
+description = "Create a Django superuser"
+run = "cd backend && uv run python manage.py createsuperuser"
+
 [tasks."backend:run"]
 description = "Run the backend development server"
 run = "cd backend && uv run python manage.py runserver"
