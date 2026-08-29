@@ -3,6 +3,8 @@ kind: HelmRelease
 metadata:
   name: cert-manager
   namespace: flux-system
+  annotations:
+    kustomize.toolkit.fluxcd.io/prune: disabled
 spec:
   interval: 30m
   releaseName: cert-manager
