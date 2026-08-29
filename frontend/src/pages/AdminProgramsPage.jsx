@@ -13,6 +13,7 @@ function AdminProgramsPage() {
   const [error, setError] = useState("");
   const [success, setSuccess] = useState("");
   const [submitting, setSubmitting] = useState(false);
+  const [isFormValid, setIsFormValid] = useState(false);
 
   const load = () =>
     api
@@ -37,6 +38,7 @@ function AdminProgramsPage() {
         Object.fromEntries(new FormData(form)),
       );
       form.reset();
+      setIsFormValid(false);
       setSuccess("Curriculum created.");
       load();
     } catch (requestError) {
@@ -48,11 +50,19 @@ function AdminProgramsPage() {
     }
   };
 
+  const updateFormValidity = (event) => {
+    setIsFormValid(event.currentTarget.checkValidity());
+  };
+
   return (
     <main className="container py-5">
       <h1 className="h2 mb-4">Curricula</h1>
       {error && <ErrorState message={error} />}
-      <form className="card shadow-sm mb-4" onSubmit={submit}>
+      <form
+        className="card shadow-sm mb-4"
+        onChange={updateFormValidity}
+        onSubmit={submit}
+      >
         <div className="card-body row g-3">
           <div className="col-md-3">
             <label className="form-label">Code</label>
@@ -95,7 +105,7 @@ function AdminProgramsPage() {
         <div className="card-footer bg-transparent text-end">
           <button
             className="btn btn-primary"
-            disabled={submitting}
+            disabled={submitting || !isFormValid}
             type="submit"
           >
             {submitting ? "Creating…" : "Create curriculum"}

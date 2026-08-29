@@ -21,6 +21,7 @@ function WalletPage() {
   const [depositError, setDepositError] = useState("");
   const [successMessage, setSuccessMessage] = useState("");
   const [isDepositing, setIsDepositing] = useState(false);
+  const [isDepositFormValid, setIsDepositFormValid] = useState(false);
 
   const loadWallet = async () => {
     setError("");
@@ -71,6 +72,7 @@ function WalletPage() {
     try {
       await api.post("/finance/deposit/", { amount });
       setAmount("");
+      setIsDepositFormValid(false);
       setSuccessMessage("Funds deposited.");
       await loadWallet();
     } catch (requestError) {
@@ -80,6 +82,11 @@ function WalletPage() {
     } finally {
       setIsDepositing(false);
     }
+  };
+
+  const changeDepositAmount = (event) => {
+    setAmount(event.target.value);
+    setIsDepositFormValid(event.currentTarget.form.checkValidity());
   };
 
   return (
@@ -114,7 +121,7 @@ function WalletPage() {
                     id="deposit-amount"
                     inputMode="decimal"
                     min="1.00"
-                    onChange={(event) => setAmount(event.target.value)}
+                    onChange={changeDepositAmount}
                     required
                     step="0.01"
                     type="number"
@@ -124,7 +131,7 @@ function WalletPage() {
                 <div className="col-sm-auto">
                   <button
                     className="btn btn-primary"
-                    disabled={isDepositing}
+                    disabled={isDepositing || !isDepositFormValid}
                     type="submit"
                   >
                     {isDepositing ? (

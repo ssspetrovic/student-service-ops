@@ -24,6 +24,7 @@ function AdminUserFormPage() {
   const [curricula, setCurricula] = useState(null);
   const [error, setError] = useState("");
   const [submitting, setSubmitting] = useState(false);
+  const [isCreateFormValid, setIsCreateFormValid] = useState(false);
 
   useEffect(() => {
     const loadForm = async () => {
@@ -56,6 +57,12 @@ function AdminUserFormPage() {
       ...current,
       [event.target.name]: event.target.value,
     }));
+  };
+
+  const updateCreateFormValidity = (event) => {
+    if (!isEdit) {
+      setIsCreateFormValid(event.currentTarget.checkValidity());
+    }
   };
 
   const submit = async (event) => {
@@ -105,7 +112,11 @@ function AdminUserFormPage() {
         </Link>
       </div>
       {error && <ErrorState message={error} />}
-      <form className="card shadow-sm" onSubmit={submit}>
+      <form
+        className="card shadow-sm"
+        onChange={updateCreateFormValidity}
+        onSubmit={submit}
+      >
         <div className="card-body row g-3">
           <div className="col-md-6">
             <label className="form-label">First name</label>
@@ -224,7 +235,7 @@ function AdminUserFormPage() {
         <div className="card-footer bg-transparent text-end">
           <button
             className="btn btn-primary"
-            disabled={submitting}
+            disabled={submitting || (!isEdit && !isCreateFormValid)}
             type="submit"
           >
             {submitting ? "Saving…" : "Save user"}
