@@ -15,7 +15,10 @@ if [[ ${#search_dirs[@]} -eq 0 ]]; then
 	exit 0
 fi
 
-mapfile -d '' files < <(
+files=()
+while IFS= read -r -d '' file; do
+	files+=("$file")
+done < <(
 	find "${search_dirs[@]}" \
 		-type f \
 		\( -name '*.yaml' -o -name '*.yml' \) \
