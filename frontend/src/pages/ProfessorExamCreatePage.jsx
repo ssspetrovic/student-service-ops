@@ -130,7 +130,7 @@ function ProfessorExamCreatePage() {
           <div className="card-footer bg-transparent text-end">
             <button
               className="btn btn-primary"
-              disabled={isSubmitting || !courseCode}
+              disabled={isSubmitting || !courseCode || !date}
               type="submit"
             >
               {isSubmitting ? "Scheduling exam…" : "Schedule exam"}

@@ -11,6 +11,7 @@ function StudentRegistrationPage() {
   const [error, setError] = useState("");
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [isSuccessModalOpen, setIsSuccessModalOpen] = useState(false);
+  const [isFormValid, setIsFormValid] = useState(false);
 
   useEffect(() => {
     let isCurrent = true;
@@ -64,6 +65,10 @@ function StudentRegistrationPage() {
     }
   };
 
+  const updateFormValidity = (event) => {
+    setIsFormValid(event.currentTarget.checkValidity());
+  };
+
   return (
     <main className="container py-5">
       <div className="row justify-content-center">
@@ -77,7 +82,7 @@ function StudentRegistrationPage() {
               {error && <ErrorState message={error} />}
               {!curricula && !error && <LoadingState label="curricula" />}
               {curricula && (
-                <form onSubmit={handleSubmit}>
+                <form onChange={updateFormValidity} onSubmit={handleSubmit}>
                   <div className="row">
                     <div className="col-md-6 mb-3">
                       <label className="form-label" htmlFor="first-name">
@@ -180,7 +185,7 @@ function StudentRegistrationPage() {
                   </div>
                   <button
                     className="btn btn-primary w-100"
-                    disabled={isSubmitting}
+                    disabled={isSubmitting || !isFormValid}
                     type="submit"
                   >
                     {isSubmitting ? "Registering…" : "Register"}

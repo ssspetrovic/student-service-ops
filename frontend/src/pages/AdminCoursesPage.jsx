@@ -49,6 +49,7 @@ function AdminCoursesPage() {
   const [success, setSuccess] = useState("");
   const [saving, setSaving] = useState(null);
   const [creating, setCreating] = useState(false);
+  const [isCreateFormValid, setIsCreateFormValid] = useState(false);
 
   const load = () =>
     Promise.all([
@@ -100,6 +101,10 @@ function AdminCoursesPage() {
     }));
   };
 
+  const updateCreateFormValidity = (event) => {
+    setIsCreateFormValid(event.currentTarget.checkValidity());
+  };
+
   const createCourse = async (event) => {
     event.preventDefault();
     setCreating(true);
@@ -129,7 +134,11 @@ function AdminCoursesPage() {
         <LoadingState label="courses" />
       )}
       {courses && professors && curricula && (
-        <form className="card shadow-sm mb-4" onSubmit={createCourse}>
+        <form
+          className="card shadow-sm mb-4"
+          onChange={updateCreateFormValidity}
+          onSubmit={createCourse}
+        >
           <div className="card-body row g-3">
             {courseFields
               .slice(0, 3)
@@ -225,7 +234,7 @@ function AdminCoursesPage() {
           <div className="card-footer bg-transparent text-end">
             <button
               className="btn btn-primary"
-              disabled={creating}
+              disabled={creating || !isCreateFormValid}
               type="submit"
             >
               {creating ? "Creating…" : "Create course"}
