@@ -14,10 +14,6 @@ spec:
     app.kubernetes.io/name: student-service-frontend
     app.kubernetes.io/component: web
   ports:
-    - name: http
-      port: 80
-      targetPort: http-redirect
-      protocol: TCP
     - name: https
       port: 443
       targetPort: https
