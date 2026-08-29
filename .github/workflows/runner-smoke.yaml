@@ -3,6 +3,8 @@ name: Runner Smoke Test
 on:
   workflow_dispatch:
 
+permissions: {}
+
 jobs:
   hello:
     runs-on: student-service-runner
