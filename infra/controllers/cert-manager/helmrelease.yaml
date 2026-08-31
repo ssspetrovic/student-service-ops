@@ -10,15 +10,10 @@ spec:
   releaseName: cert-manager
   targetNamespace: cert-manager
   storageNamespace: cert-manager
-  chart:
-    spec:
-      chart: cert-manager
-      reconcileStrategy: ChartVersion
-      sourceRef:
-        kind: HelmRepository
-        name: cert-manager
-        namespace: flux-system
-      version: 1.20.2
+  chartRef:
+    kind: OCIRepository
+    name: cert-manager
+    namespace: flux-system
   install:
     createNamespace: true
     crds: CreateReplace

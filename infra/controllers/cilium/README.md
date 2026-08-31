@@ -8,9 +8,7 @@ Install Cilium once before flux to enable networking for pods.
 Flux later manages the release with the same kube-proxy replacement and KubePrism settings.
 
 ```bash
-helm repo add cilium https://helm.cilium.io/
-helm repo update
-helm install cilium cilium/cilium \
+helm install cilium oci://quay.io/cilium/charts/cilium \
   --version 1.19.3 \
   --namespace kube-system \
   --set ipam.mode=kubernetes \
