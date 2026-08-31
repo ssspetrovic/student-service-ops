@@ -24,6 +24,8 @@ helm install cilium oci://quay.io/cilium/charts/cilium \
   --set cgroup.hostRoot=/sys/fs/cgroup
 ```
 
+## Check state
+
 After running the Cilium installation, it's important to wait for the nodes to become ready before proceeding with the
 Flux bootstrap.
 
@@ -32,12 +34,4 @@ You can check the Cilium related pods like this:
 ```bash
 kubectl -n kube-system get pods -l app.kubernetes.io/name=cilium --watch
 kubectl get nodes --watch
-```
-
-## Check state
-
-```bash
-kubectl -n kube-system get pods -l app.kubernetes.io/name=cilium
-kubectl get ciliumloadbalancerippools
-kubectl get ciliuml2announcementpolicies
 ```
