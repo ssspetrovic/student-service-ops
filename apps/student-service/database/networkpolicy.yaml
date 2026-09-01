@@ -17,20 +17,12 @@ spec:
           podSelector:
             matchLabels:
               app.kubernetes.io/name: cloudnative-pg
-      ports:
-        - protocol: TCP
-          port: 8000
-        - protocol: TCP
-          port: 5432
-    - from:
         - podSelector:
             matchLabels:
               cnpg.io/cluster: student-service-db
       ports:
-        - protocol: TCP
-          port: 8000
-        - protocol: TCP
-          port: 5432
+        - port: 8000
+        - port: 5432
     - from:
         - namespaceSelector:
             matchLabels:
@@ -39,5 +31,4 @@ spec:
             matchLabels:
               app.kubernetes.io/name: student-service-backend
       ports:
-        - protocol: TCP
-          port: 5432
+        - port: 5432

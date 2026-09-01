@@ -39,8 +39,6 @@ spec:
     updateStrategy:
       type: Recreate
     persistence:
-      enabled: true
-      resourcePolicy: keep
       persistentVolumeClaim:
         registry:
           storageClass: local-path
@@ -48,21 +46,11 @@ spec:
         jobservice:
           jobLog:
             storageClass: local-path
-            size: 1Gi
         database:
           storageClass: local-path
           size: 5Gi
         redis:
           storageClass: local-path
           size: 2Gi
-        trivy:
-          storageClass: local-path
-          size: 5Gi
-    database:
-      type: internal
-    redis:
-      type: internal
     trivy:
-      enabled: false
-    metrics:
       enabled: false
