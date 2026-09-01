@@ -126,7 +126,7 @@ jobs:
           base: main
           delete-branch: true
           add-paths: |
-            apps/student-service/migrations/job.yaml
+            apps/student-service/backend/bootstrap/job.yaml
             apps/student-service/backend/deployment.yaml
           commit-message: "chore: auto-promote backend image"
           title: "chore: auto-promote backend image"

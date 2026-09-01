@@ -10,7 +10,7 @@ script_dir="$(cd -- "$(dirname -- "${BASH_SOURCE[0]}")" && pwd)"
 cd "$script_dir/.."
 
 image="harbor.student-service.internal/student-service/backend:$1"
-job="apps/student-service/migrations/job.yaml"
+job="apps/student-service/backend/bootstrap/job.yaml"
 deployment="apps/student-service/backend/deployment.yaml"
 
 read_image() {

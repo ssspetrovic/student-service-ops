@@ -11,7 +11,7 @@ spec:
     secretRef:
       name: sops-age
   interval: 10m
-  path: ./apps/student-service/migrations
+  path: ./apps/student-service/backend/bootstrap
   prune: true
   force: true
   wait: true

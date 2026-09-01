@@ -49,7 +49,7 @@ read_image() {
 backend_root="$temp_root/backend"
 prepare_repo "$backend_root" \
 	scripts/update-backend-image.sh \
-	apps/student-service/migrations/job.yaml \
+	apps/student-service/backend/bootstrap/job.yaml \
 	apps/student-service/backend/deployment.yaml
 
 backend_tag="ci-validation-backend"
@@ -59,10 +59,11 @@ backend_image="harbor.student-service.internal/student-service/backend:$backend_
 	./scripts/update-backend-image.sh "$backend_tag"
 )
 assert_changed_files "$backend_root" \
-	apps/student-service/backend/deployment.yaml \
-	apps/student-service/migrations/job.yaml
+	apps/student-service/backend/bootstrap/job.yaml \
+	apps/student-service/backend/deployment.yaml
+
 [[ "$(read_image "$backend_root" apps/student-service/backend/deployment.yaml backend)" == "$backend_image" ]]
-[[ "$(read_image "$backend_root" apps/student-service/migrations/job.yaml migrations)" == "$backend_image" ]]
+[[ "$(read_image "$backend_root" apps/student-service/backend/bootstrap/job.yaml migrations)" == "$backend_image" ]]
 
 frontend_root="$temp_root/frontend"
 prepare_repo "$frontend_root" \
