@@ -58,6 +58,6 @@ flux reconcile ks flux-system -n flux-system --with-source
 
 ```bash
 flux check
-flux get ks -A | column
+flux get kustomizations -A
 flux get helmreleases -A
 ```

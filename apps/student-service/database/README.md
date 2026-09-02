@@ -30,4 +30,5 @@ As explained in the storage README, the caveat here is that the data can be lost
 
 ```bash
 kubectl -n student-service-database get pods,pvc,svc
+kubectl cnpg status -n student-service-database student-service-db
 ```

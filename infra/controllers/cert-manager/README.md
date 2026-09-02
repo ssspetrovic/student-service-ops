@@ -56,5 +56,5 @@ Note: you might need to restart your browser in order for certificates to strrt 
 
 ```bash
 kubectl get pods -n cert-manager
-kubectl get certificates -A
+kubectl get certificates --all-namespaces
 ```

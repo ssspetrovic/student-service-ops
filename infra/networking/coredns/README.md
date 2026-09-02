@@ -13,5 +13,7 @@ CoreDNS maps the frontend, Harbor and Grafana hostnames to their private LB addr
 ## Check state
 
 ```bash
+kubectl -n kube-system rollout status deployment/coredns --timeout=5m
 kubectl -n kube-system get configmap coredns -o yaml
+kubectl run --rm -i --restart=Never dnsutils --image=registry.k8s.io/e2e-test-images/dnsutils:1.3 -- nslookup student-service.internal
 ```

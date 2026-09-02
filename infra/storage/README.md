@@ -16,5 +16,6 @@ The storage path in this case is set to: `/var/mnt/local-path-provisioner` on bo
 
 ```bash
 kubectl get storageclass
-kubectl get pods -n local-path-storage
+kubectl -n local-path-storage get pods
+kubectl -n local-path-storage logs -l app=local-path-provisioner
 ```

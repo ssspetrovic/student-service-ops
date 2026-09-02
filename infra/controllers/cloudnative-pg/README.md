@@ -9,5 +9,5 @@ Services and storage resources that are used.
 
 ```bash
 kubectl get pods -n cnpg-system
-kubectl get crds | grep cnpg.io
+kubectl cnpg status -n student-service-database student-service-db
 ```

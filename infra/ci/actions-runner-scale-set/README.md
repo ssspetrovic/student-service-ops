@@ -12,5 +12,7 @@ Some of the options configured for this pool are:
 ## Check state
 
 ```bash
-kubectl get pods -n arc-runners
+kubectl get pods -n arc-runners -l app.kubernetes.io/component=runner-scale-set-listener
+kubectl get pods -n arc-runners -l app.kubernetes.io/component=runner
+kubectl logs -n arc-runners -l actions.github.com/scale-set-name=student-service-runner
 ```

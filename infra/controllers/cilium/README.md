@@ -32,6 +32,6 @@ Flux bootstrap.
 You can check the Cilium related pods like this:
 
 ```bash
-kubectl -n kube-system get pods -l app.kubernetes.io/name=cilium --watch
-kubectl get nodes --watch
+cilium status --wait
+cilium connectivity test
 ```

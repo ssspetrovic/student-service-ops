@@ -43,8 +43,10 @@ tailscale up --accept-dns --accept-routes
 ## Check state
 
 ```bash
-kubectl -n tailnet-dns get deployment,service
+kubectl -n tailnet-dns rollout status deployment/student-service-dns --timeout=5m
+kubectl -n tailnet-dns get service student-service-dns
 dig @192.168.1.242 student-service.internal
+resolvectl query student-service.internal
 ```
 
 One DNS lookup is enough to confirm the service is running and answering requests.

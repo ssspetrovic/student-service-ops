@@ -9,5 +9,6 @@ The runner pool configuration is described in the [runner scale-set README](../.
 ## CHeck state
 
 ```bash
-kubectl get pods -n arc-systems
+kubectl get pods -n arc-systems -l app.kubernetes.io/name=gha-runner-scale-set-controller
+kubectl logs -n arc-systems -l app.kubernetes.io/name=gha-runner-scale-set-controller
 ```

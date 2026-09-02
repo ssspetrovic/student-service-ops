@@ -35,4 +35,6 @@ This folder contains the IP pool and L2 announcement policy for:
 ```bash
 kubectl get ciliumloadbalancerippools
 kubectl get ciliuml2announcementpolicies
+kubectl get services -A -o wide
+kubectl -n kube-system get leases | grep cilium-l2announce
 ```

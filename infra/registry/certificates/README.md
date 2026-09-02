@@ -10,6 +10,7 @@ The certificate is finally mounted by Harbor which allows for the HTTPS serving.
 ## Check state
 
 ```bash
-kubectl get certificate -n harbor
+kubectl get certificate/harbor-tls -n harbor
+kubectl describe certificate/harbor-tls -n harbor
 kubectl get secret -n harbor harbor-tls
 ```

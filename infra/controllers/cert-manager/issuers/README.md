@@ -34,6 +34,6 @@ because the CA keypair is saved in the mentioned encrypted yaml.
 ## Check state
 
 ```bash
-kubectl get clusterissuer student-service-ca
+kubectl get clusterissuer student-service-ca -o wide
 kubectl -n cert-manager get secret student-service-root-ca
 ```
