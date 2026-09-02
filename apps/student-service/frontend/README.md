@@ -1,6 +1,16 @@
 # Student Service Frontend
 
-Serves `student-service.internal` through a Cilium LoadBalancer at `192.168.1.240` and proxies `/api/` to the private
-backend Service. Nginx terminates TLS with the cert-manager-managed certificate.
+Frontend is served as an Nginx deployment.
+It can be accessed form <https://student-service.internal>.
+Nginx also forwards the API requests to the backend application.
 
-It reuses the encrypted `harbor-pull` image-pull Secret.
+Frontend has its own certificate secret that Nginx mounts and uses to provide HTTPS endpoint.
+
+LoadBalancer Service is used to expose the frontend at `192.168.1.240`.
+
+## State check
+
+```bash
+kubectl -n student-service get deployment,service,certificate
+curl https://student-service.internal/healthz
+```

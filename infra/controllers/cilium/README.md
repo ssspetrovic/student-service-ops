@@ -1,11 +1,14 @@
 # Cilium
 
-Cilium provides cluster networking, Kubernetes Service forwarding, LoadBalancer IP allocation, and L2 announcements.
+Cilium provides pod networking, Kubernetes Service forwarding, LoadBalancer IP allocation, and L2 announcements.
+It replaces both kube-proxy and the former MetalLB deployment, so the cluster does not need separate controllers for
+those responsibilities.
 
 ## Initial bootstrap
 
-Install Cilium once before flux to enable networking for pods.
-Flux later manages the release with the same kube-proxy replacement and KubePrism settings.
+Before Cilium is installed, Kubernetes has no pod network and the nodes remain `NotReady`. Install it once before
+bootstrapping Flux. Flux then takes ownership of the same Helm release and keeps it aligned with the
+`HelmRelease` configuration.
 
 ```bash
 helm install cilium oci://quay.io/cilium/charts/cilium \
@@ -21,17 +24,14 @@ helm install cilium oci://quay.io/cilium/charts/cilium \
   --set cgroup.hostRoot=/sys/fs/cgroup
 ```
 
-Wait for Cilium and the nodes to become ready before bootstrapping flux:
-
-```bash
-kubectl -n kube-system get pods -l app.kubernetes.io/name=cilium --watch
-kubectl get nodes --watch
-```
-
 ## Check state
 
+After running the Cilium installation, it's important to wait for the nodes to become ready before proceeding with the
+Flux bootstrap.
+
+You can check the Cilium related pods like this:
+
 ```bash
-kubectl -n kube-system get pods -l app.kubernetes.io/name=cilium
-kubectl get ciliumloadbalancerippools
-kubectl get ciliuml2announcementpolicies
+cilium status --wait
+cilium connectivity test
 ```

@@ -1,10 +1,14 @@
 # Actions Runner Controller
 
-This controller runs the repository's GitHub Actions runners.
+Action Runner Controller (ARC) is what manages the self-hosted GitHub Actions runners in the cluster.
 
-## Check state
+The controller creates or removes runner pods as jobs from workflows get scheduled.
+
+The runner pool configuration is described in the [runner scale-set README](../../ci/actions-runner-scale-set/README.md).
+
+## CHeck state
 
 ```bash
-flux get kustomization actions-runner-controller -n flux-system
-kubectl get pods -n arc-systems
+kubectl get pods -n arc-systems -l app.kubernetes.io/name=gha-runner-scale-set-controller
+kubectl logs -n arc-systems -l app.kubernetes.io/name=gha-runner-scale-set-controller
 ```

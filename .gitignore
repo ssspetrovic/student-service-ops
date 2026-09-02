@@ -1,5 +1,5 @@
 # Generated Talos machine configs and local talosconfig.
-infra/talos/clusterconfig/
+talos/clusterconfig/
 talosconfig
 
 # Local kubeconfig copies.
