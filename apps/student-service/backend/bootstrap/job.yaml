@@ -22,7 +22,7 @@ spec:
           type: RuntimeDefault
       containers:
         - name: migrations
-          image: harbor.student-service.internal/student-service/backend:42cccc328099d789d09b86e3f31d5d6335cd43d6
+          image: harbor.student-service.internal/student-service/backend:193e622509b41fb31dedf802e121d804ae83386b
           command: [".venv/bin/python", "manage.py", "migrate", "--noinput"]
           envFrom:
             - configMapRef:
