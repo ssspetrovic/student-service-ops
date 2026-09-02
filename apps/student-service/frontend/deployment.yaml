@@ -29,7 +29,7 @@ spec:
           type: RuntimeDefault
       containers:
         - name: frontend
-          image: harbor.student-service.internal/student-service/frontend:8dd9c83fba460915fe68578fe4a5fcb3805801d8
+          image: harbor.student-service.internal/student-service/frontend:193e622509b41fb31dedf802e121d804ae83386b
           ports:
             - name: http
               containerPort: 8080
