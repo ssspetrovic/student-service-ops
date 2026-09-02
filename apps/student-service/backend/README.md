@@ -2,20 +2,26 @@
 
 IN this directory, both migrations and backend are covered.
 
-## Migrations
+Deployment order is the following:
 
-In order for the backend to have the actual models as fields in databases, migration applying is required.
+1. DB
+2. bootstrap + migrations
+3. backend
+4. frontend
+
+## Bootstrap/migrations
+
+In order for the backend to have the actual DB tables and columns, migration applying is required.
 Migrations are not only required for the initial database table fill, it's also required for other updates that can be
 introduced with promotion flows.
 
 For migrations to work, there are some prerequisites reuqired like Django config settings (variables).
-Those configs are placed in the `bootstrap/` directory which contains Django related secrets, DB connection string,
-Harbor CA, etc.
+Those configs are placed in the `bootstrap/` directory which contains Django related secrets, Harbor CA, etc.
 
 What the migration job itself does is quite simple:
 
 ```bash
-./venv/bin/python manage.py migrate --noinput
+.venv/bin/python manage.py migrate --noinput
 ```
 
 ## Backend access
@@ -28,8 +34,8 @@ It's accessible through the internal connection: `student-service-backend.studen
 
 There are two simple checks that backend deployment uses:
 
-- `/api/ready`: used to check whether the pod can receive any traffic
-- `/api/health`: used to check whether the deployment container is healthy or if it needs to be restarted
+- `/api/ready/`: used to check whether the pod can receive any traffic
+- `/api/health/`: used to check whether the deployment container is healthy or if it needs to be restarted
 
 ## Check state
 
