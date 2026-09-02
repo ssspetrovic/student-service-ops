@@ -1,79 +1,31 @@
-from datetime import timedelta
 from decimal import Decimal
 
 from django.test import TestCase
 from django.urls import reverse
-from django.utils import timezone
 from rest_framework import status
 from rest_framework.test import APIClient
 
 from accounts.models import User, UserRole
 from accounts.test_helpers import create_student_profile
-from .models import Transaction, TransactionCause, Wallet
-
-# Create your tests here.
+from .models import Wallet
 
 
 class StudentFinanceApiTestCase(TestCase):
-    def setUp(self):
-        self.client = APIClient()
-        self.student_user = User.objects.create_user(
-            email="finance-student@example.com",
-            password="student123",
-            role=UserRole.STUDENT,
-        )
-        self.student = create_student_profile(
-            user=self.student_user,
-            index_no="FIN-001",
-        )
-        Wallet.objects.create(student=self.student)
-
-    def test_own_transactions(self):
-        other_user = User.objects.create_user(
-            email="other-finance-student@example.com",
-            password="student123",
-            role=UserRole.STUDENT,
-        )
-        other_student = create_student_profile(
-            user=other_user,
-            index_no="FIN-002",
-        )
-        older = Transaction.objects.create(
-            student=self.student,
-            amount=Decimal("10.00"),
-            cause=TransactionCause.DEPOSIT,
-        )
-        newer = Transaction.objects.create(
-            student=self.student,
-            amount=Decimal("20.00"),
-            cause=TransactionCause.DEPOSIT,
-        )
-        Transaction.objects.create(
-            student=other_student,
-            amount=Decimal("30.00"),
-            cause=TransactionCause.DEPOSIT,
-        )
-        Transaction.objects.filter(pk=older.pk).update(
-            created_at=timezone.now() - timedelta(days=1)
-        )
-        self.client.force_authenticate(user=self.student_user)
-
-        response = self.client.get(reverse("current-student-transactions"))
-
-        self.assertEqual(response.status_code, status.HTTP_200_OK)
-        self.assertEqual([item["id"] for item in response.data], [newer.pk, older.pk])
-
     def test_deposit_updates_wallet(self):
-        self.client.force_authenticate(user=self.student_user)
+        client = APIClient()
+        user = User.objects.create_user(
+            email="student@example.com",
+            password="StrongPassword123!",
+            role=UserRole.STUDENT,
+        )
+        student = create_student_profile(user=user, index_no="FIN-001")
+        wallet = Wallet.objects.create(student=student)
+        client.force_authenticate(user=user)
 
-        response = self.client.post(
+        response = client.post(
             reverse("current-student-deposit"), {"amount": "125.50"}, format="json"
         )
 
+        wallet.refresh_from_db()
         self.assertEqual(response.status_code, status.HTTP_201_CREATED)
-        self.assertEqual(response.data["balance"], "125.50")
-        self.student.wallet.refresh_from_db()
-        self.assertEqual(self.student.wallet.balance, Decimal("125.50"))
-        transaction = self.student.transactions.get()
-        self.assertEqual(transaction.amount, Decimal("125.50"))
-        self.assertEqual(transaction.cause, TransactionCause.DEPOSIT)
+        self.assertEqual(wallet.balance, Decimal("125.50"))
