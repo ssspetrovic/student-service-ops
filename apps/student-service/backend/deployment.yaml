@@ -28,7 +28,7 @@ spec:
           type: RuntimeDefault
       containers:
         - name: backend
-          image: harbor.student-service.internal/student-service/backend:3ca8b4bd5e95f15f751e0d42ed0a0dd7358ef5e7
+          image: harbor.student-service.internal/student-service/backend:c1072d13a56e7cbdd52cbfa3941f921fcaf138ad
           ports:
             - name: http
               containerPort: 8000
