@@ -25,7 +25,7 @@ There are some other checks that are preconfigured through mise:
 
 ```bash
 mise run backend:check # check for common errors and warnings
-mise run:backend:lint # lint chcek
+mise run backend:lint # lint chcek
 mise run backend:test # runs the test suite
 mise run backend:shell # creates the Django shell
 mise run backend:createsuperuser # superuser creation process

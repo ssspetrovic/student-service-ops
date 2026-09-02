@@ -7,7 +7,7 @@ for more info.
 
 ## Database
 
-There is only one instance of PostgreSQL run in the cluster and it's in `student-service-databas` ns.
+There is only one instance of PostgreSQL run in the cluster and it's in `student-service-database` ns.
 
 The DB is not exposed outside of the cluster.
 

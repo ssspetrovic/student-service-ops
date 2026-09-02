@@ -9,7 +9,7 @@ For the service ddresses and a more abstract picture, check [networking overview
 
 ## How it works
 
-A DNS server runs at `192.168.1.142`. Tailscale uses this server only for `student-service.internal` names.
+A DNS server runs at `192.168.1.242`. Tailscale uses this server only for `student-service.internal` names.
 All other names use the usual DNS server that's default on the device.
 
 ## Tailscale setup
