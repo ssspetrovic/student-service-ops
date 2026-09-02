@@ -54,7 +54,7 @@ The main technologies used in this project are:
 - Database: PostgreSQL managed by CloudNativePG
 - Platform: Talos Linux and Kubernetes
 - GitOps: Flux, Kustomize and Helm
-- Networking: Cilium and Kubernetes Gateway API
+- Networking: Cilium LB IPAM + L2 announcements and Tailscale DNS
 - Container registry: Harbor
 - Secrets and certificates: SOPS, age and cert-manager
 - CI/CD and monitoring: GitHub Actions, Trivy, Prometheus and Grafana
