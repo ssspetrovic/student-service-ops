@@ -21,13 +21,6 @@ spec:
       automountServiceAccountToken: false
       imagePullSecrets:
         - name: harbor-pull
-      affinity:
-        nodeAffinity:
-          requiredDuringSchedulingIgnoredDuringExecution:
-            nodeSelectorTerms:
-              - matchExpressions:
-                  - key: node-role.kubernetes.io/control-plane
-                    operator: DoesNotExist
       securityContext:
         runAsNonRoot: true
         runAsUser: 101
@@ -37,20 +30,16 @@ spec:
       containers:
         - name: frontend
           image: harbor.student-service.internal/student-service/frontend:8dd9c83fba460915fe68578fe4a5fcb3805801d8
-          imagePullPolicy: IfNotPresent
           ports:
             - name: http
               containerPort: 8080
-              protocol: TCP
             - name: https
               containerPort: 8443
-              protocol: TCP
           readinessProbe:
             httpGet:
               path: /healthz
               port: http
             initialDelaySeconds: 3
-            periodSeconds: 10
             timeoutSeconds: 2
             failureThreshold: 6
           livenessProbe:
@@ -60,7 +49,6 @@ spec:
             initialDelaySeconds: 10
             periodSeconds: 20
             timeoutSeconds: 2
-            failureThreshold: 3
           resources:
             requests:
               cpu: 25m
@@ -78,8 +66,7 @@ spec:
             allowPrivilegeEscalation: false
             readOnlyRootFilesystem: true
             capabilities:
-              drop:
-                - ALL
+              drop: ["ALL"]
       volumes:
         - name: tls
           secret:

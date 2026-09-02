@@ -28,7 +28,6 @@ spec:
     alertmanager:
       enabled: false
     defaultRules:
-      create: true
       disabled:
         PrometheusErrorSendingAlertsToAnyAlertmanager: true
         PrometheusErrorSendingAlertsToSomeAlertmanagers: true
@@ -42,8 +41,6 @@ spec:
         kubeSchedulerRecording: false
         windows: false
     grafana:
-      enabled: true
-      defaultDashboardsEnabled: true
       admin:
         existingSecret: kube-prometheus-stack-grafana-admin
         userKey: admin-user
@@ -116,23 +113,16 @@ spec:
       enabled: false
     kubeScheduler:
       enabled: false
-    kubeStateMetrics:
-      enabled: true
     nodeExporter:
-      enabled: true
       operatingSystems:
         aix:
           enabled: false
         darwin:
           enabled: false
-        linux:
-          enabled: true
     prometheus-node-exporter:
       namespaceOverride: monitoring-node-exporter
     prometheus:
-      enabled: true
       prometheusSpec:
-        replicas: 1
         retention: 24h
         resources:
           requests:
@@ -140,7 +130,3 @@ spec:
             memory: 200Mi
         storageSpec:
           emptyDir: {}
-    prometheusOperator:
-      enabled: true
-    windowsMonitoring:
-      enabled: false

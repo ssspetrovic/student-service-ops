@@ -21,13 +21,6 @@ spec:
       automountServiceAccountToken: false
       imagePullSecrets:
         - name: harbor-pull
-      affinity:
-        nodeAffinity:
-          requiredDuringSchedulingIgnoredDuringExecution:
-            nodeSelectorTerms:
-              - matchExpressions:
-                  - key: node-role.kubernetes.io/control-plane
-                    operator: DoesNotExist
       securityContext:
         runAsNonRoot: true
         runAsUser: 1000
@@ -35,26 +28,21 @@ spec:
           type: RuntimeDefault
       containers:
         - name: backend
-          image: harbor.student-service.internal/student-service/backend:2dc201b97dad1cbb23ec6dfb3a117e745f986ff2
-          imagePullPolicy: IfNotPresent
+          image: harbor.student-service.internal/student-service/backend:42cccc328099d789d09b86e3f31d5d6335cd43d6
           ports:
             - name: http
               containerPort: 8000
-              protocol: TCP
           envFrom:
             - configMapRef:
                 name: student-service-backend-config
+            - secretRef:
+                name: student-service-backend
           env:
             - name: DATABASE_URL
               valueFrom:
                 secretKeyRef:
                   name: student-service-db-app
                   key: uri
-            - name: DJANGO_SECRET_KEY
-              valueFrom:
-                secretKeyRef:
-                  name: student-service-backend
-                  key: DJANGO_SECRET_KEY
           readinessProbe:
             httpGet:
               path: /api/ready/
@@ -63,7 +51,6 @@ spec:
                 - name: Host
                   value: student-service-backend.student-service.svc.cluster.local
             initialDelaySeconds: 5
-            periodSeconds: 10
             timeoutSeconds: 2
             failureThreshold: 6
           livenessProbe:
@@ -76,7 +63,6 @@ spec:
             initialDelaySeconds: 20
             periodSeconds: 20
             timeoutSeconds: 2
-            failureThreshold: 3
           resources:
             requests:
               cpu: 100m
@@ -91,8 +77,7 @@ spec:
             allowPrivilegeEscalation: false
             readOnlyRootFilesystem: true
             capabilities:
-              drop:
-                - ALL
+              drop: ["ALL"]
       volumes:
         - name: tmp
           emptyDir:

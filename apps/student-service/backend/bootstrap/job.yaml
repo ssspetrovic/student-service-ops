@@ -3,9 +3,6 @@ kind: Job
 metadata:
   name: student-service-migrations
   namespace: student-service
-  labels:
-    app.kubernetes.io/name: student-service-backend
-    app.kubernetes.io/component: migrations
 spec:
   activeDeadlineSeconds: 600
   backoffLimit: 2
@@ -13,19 +10,11 @@ spec:
     metadata:
       labels:
         app.kubernetes.io/name: student-service-backend
-        app.kubernetes.io/component: migrations
     spec:
       automountServiceAccountToken: false
       restartPolicy: Never
       imagePullSecrets:
         - name: harbor-pull
-      affinity:
-        nodeAffinity:
-          requiredDuringSchedulingIgnoredDuringExecution:
-            nodeSelectorTerms:
-              - matchExpressions:
-                  - key: node-role.kubernetes.io/control-plane
-                    operator: DoesNotExist
       securityContext:
         runAsNonRoot: true
         runAsUser: 1000
@@ -33,27 +22,19 @@ spec:
           type: RuntimeDefault
       containers:
         - name: migrations
-          image: harbor.student-service.internal/student-service/backend:2dc201b97dad1cbb23ec6dfb3a117e745f986ff2
-          imagePullPolicy: IfNotPresent
-          command:
-            - .venv/bin/python
-            - manage.py
-            - migrate
-            - --noinput
+          image: harbor.student-service.internal/student-service/backend:42cccc328099d789d09b86e3f31d5d6335cd43d6
+          command: [".venv/bin/python", "manage.py", "migrate", "--noinput"]
           envFrom:
             - configMapRef:
                 name: student-service-backend-config
+            - secretRef:
+                name: student-service-backend
           env:
             - name: DATABASE_URL
               valueFrom:
                 secretKeyRef:
                   name: student-service-db-app
                   key: uri
-            - name: DJANGO_SECRET_KEY
-              valueFrom:
-                secretKeyRef:
-                  name: student-service-backend
-                  key: DJANGO_SECRET_KEY
           resources:
             requests:
               cpu: 100m
@@ -68,8 +49,7 @@ spec:
             allowPrivilegeEscalation: false
             readOnlyRootFilesystem: true
             capabilities:
-              drop:
-                - ALL
+              drop: ["ALL"]
       volumes:
         - name: tmp
           emptyDir:
