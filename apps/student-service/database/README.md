@@ -7,24 +7,23 @@ for more info.
 
 ## Database
 
-There is only one instance of PostgreSQL run in the cluster and it's in `student-service-database` ns.
+The DB is configured for two PostgreSQL instances in `student-service-database` ns:
+one primary and one asynchronous standby, with required anti-affinity keeping them on different worker nodes.
 
 The DB is not exposed outside of the cluster.
 
-The DB uses one `5Gi` volume from the `local-path` storage.
+Each instance uses its own `5Gi` volume from the `local-path` storage.
 
-The volume is stored on a worker node and it's not replicated.
+The volumes are stored on worker nodes with replicas set to `2` and CNPG can promote the standby if the primary fails.
 
-Only the backend service, migration job, CNPG operator and DB pods are allowed to connect to DB
-due to the network policy configuration:
+Only the backend service, migration job, CNPG operator and DB pods are allowed to connect to DB due to the network
+policy configuration:
 
 ```yaml
 podSelector:
     matchLabels:
         cnpg.io/cluster: student-service-db
 ```
-
-As explained in the storage README, the caveat here is that the data can be lost if worker goes bad or down.
 
 ## Check State
 

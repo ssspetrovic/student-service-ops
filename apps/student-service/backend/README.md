@@ -9,6 +9,11 @@ Deployment order is the following:
 3. backend
 4. frontend
 
+## Replicas
+
+The replicas for the backend application are set to `2`. Anti-affinity settings try to keep the replicas on
+separate nodes.
+
 ## Bootstrap/migrations
 
 In order for the backend to have the actual DB tables and columns, migration applying is required.
