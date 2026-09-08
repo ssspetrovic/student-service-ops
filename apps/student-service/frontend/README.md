@@ -10,7 +10,7 @@ LoadBalancer Service is used to expose the frontend at `192.168.1.240`.
 
 ## Replicas
 
-The replicas for the backend application are set to `2`. Anti-affinity settings try to keep the replicas on
+The replicas for the frontend application are set to `2`. Anti-affinity settings try to keep the replicas on
 separate nodes.
 
 ## State check
