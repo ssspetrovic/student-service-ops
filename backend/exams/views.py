@@ -15,21 +15,10 @@ from accounts.permissions import IsProfessor, IsStudent
 from academics.models import Course, EnrollmentStatus
 from finance.models import Wallet
 
-
 from .models import Exam, ExamRegistration, ExamRegistrationStatus
 from .services import (
-    AlreadyRegisteredError,
     ExamGradingError,
-    ExamNotFinishedError,
-    ExamRegistrationCancellationClosedError,
     ExamRegistrationError,
-    ExamRegistrationNotGradableError,
-    ExamRegistrationNotActiveError,
-    ExamRegistrationOwnershipError,
-    ExamRegistrationPaymentError,
-    ExamRegistrationRefundError,
-    RegistrationPeriodClosedError,
-    StudentNotEnrolledError,
     CANCELLATION_CLOSES_BEFORE_HOURS,
     REGISTRATION_CLOSES_BEFORE_DAYS,
     REGISTRATION_OPENS_BEFORE_DAYS,
@@ -49,9 +38,7 @@ from .serializers import (
 
 # Create your views here.
 class ExamListView(ListAPIView):
-    queryset = Exam.objects.select_related("course", "professor__user").order_by(
-        "date", "course__code"
-    )
+    queryset = Exam.objects.order_by("date", "course__code")
     serializer_class = ExamSerializer
     permission_classes = [IsAuthenticated]
 
@@ -85,9 +72,7 @@ class CurrentProfessorExamListView(ListAPIView):
 
     def get_queryset(self):
         professor = get_object_or_404(ProfessorProfile, user=self.request.user)
-        return Exam.objects.select_related("course", "professor__user").filter(
-            professor=professor
-        ).order_by("date", "course__code")
+        return Exam.objects.filter(professor=professor).order_by("date", "course__code")
 
 
 class CurrentStudentExamRegistrationListView(ListAPIView):
@@ -95,10 +80,8 @@ class CurrentStudentExamRegistrationListView(ListAPIView):
     permission_classes = [IsStudent]
 
     def get_queryset(self):
-        return (
-            ExamRegistration.objects.select_related("student", "exam__course")
-            .filter(student__user=self.request.user)
-            .order_by("-exam__date", "-pk")
+        return ExamRegistration.objects.filter(student__user=self.request.user).order_by(
+            "-exam__date", "-pk"
         )
 
 
@@ -107,8 +90,7 @@ class CurrentStudentExamResultView(APIView):
 
     def get(self, request):
         results = (
-            ExamRegistration.objects.select_related("student", "exam__course")
-            .filter(
+            ExamRegistration.objects.filter(
                 student__user=request.user,
                 status=ExamRegistrationStatus.GRADED,
                 grade__isnull=False,
@@ -139,8 +121,7 @@ class AvailableExamListView(ListAPIView):
             ],
         ).values("exam_id")
         return (
-            Exam.objects.select_related("course", "professor__user")
-            .filter(
+            Exam.objects.filter(
                 course__enrollments__student=student,
                 course__enrollments__status=EnrollmentStatus.ACTIVE,
                 date__lte=now + timedelta(days=REGISTRATION_OPENS_BEFORE_DAYS),
@@ -167,8 +148,7 @@ class CancellableExamRegistrationListView(ListAPIView):
 
     def get_queryset(self):
         return (
-            ExamRegistration.objects.select_related("student", "exam__course")
-            .filter(
+            ExamRegistration.objects.filter(
                 student__user=self.request.user,
                 status=ExamRegistrationStatus.ACTIVE,
                 exam__date__gt=timezone.now() + timedelta(hours=CANCELLATION_CLOSES_BEFORE_HOURS),
@@ -190,8 +170,7 @@ class ProfessorExamRegistrationListView(ListAPIView):
         )
 
         return (
-            ExamRegistration.objects.select_related("student__user", "exam__course")
-            .filter(
+            ExamRegistration.objects.filter(
                 exam=exam,
                 status__in=[
                     ExamRegistrationStatus.ACTIVE,
@@ -213,7 +192,7 @@ class ExamRegistrationView(APIView):
             registration = register_student_for_exam(student=student, exam=exam)
         except ExamRegistrationError as e:
             return Response(
-                {"detail": get_registration_error_detail(e)},
+                {"detail": str(e)},
                 status=status.HTTP_400_BAD_REQUEST,
             )
 
@@ -243,7 +222,7 @@ class ExamRegistrationCancelView(APIView):
             )
         except ExamRegistrationError as e:
             return Response(
-                {"detail": get_registration_error_detail(e)},
+                {"detail": str(e)},
                 status=status.HTTP_400_BAD_REQUEST,
             )
 
@@ -276,37 +255,9 @@ class ExamRegistrationGradeView(APIView):
             )
         except ExamGradingError as error:
             return Response(
-                {"detail": get_grading_error_detail(error)},
+                {"detail": str(error)},
                 status=status.HTTP_400_BAD_REQUEST,
             )
 
         serializer = ProfessorExamRegistrationSerializer(registration)
         return Response(serializer.data, status=status.HTTP_200_OK)
-
-
-def get_registration_error_detail(error: ExamRegistrationError) -> str:
-    if isinstance(error, StudentNotEnrolledError):
-        return "Student is not enrolled in this course."
-    if isinstance(error, RegistrationPeriodClosedError):
-        return "Registration period is not active."
-    if isinstance(error, AlreadyRegisteredError):
-        return "Student is already registered for this exam."
-    if isinstance(error, ExamRegistrationPaymentError):
-        return "Student does not have enough funds to register for this exam."
-    if isinstance(error, ExamRegistrationCancellationClosedError):
-        return "Registration can no longer be canceled."
-    if isinstance(error, ExamRegistrationNotActiveError):
-        return "Only active registrations can be canceled."
-    if isinstance(error, ExamRegistrationOwnershipError):
-        return "Registration does not belong to this student."
-    if isinstance(error, ExamRegistrationRefundError):
-        return "The original exam registration payment could not be found."
-    return "Exam registration failed."
-
-
-def get_grading_error_detail(error: ExamGradingError) -> str:
-    if isinstance(error, ExamNotFinishedError):
-        return "The exam has not finished yet."
-    if isinstance(error, ExamRegistrationNotGradableError):
-        return "Canceled registrations cannot be graded."
-    return "Exam grading failed."

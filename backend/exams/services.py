@@ -20,56 +20,8 @@ class ExamRegistrationError(ValueError):
     """Base exception for expected exam registration failures."""
 
 
-class StudentNotEnrolledError(ExamRegistrationError):
-    pass
-
-
-class RegistrationPeriodClosedError(ExamRegistrationError):
-    pass
-
-
-class AlreadyRegisteredError(ExamRegistrationError):
-    pass
-
-
-class ExamRegistrationPaymentError(ExamRegistrationError):
-    pass
-
-
-class ExamRegistrationCancellationClosedError(ExamRegistrationError):
-    pass
-
-
-class ExamRegistrationNotActiveError(ExamRegistrationError):
-    pass
-
-
-class ExamRegistrationOwnershipError(ExamRegistrationError):
-    pass
-
-
-class ExamRegistrationRefundError(ExamRegistrationError):
-    pass
-
-
 class ExamGradingError(ValueError):
     """Base exception for expected exam grading failures."""
-
-
-class ExamGradingOwnershipError(ExamGradingError):
-    pass
-
-
-class ExamNotFinishedError(ExamGradingError):
-    pass
-
-
-class ExamRegistrationNotGradableError(ExamGradingError):
-    pass
-
-
-class InvalidExamGradeError(ExamGradingError):
-    pass
 
 
 def is_registration_open(exam: Exam) -> bool:
@@ -102,17 +54,17 @@ def register_student_for_exam(
     ).exists()
 
     if not is_enrolled:
-        raise StudentNotEnrolledError(f"Student is not enrolled in course '{exam.course.name}'.")
+        raise ExamRegistrationError("Student is not enrolled in this course.")
 
     if not is_registration_open(exam):
-        raise RegistrationPeriodClosedError("Registration period is not active.")
+        raise ExamRegistrationError("Registration period is not active.")
 
     if (
         ExamRegistration.objects.filter(student=student, exam=exam)
         .exclude(status=ExamRegistrationStatus.CANCELED)
         .exists()
     ):
-        raise AlreadyRegisteredError("Student is already registered for this exam.")
+        raise ExamRegistrationError("Student is already registered for this exam.")
 
     registration = ExamRegistration.objects.create(
         student=student,
@@ -129,7 +81,9 @@ def register_student_for_exam(
             exam_registration=registration,
         )
     except InsufficientFundsError as e:
-        raise ExamRegistrationPaymentError(str(e)) from e
+        raise ExamRegistrationError(
+            "Student does not have enough funds to register for this exam."
+        ) from e
 
     return registration
 
@@ -138,18 +92,16 @@ def register_student_for_exam(
 def cancel_exam_registration(
     student: StudentProfile, registration: ExamRegistration
 ) -> ExamRegistration:
-    registration = (
-        ExamRegistration.objects.select_for_update().select_related("exam").get(pk=registration.pk)
-    )
+    registration = ExamRegistration.objects.select_for_update().get(pk=registration.pk)
 
     if registration.student_id != student.pk:
-        raise ExamRegistrationOwnershipError("Registration does not belong to this student.")
+        raise ExamRegistrationError("Registration does not belong to this student.")
 
     if registration.status != ExamRegistrationStatus.ACTIVE:
-        raise ExamRegistrationNotActiveError("Only active registrations can be canceled.")
+        raise ExamRegistrationError("Only active registrations can be canceled.")
 
     if not can_cancel_registration(registration):
-        raise ExamRegistrationCancellationClosedError("Registration can no longer be canceled.")
+        raise ExamRegistrationError("Registration can no longer be canceled.")
 
     try:
         payment_transaction = Transaction.objects.get(
@@ -158,7 +110,7 @@ def cancel_exam_registration(
             cause=TransactionCause.EXAM_REGISTRATION,
         )
     except Transaction.DoesNotExist as e:
-        raise ExamRegistrationRefundError(
+        raise ExamRegistrationError(
             "The original exam registration payment could not be found."
         ) from e
 
@@ -181,23 +133,19 @@ def grade_exam_registration(
     registration: ExamRegistration,
     grade: int,
 ) -> ExamRegistration:
-    registration = (
-        ExamRegistration.objects.select_for_update()
-        .select_related("exam__course", "student__user")
-        .get(pk=registration.pk)
-    )
+    registration = ExamRegistration.objects.select_for_update().get(pk=registration.pk)
 
     if registration.exam.professor_id != professor.pk:
-        raise ExamGradingOwnershipError("Professor is not responsible for this exam.")
+        raise ExamGradingError("Exam grading failed.")
 
     if registration.exam.date >= timezone.now():
-        raise ExamNotFinishedError("The exam has not finished yet.")
+        raise ExamGradingError("The exam has not finished yet.")
 
     if registration.status == ExamRegistrationStatus.CANCELED:
-        raise ExamRegistrationNotGradableError("Canceled registrations cannot be graded.")
+        raise ExamGradingError("Canceled registrations cannot be graded.")
 
     if not 5 <= grade <= 10:
-        raise InvalidExamGradeError("Grade must be between 5 and 10.")
+        raise ExamGradingError("Exam grading failed.")
 
     registration.grade = grade
     registration.status = ExamRegistrationStatus.GRADED

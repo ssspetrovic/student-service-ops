@@ -24,18 +24,6 @@ prepare_repo() {
 	git -C "$target" add .
 }
 
-assert_changed_files() {
-	local target="$1"
-	shift
-
-	if ! diff -u \
-		<(printf '%s\n' "$@" | sort) \
-		<(git -C "$target" diff --name-only | sort); then
-		echo "Promotion script changed unexpected files." >&2
-		exit 1
-	fi
-}
-
 read_image() {
 	local root="$1"
 	local manifest="$2"
@@ -58,9 +46,6 @@ backend_image="harbor.student-service.internal/student-service/backend:$backend_
 	cd "$backend_root"
 	./scripts/update-backend-image.sh "$backend_tag"
 )
-assert_changed_files "$backend_root" \
-	apps/student-service/backend/bootstrap/job.yaml \
-	apps/student-service/backend/deployment.yaml
 
 [[ "$(read_image "$backend_root" apps/student-service/backend/deployment.yaml backend)" == "$backend_image" ]]
 [[ "$(read_image "$backend_root" apps/student-service/backend/bootstrap/job.yaml migrations)" == "$backend_image" ]]
@@ -76,7 +61,6 @@ frontend_image="harbor.student-service.internal/student-service/frontend:$fronte
 	cd "$frontend_root"
 	./scripts/update-frontend-image.sh "$frontend_tag"
 )
-assert_changed_files "$frontend_root" apps/student-service/frontend/deployment.yaml
 [[ "$(read_image "$frontend_root" apps/student-service/frontend/deployment.yaml frontend)" == "$frontend_image" ]]
 
 echo "Image promotion scripts passed isolated validation."

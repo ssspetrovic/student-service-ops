@@ -107,7 +107,7 @@ class AdminUserWriteSerializer(serializers.Serializer):
     def validate_update(self, attrs):
         if self.instance.role == UserRole.ADMIN:
             raise serializers.ValidationError(
-                "Administrator accounts are managed through Django admin."
+                "Administrator accounts cannot be managed through this API."
             )
 
         if "role" in attrs:
@@ -204,9 +204,7 @@ class AdminUserListCreateView(ListCreateAPIView):
     permission_classes = [IsAdmin]
 
     def get_queryset(self):
-        return User.objects.select_related(
-            "student_profile__curriculum", "professor_profile"
-        ).order_by("last_name", "first_name", "email")
+        return User.objects.order_by("last_name", "first_name", "email")
 
     def get_serializer_class(self):
         return AdminUserSerializer if self.request.method == "GET" else AdminUserWriteSerializer
@@ -219,7 +217,7 @@ class AdminUserListCreateView(ListCreateAPIView):
 
 
 class AdminUserUpdateView(UpdateAPIView):
-    queryset = User.objects.select_related("student_profile__curriculum", "professor_profile")
+    queryset = User.objects.all()
     serializer_class = AdminUserWriteSerializer
     permission_classes = [IsAdmin]
     http_method_names = ["patch"]
@@ -236,7 +234,7 @@ class AdminUserDeactivateView(APIView):
         user = get_object_or_404(User, pk=pk)
         if user.role == UserRole.ADMIN:
             return Response(
-                {"detail": "Administrator accounts are managed through Django admin."},
+                {"detail": "Administrator accounts cannot be managed through this API."},
                 status=status.HTTP_400_BAD_REQUEST,
             )
         if not user.is_active:
@@ -291,7 +289,6 @@ class AdminProfessorSerializer(serializers.ModelSerializer):
 class AdminProfessorListView(ListAPIView):
     queryset = (
         ProfessorProfile.objects.filter(user__is_active=True)
-        .select_related("user")
         .order_by("user__last_name", "user__first_name")
     )
     serializer_class = AdminProfessorSerializer
@@ -361,7 +358,7 @@ class AdminCourseCreateSerializer(serializers.ModelSerializer):
 
 
 class AdminCourseListView(ListCreateAPIView):
-    queryset = Course.objects.select_related("professor__user").order_by("code")
+    queryset = Course.objects.order_by("code")
     permission_classes = [IsAdmin]
 
     def get_serializer_class(self):
@@ -377,7 +374,7 @@ class AdminCourseListView(ListCreateAPIView):
 
 
 class AdminCourseUpdateView(UpdateAPIView):
-    queryset = Course.objects.select_related("professor__user")
+    queryset = Course.objects.all()
     serializer_class = AdminCourseUpdateSerializer
     permission_classes = [IsAdmin]
     http_method_names = ["patch"]

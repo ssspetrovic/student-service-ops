@@ -18,7 +18,7 @@ from .serializers import (
 
 # Create your views here.
 class CourseListView(ListAPIView):
-    queryset = Course.objects.select_related("professor__user").order_by("code")
+    queryset = Course.objects.order_by("code")
     serializer_class = CourseSerializer
     permission_classes = [IsAuthenticated]
 
@@ -29,12 +29,7 @@ class CurrentProfessorCourseListView(ListAPIView):
 
     def get_queryset(self):
         professor = get_object_or_404(ProfessorProfile, user=self.request.user)
-        return (
-            Course.objects.select_related("professor__user")
-            .prefetch_related("curriculum_courses")
-            .filter(professor=professor)
-            .order_by("code")
-        )
+        return Course.objects.filter(professor=professor).order_by("code")
 
 
 class CurriculumListView(ListAPIView):
@@ -48,10 +43,8 @@ class CurrentStudentEnrollmentListView(ListAPIView):
     permission_classes = [IsStudent]
 
     def get_queryset(self):
-        return (
-            Enrollment.objects.select_related("course", "student")
-            .filter(student__user=self.request.user)
-            .order_by("school_year", "semester", "course__code")
+        return Enrollment.objects.filter(student__user=self.request.user).order_by(
+            "school_year", "semester", "course__code"
         )
 
 
@@ -60,9 +53,7 @@ class CurrentStudentCurriculumView(RetrieveAPIView):
     permission_classes = [IsStudent]
 
     def get_object(self):
-        curriculum_courses = CurriculumCourse.objects.select_related(
-            "course__professor__user"
-        ).order_by("semester", "course__code")
+        curriculum_courses = CurriculumCourse.objects.order_by("semester", "course__code")
         return get_object_or_404(
             Curriculum.objects.prefetch_related(
                 Prefetch("curriculum_courses", queryset=curriculum_courses)

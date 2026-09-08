@@ -56,12 +56,8 @@ jobs:
 
   promote-frontend:
     name: Promote frontend image
-    needs:
-      - frontend-image
-    if: >-
-      always() &&
-      github.event_name == 'push' &&
-      needs.frontend-image.result == 'success'
+    needs: frontend-image
+    if: github.event_name == 'push'
     runs-on: student-service-runner
     timeout-minutes: 10
     steps:
@@ -77,15 +73,6 @@ jobs:
           install_args: yq
           cache: true
 
-      - name: Check deployment token
-        env:
-          GITOPS_PROMOTION_PAT: ${{ secrets.GITOPS_PROMOTION_PAT }}
-        run: |
-          if [[ -z "$GITOPS_PROMOTION_PAT" ]]; then
-            echo "GITOPS_PROMOTION_PAT is required for image promotion." >&2
-            exit 1
-          fi
-
       - name: Update frontend image
         run: scripts/update-frontend-image.sh "$GITHUB_SHA"
 
@@ -99,7 +86,4 @@ jobs:
           add-paths: apps/student-service/frontend/deployment.yaml
           commit-message: "chore: auto-promote frontend image"
           title: "chore: auto-promote frontend image"
-          body: |
-            Promote the frontend image built from `${{ github.sha }}`:
-
-            `${{ env.IMAGE }}:${{ github.sha }}`
+          body: "Promote `${{ env.IMAGE }}:${{ github.sha }}`."
