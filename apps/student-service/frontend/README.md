@@ -8,6 +8,11 @@ Frontend has its own certificate secret that Nginx mounts and uses to provide HT
 
 LoadBalancer Service is used to expose the frontend at `192.168.1.240`.
 
+## Replicas
+
+The replicas for the backend application are set to `2`. Anti-affinity settings try to keep the replicas on
+separate nodes.
+
 ## State check
 
 ```bash
