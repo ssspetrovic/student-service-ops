@@ -22,7 +22,7 @@ class Command(BaseCommand):
 
     def get_test_courses(self):
         course_codes = [course["code"] for course in TEST_COURSES]
-        courses = Course.objects.select_related("professor").filter(code__in=course_codes)
+        courses = Course.objects.filter(code__in=course_codes)
         courses_by_code = {course.code: course for course in courses}
 
         missing_codes = set(course_codes) - set(courses_by_code)

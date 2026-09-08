@@ -4,14 +4,12 @@ on:
   pull_request:
     branches:
       - main
-    paths:
-      - frontend/**
-      - .github/workflows/frontend-image.yaml
   push:
     branches:
       - main
     paths:
       - frontend/**
+      - "!frontend/**/*.md"
       - .github/workflows/frontend-image.yaml
   workflow_dispatch:
 
@@ -34,9 +32,25 @@ jobs:
       - name: Checkout
         uses: actions/checkout@d23441a48e516b6c34aea4fa41551a30e30af803 # v6
         with:
+          fetch-depth: 0
           persist-credentials: false
 
+      - name: Check changed paths
+        id: changes
+        if: github.event_name == 'pull_request'
+        env:
+          BASE_SHA: ${{ github.event.pull_request.base.sha }}
+        run: |
+          if git diff --quiet "$BASE_SHA"...HEAD -- \
+            frontend/ \
+            ':(exclude)frontend/*.md' \
+            .github/workflows/frontend-image.yaml
+          then
+            echo "skip=true" >> "$GITHUB_OUTPUT"
+          fi
+
       - name: Build image
+        if: steps.changes.outputs.skip != 'true'
         run: docker build --pull -t "$IMAGE:$GITHUB_SHA" frontend
 
       - name: Log in to Harbor
@@ -56,12 +70,8 @@ jobs:
 
   promote-frontend:
     name: Promote frontend image
-    needs:
-      - frontend-image
-    if: >-
-      always() &&
-      github.event_name == 'push' &&
-      needs.frontend-image.result == 'success'
+    needs: frontend-image
+    if: github.event_name == 'push'
     runs-on: student-service-runner
     timeout-minutes: 10
     steps:
@@ -77,15 +87,6 @@ jobs:
           install_args: yq
           cache: true
 
-      - name: Check deployment token
-        env:
-          GITOPS_PROMOTION_PAT: ${{ secrets.GITOPS_PROMOTION_PAT }}
-        run: |
-          if [[ -z "$GITOPS_PROMOTION_PAT" ]]; then
-            echo "GITOPS_PROMOTION_PAT is required for image promotion." >&2
-            exit 1
-          fi
-
       - name: Update frontend image
         run: scripts/update-frontend-image.sh "$GITHUB_SHA"
 
@@ -99,7 +100,4 @@ jobs:
           add-paths: apps/student-service/frontend/deployment.yaml
           commit-message: "chore: auto-promote frontend image"
           title: "chore: auto-promote frontend image"
-          body: |
-            Promote the frontend image built from `${{ github.sha }}`:
-
-            `${{ env.IMAGE }}:${{ github.sha }}`
+          body: "Promote `${{ env.IMAGE }}:${{ github.sha }}`."

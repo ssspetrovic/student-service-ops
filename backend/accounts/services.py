@@ -7,23 +7,19 @@ from finance.models import Wallet
 from .models import StudentProfile, User
 
 
-def semesters_for_study_year(study_year: int) -> tuple[int, int]:
-    first_semester = (study_year - 1) * 2 + 1
-    return first_semester, first_semester + 1
-
-
 def ensure_current_mandatory_enrollments(student: StudentProfile) -> None:
-    """Add this year's required courses without changing prior enrollments."""
+    first_semester = student.current_year_of_study * 2 - 1
     curriculum_courses = student.curriculum.curriculum_courses.filter(
-        semester__in=semesters_for_study_year(student.current_year_of_study),
+        semester__in=(first_semester, first_semester + 1),
         is_mandatory=True,
-    ).select_related("course")
+    )
+    school_year = current_school_year()
 
     for curriculum_course in curriculum_courses:
         Enrollment.objects.update_or_create(
             student=student,
             course=curriculum_course.course,
-            school_year=current_school_year(),
+            school_year=school_year,
             defaults={"semester": curriculum_course.semester},
         )
 

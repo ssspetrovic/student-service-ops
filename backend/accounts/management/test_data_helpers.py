@@ -15,7 +15,7 @@ def get_test_student_profile():
 
 def get_test_student_profiles():
     emails = [student["email"] for student in TEST_STUDENTS]
-    student_queryset = StudentProfile.objects.select_related("user").filter(user__email__in=emails)
+    student_queryset = StudentProfile.objects.filter(user__email__in=emails)
     students_by_email = {student.user.email: student for student in student_queryset}
     if len(students_by_email) != len(emails):
         raise CommandError("Run `python manage.py create_test_accounts` before this command.")
@@ -33,9 +33,7 @@ def get_test_professor_profile():
 
 def get_test_professor_profiles():
     emails = [professor["email"] for professor in TEST_PROFESSORS]
-    professor_queryset = ProfessorProfile.objects.select_related("user").filter(
-        user__email__in=emails
-    )
+    professor_queryset = ProfessorProfile.objects.filter(user__email__in=emails)
     professors_by_email = {professor.user.email: professor for professor in professor_queryset}
     if len(professors_by_email) != len(emails):
         raise CommandError("Run `python manage.py create_test_accounts` before this command.")

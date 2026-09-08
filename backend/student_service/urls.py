@@ -15,7 +15,6 @@ Including another URLconf
     2. Add a URL to urlpatterns:  path('blog/', include('blog.urls'))
 """
 
-from django.contrib import admin
 from django.db import DatabaseError, connection
 from django.http import JsonResponse
 from django.urls import include, path
@@ -49,7 +48,6 @@ def ready(_request):
 
 
 urlpatterns = [
-    path("admin/", admin.site.urls),
     path("api/health/", health, name="health"),
     path("api/ready/", ready, name="ready"),
     path("api/accounts/", include("accounts.urls")),

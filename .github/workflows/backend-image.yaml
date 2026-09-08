@@ -9,6 +9,7 @@ on:
       - main
     paths:
       - backend/**
+      - "!backend/**/*.md"
       - .github/workflows/backend-image.yaml
   workflow_dispatch:
 
@@ -23,12 +24,10 @@ env:
   IMAGE: harbor.student-service.internal/student-service/backend
 
 jobs:
-  changes:
-    name: Backend image changes
-    if: github.event_name == 'pull_request'
+  backend-image:
+    name: Backend image
     runs-on: student-service-runner
-    outputs:
-      backend: ${{ steps.diff.outputs.backend }}
+    timeout-minutes: 30
     steps:
       - name: Checkout
         uses: actions/checkout@d23441a48e516b6c34aea4fa41551a30e30af803 # v6
@@ -36,36 +35,22 @@ jobs:
           fetch-depth: 0
           persist-credentials: false
 
-      - id: diff
-        name: Check changed paths
+      - name: Check changed paths
+        id: changes
+        if: github.event_name == 'pull_request'
+        env:
+          BASE_SHA: ${{ github.event.pull_request.base.sha }}
         run: |
-          if git diff --quiet "origin/${{ github.base_ref }}"...HEAD -- \
+          if git diff --quiet "$BASE_SHA"...HEAD -- \
             backend/ \
+            ':(exclude)backend/*.md' \
             .github/workflows/backend-image.yaml
           then
-            echo "backend=false" >> "$GITHUB_OUTPUT"
-          else
-            echo "backend=true" >> "$GITHUB_OUTPUT"
+            echo "skip=true" >> "$GITHUB_OUTPUT"
           fi
 
-  backend-image:
-    name: Backend image
-    needs: changes
-    if: >-
-      always() &&
-      (
-        github.event_name != 'pull_request' ||
-        (needs.changes.result == 'success' && needs.changes.outputs.backend == 'true')
-      )
-    runs-on: student-service-runner
-    timeout-minutes: 30
-    steps:
-      - name: Checkout
-        uses: actions/checkout@d23441a48e516b6c34aea4fa41551a30e30af803 # v6
-        with:
-          persist-credentials: false
-
       - name: Build image
+        if: steps.changes.outputs.skip != 'true'
         run: docker build --pull -t "$IMAGE:$GITHUB_SHA" backend
 
       - name: Log in to Harbor
@@ -85,12 +70,8 @@ jobs:
 
   promote-backend:
     name: Promote backend image
-    needs:
-      - backend-image
-    if: >-
-      always() &&
-      github.event_name == 'push' &&
-      needs.backend-image.result == 'success'
+    needs: backend-image
+    if: github.event_name == 'push'
     runs-on: student-service-runner
     timeout-minutes: 10
     steps:
@@ -105,15 +86,6 @@ jobs:
           install: true
           install_args: yq
           cache: true
-
-      - name: Check deployment token
-        env:
-          GITOPS_PROMOTION_PAT: ${{ secrets.GITOPS_PROMOTION_PAT }}
-        run: |
-          if [[ -z "$GITOPS_PROMOTION_PAT" ]]; then
-            echo "GITOPS_PROMOTION_PAT is required for image promotion." >&2
-            exit 1
-          fi
 
       - name: Update backend image
         run: scripts/update-backend-image.sh "$GITHUB_SHA"
@@ -130,10 +102,4 @@ jobs:
             apps/student-service/backend/deployment.yaml
           commit-message: "chore: auto-promote backend image"
           title: "chore: auto-promote backend image"
-          body: |
-            Promote the backend image built from `${{ github.sha }}`:
-
-            `${{ env.IMAGE }}:${{ github.sha }}`
-
-            The migration Job and backend Deployment are updated together.
-            After merge, Flux runs the migrations before rolling out the backend.
+          body: "Promote `${{ env.IMAGE }}:${{ github.sha }}`."

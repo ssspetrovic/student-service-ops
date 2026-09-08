@@ -1,25 +1,25 @@
 #!/usr/bin/env bash
 set -euo pipefail
 
-if [[ $# -ne 1 || -z "$1" ]]; then
-	echo "Usage: $0 <image-tag>" >&2
-	exit 2
-fi
-
-script_dir="$(cd -- "$(dirname -- "${BASH_SOURCE[0]}")" && pwd)"
-cd "$script_dir/.."
+cd "$(dirname "$0")/.."
 
 image="harbor.student-service.internal/student-service/frontend:$1"
 deployment="apps/student-service/frontend/deployment.yaml"
+image_query='.spec.template.spec.containers[] | select(.name == "frontend").image'
 
-current_image="$(yq -er '.spec.template.spec.containers[] | select(.name == "frontend") | .image' "$deployment")"
+current_image="$(yq -er "$image_query" "$deployment")"
 if [[ "$current_image" == "$image" ]]; then
 	exit 0
 fi
 
-IMAGE="$image" yq -i \
-	'(.spec.template.spec.containers[] | select(.name == "frontend").image) = strenv(IMAGE)' \
-	"$deployment"
+export IMAGE="$image"
+yq -i "($image_query) = strenv(IMAGE)" "$deployment"
 
-[[ "$(yq -er '.spec.template.spec.containers[] | select(.name == "frontend") | .image' "$deployment")" == "$image" ]]
+updated_image="$(yq -er "$image_query" "$deployment")"
+
+if [[ "$updated_image" != "$image" ]]; then
+	echo "Frontend image was not updated." >&2
+	exit 1
+fi
+
 git diff --check -- "$deployment"

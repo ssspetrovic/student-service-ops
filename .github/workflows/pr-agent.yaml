@@ -1,0 +1,53 @@
+name: PR Agent
+
+on:
+  pull_request:
+    branches:
+      - main
+    types:
+      - opened
+      - reopened
+      - ready_for_review
+      - synchronize
+
+permissions:
+  contents: read
+  pull-requests: write
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.event.pull_request.number }}
+  cancel-in-progress: true
+
+env:
+  OPENAI_KEY: ${{ secrets.OPENAI_KEY }}
+  GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+  github_action_config.auto_improve: "false"
+
+jobs:
+  auto-review:
+    name: Auto review
+    runs-on: student-service-runner
+    if: github.event.sender.type != 'Bot' && github.event.pull_request.draft == false
+    steps:
+      - name: Run PR-Agent review
+        # 0.35.0-github_action
+        uses: docker://pragent/pr-agent@sha256:70e78800a3ee94ee31a25e43d3b8ef25e8e8fda7ccacfd765f911c9f66b6b048
+        env:
+          github_action_config.auto_review: "true"
+          github_action_config.auto_describe: "false"
+          github_action_config.pr_actions: '["opened", "reopened", "ready_for_review", "synchronize"]'
+
+  auto-describe:
+    name: Auto describe
+    runs-on: student-service-runner
+    if: >-
+      github.event.sender.type != 'Bot' &&
+      github.event.pull_request.draft == false
+    steps:
+      - name: Run PR-Agent describe
+        # 0.35.0-github_action
+        uses: docker://pragent/pr-agent@sha256:70e78800a3ee94ee31a25e43d3b8ef25e8e8fda7ccacfd765f911c9f66b6b048
+        env:
+          github_action_config.auto_review: "false"
+          github_action_config.auto_describe: "true"
+          github_action_config.pr_actions: '["opened", "reopened", "ready_for_review"]'
