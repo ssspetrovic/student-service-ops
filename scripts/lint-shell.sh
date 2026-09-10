@@ -1,32 +1,24 @@
 #!/usr/bin/env bash
 set -euo pipefail
 
+fix_arg="${1:-}"
+
 fix_mode=false
 
-if [[ "${1:-}" == "--fix" ]]; then
+if [[ "$fix_arg" == "--fix" ]]; then
 	fix_mode=true
 fi
 
-files=()
-while IFS= read -r -d '' file; do
-	files+=("$file")
-done < <(
-	find . \
-		-type f \
-		-name '*.sh' \
+if [[ "$fix_mode" == "true" ]]; then
+	find . -type f -name '*.sh' \
 		! -path './.git/*' \
 		! -path './.agents/*' \
 		! -path './.codex/*' \
-		-print0
-)
-
-if [[ ${#files[@]} -eq 0 ]]; then
-	echo "No shell scripts found."
-	exit 0
-fi
-
-if [[ "$fix_mode" == "true" ]]; then
-	shfmt -w "${files[@]}"
+		-exec shfmt -w {} +
 else
-	shellcheck "${files[@]}"
+	find . -type f -name '*.sh' \
+		! -path './.git/*' \
+		! -path './.agents/*' \
+		! -path './.codex/*' \
+		-exec shellcheck {} +
 fi

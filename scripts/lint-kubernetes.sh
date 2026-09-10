@@ -1,13 +1,9 @@
 #!/usr/bin/env bash
 set -euo pipefail
 
-# Validate built-in Kubernetes resources with kubeconform's default schema
-# catalog, then try Datree's CRD catalog for common operator resources.
 search_dirs=()
 for dir in clusters infra apps; do
-	if [[ -d "${dir}" ]]; then
-		search_dirs+=("${dir}")
-	fi
+	[[ -d "$dir" ]] && search_dirs+=("$dir")
 done
 
 if [[ ${#search_dirs[@]} -eq 0 ]]; then
@@ -15,29 +11,15 @@ if [[ ${#search_dirs[@]} -eq 0 ]]; then
 	exit 0
 fi
 
-files=()
-while IFS= read -r -d '' file; do
-	files+=("$file")
-done < <(
-	find "${search_dirs[@]}" \
-		-type f \
-		\( -name '*.yaml' -o -name '*.yml' \) \
-		! -name 'kustomization.yaml' \
-		! -name '*.sops.yaml' \
-		! -path '*/flux-system/*' \
-		-print0
-)
-
-if [[ ${#files[@]} -eq 0 ]]; then
-	echo "No Kubernetes manifest files found."
-	exit 0
-fi
-
-kubeconform \
-	-strict \
-	-ignore-missing-schemas \
-	-kubernetes-version 1.35.3 \
-	-schema-location "https://raw.githubusercontent.com/datreeio/CRDs-catalog/main/{{.Group}}/{{.ResourceKind}}_{{.ResourceAPIVersion}}.json" \
-	-schema-location default \
-	-summary \
-	"${files[@]}"
+find "${search_dirs[@]}" -type f \( -name '*.yaml' -o -name '*.yml' \) \
+	! -name 'kustomization.yaml' \
+	! -name '*.sops.yaml' \
+	! -path '*/flux-system/*' \
+	-exec kubeconform \
+		-strict \
+		-ignore-missing-schemas \
+		-kubernetes-version 1.35.3 \
+		-schema-location "https://raw.githubusercontent.com/datreeio/CRDs-catalog/main/{{.Group}}/{{.ResourceKind}}_{{.ResourceAPIVersion}}.json" \
+		-schema-location default \
+		-summary \
+		{} +
