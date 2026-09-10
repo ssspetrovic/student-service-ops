@@ -5,6 +5,7 @@ from .services import EXAM_REGISTRATION_FEE
 
 
 class ExamSerializer(serializers.ModelSerializer):
+    ends_at = serializers.DateTimeField(read_only=True)
     course_code = serializers.CharField(source="course.code")
     course_name = serializers.CharField(source="course.name")
     professor_email = serializers.CharField(source="professor.user.email")
@@ -15,6 +16,7 @@ class ExamSerializer(serializers.ModelSerializer):
         fields = [
             "id",  # for targeting with register requests
             "date",
+            "ends_at",
             "room",
             "course_code",
             "course_name",
@@ -38,6 +40,7 @@ class AvailableExamSerializer(ExamSerializer):
         fields = [
             "id",
             "date",
+            "ends_at",
             "room",
             "course_code",
             "course_name",
@@ -60,6 +63,7 @@ class ExamRegistrationSerializer(serializers.ModelSerializer):
     exam_course_code = serializers.CharField(source="exam.course.code")
     exam_course_name = serializers.CharField(source="exam.course.name")
     exam_date = serializers.DateTimeField(source="exam.date")
+    exam_ends_at = serializers.DateTimeField(source="exam.ends_at", read_only=True)
     exam_room = serializers.CharField(source="exam.room")
 
     class Meta:
@@ -71,6 +75,7 @@ class ExamRegistrationSerializer(serializers.ModelSerializer):
             "exam_course_code",
             "exam_course_name",
             "exam_date",
+            "exam_ends_at",
             "exam_room",
             "grade",
             "status",
