@@ -170,12 +170,17 @@ class AdminUserWriteSerializer(serializers.Serializer):
     @transaction.atomic
     def update(self, instance, validated_data):
         if instance.role == UserRole.STUDENT:
-            profile_fields = ("index_no", "curriculum_code", "current_year_of_study")
-            if any(field in validated_data for field in profile_fields):
+            student_profile_changed = (
+                "index_no" in validated_data
+                or "curriculum_code" in validated_data
+                or "current_year_of_study" in validated_data
+            )
+
+            if student_profile_changed:
                 profile = getattr(instance, "student_profile", None)
                 if profile is None:
                     raise serializers.ValidationError({"profile": "Student profile is missing."})
-            if any(field in validated_data for field in profile_fields):
+
                 update_student_profile(
                     profile,
                     index_no=validated_data.get("index_no"),
@@ -244,20 +249,21 @@ class AdminUserDeactivateView(APIView):
             )
         if user.role == UserRole.PROFESSOR:
             professor = getattr(user, "professor_profile", None)
-            if professor and (
-                professor.courses.exists()
-                or professor.exams.filter(
+            if professor:
+                has_assigned_courses = professor.courses.exists()
+                has_pending_exams = professor.exams.filter(
                     Q(date__gte=timezone.now()) | Q(registrations__status="active")
                 ).exists()
-            ):
-                return Response(
-                    {
-                        "detail": (
-                            "Reassign this professor's courses and pending exams deactivating the account."
-                        )
-                    },
-                    status=status.HTTP_400_BAD_REQUEST,
-                )
+
+                if has_assigned_courses or has_pending_exams:
+                    return Response(
+                        {
+                            "detail": (
+                                "Reassign this professor's courses and pending exams deactivating the account."
+                            )
+                        },
+                        status=status.HTTP_400_BAD_REQUEST,
+                    )
         user.is_active = False
         user.save(update_fields=["is_active"])
         return Response(AdminUserSerializer(user).data)

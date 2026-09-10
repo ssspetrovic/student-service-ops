@@ -144,7 +144,7 @@ def grade_exam_registration(
     if registration.status == ExamRegistrationStatus.CANCELED:
         raise ExamGradingError("Canceled registrations cannot be graded.")
 
-    if not 5 <= grade <= 10:
+    if grade < 5 or grade > 10:
         raise ExamGradingError("Exam grading failed.")
 
     registration.grade = grade
