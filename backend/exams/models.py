@@ -1,3 +1,5 @@
+from datetime import timedelta
+
 from django.core.exceptions import ValidationError
 from django.core.validators import MinValueValidator, MaxValueValidator
 from django.db import models
@@ -6,6 +8,8 @@ from academics.models import Course
 from accounts.models import ProfessorProfile, StudentProfile
 
 # Create your models here.
+
+EXAM_DURATION = timedelta(hours=3)
 
 
 class Exam(models.Model):
@@ -22,6 +26,10 @@ class Exam(models.Model):
     )
     date = models.DateTimeField()
     room = models.CharField(max_length=50, blank=True)
+
+    @property
+    def ends_at(self):
+        return self.date + EXAM_DURATION
 
     def clean(self):
         super().clean()

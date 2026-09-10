@@ -138,7 +138,7 @@ def grade_exam_registration(
     if registration.exam.professor_id != professor.pk:
         raise ExamGradingError("Exam grading failed.")
 
-    if registration.exam.date >= timezone.now():
+    if timezone.now() < registration.exam.ends_at:
         raise ExamGradingError("The exam has not finished yet.")
 
     if registration.status == ExamRegistrationStatus.CANCELED:

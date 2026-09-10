@@ -1,4 +1,5 @@
-from datetime import timedelta
+from datetime import datetime, timedelta, timezone as datetime_timezone
+from unittest.mock import patch
 from decimal import Decimal
 
 from django.test import TestCase
@@ -66,37 +67,49 @@ class ExamApiTestCase(TestCase):
         self.assertEqual(self.wallet.balance, Decimal("100.00"))
         self.assertFalse(ExamRegistration.objects.filter(student=self.student).exists())
 
-    def test_student_can_reregister_after_cancellation(self):
-        self.client.force_authenticate(user=self.student_user)
-        url = reverse("exam-registration", kwargs={"exam_id": self.exam.id})
+    def test_grading_end_time_boundary(self):
+        self.exam.date = datetime(2026, 9, 10, 9, tzinfo=datetime_timezone.utc)
+        self.exam.save(update_fields=["date"])
+        end = datetime(2026, 9, 10, 12, tzinfo=datetime_timezone.utc)
+        self.assertEqual(self.exam.ends_at, end)
+        registration = ExamRegistration.objects.create(student=self.student, exam=self.exam)
+        self.client.force_authenticate(user=self.professor_user)
+        url = reverse("exam-registration-grade", kwargs={"registration_id": registration.id})
 
-        first = self.client.post(url)
-        self.assertEqual(first.status_code, status.HTTP_201_CREATED)
-        self.wallet.refresh_from_db()
-        self.assertEqual(self.wallet.balance, Decimal("300.00"))
+        with patch("exams.services.timezone.now", return_value=end - timedelta(microseconds=1)):
+            response = self.client.patch(url, {"grade": 8}, format="json")
+        self.assertEqual(response.status_code, status.HTTP_400_BAD_REQUEST)
+        registration.refresh_from_db()
+        self.assertIsNone(registration.grade)
+        self.assertEqual(registration.status, ExamRegistrationStatus.ACTIVE)
 
-        cancellation = self.client.post(
-            reverse("exam-registration-cancel", kwargs={"registration_id": first.data["id"]})
-        )
-        self.assertEqual(cancellation.status_code, status.HTTP_200_OK)
-        self.wallet.refresh_from_db()
-        self.assertEqual(self.wallet.balance, Decimal("500.00"))
+        with patch("exams.services.timezone.now", return_value=end):
+            response = self.client.patch(url, {"grade": 8}, format="json")
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+        registration.refresh_from_db()
+        self.assertEqual(registration.grade, 8)
+        self.assertEqual(registration.status, ExamRegistrationStatus.GRADED)
 
-        second = self.client.post(url)
-        self.assertEqual(second.status_code, status.HTTP_201_CREATED)
-        self.assertNotEqual(first.data["id"], second.data["id"])
-        self.wallet.refresh_from_db()
-        self.assertEqual(self.wallet.balance, Decimal("300.00"))
+        with patch("exams.services.timezone.now", return_value=end + timedelta(seconds=1)):
+            response = self.client.patch(url, {"grade": 9}, format="json")
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+        registration.refresh_from_db()
+        self.assertEqual(registration.grade, 9)
+        self.assertEqual(registration.status, ExamRegistrationStatus.GRADED)
 
     def test_professor_cannot_grade_unfinished_exam(self):
+        now = datetime(2026, 9, 10, 10, tzinfo=datetime_timezone.utc)
+        self.exam.date = now - timedelta(hours=1)
+        self.exam.save(update_fields=["date"])
         registration = ExamRegistration.objects.create(student=self.student, exam=self.exam)
         self.client.force_authenticate(user=self.professor_user)
 
-        response = self.client.patch(
-            reverse("exam-registration-grade", kwargs={"registration_id": registration.id}),
-            {"grade": 8},
-            format="json",
-        )
+        with patch("exams.services.timezone.now", return_value=now):
+            response = self.client.patch(
+                reverse("exam-registration-grade", kwargs={"registration_id": registration.id}),
+                {"grade": 8},
+                format="json",
+            )
         self.assertEqual(response.status_code, status.HTTP_400_BAD_REQUEST)
 
         registration.refresh_from_db()

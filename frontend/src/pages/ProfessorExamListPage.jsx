@@ -8,9 +8,23 @@ import {
   LoadingState,
   SuccessNotification,
 } from "../components/PageStates";
-import { formatDate, isFinished } from "../utils/date";
+import { formatDate, getExamStatus, examStatusColors } from "../utils/date";
 
 function ProfessorExamListPage() {
+  const [now, setNow] = useState(() => Date.now());
+
+  useEffect(() => {
+    function updateTime() {
+      setNow(Date.now());
+    }
+
+    const interval = setInterval(updateTime, 30000);
+
+    return function cleanup() {
+      clearInterval(interval);
+    };
+  }, []);
+
   const [exams, setExams] = useState(null);
   const [error, setError] = useState("");
   const location = useLocation();
@@ -71,34 +85,37 @@ function ProfessorExamListPage() {
               </tr>
             </thead>
             <tbody>
-              {exams.map((exam) => (
-                <tr key={exam.id}>
-                  <td className="ps-3">
-                    <strong>{exam.course_code}</strong>
-                    <br />
-                    <span className="text-body-secondary">
-                      {exam.course_name}
-                    </span>
-                  </td>
-                  <td>{formatDate(exam.date)}</td>
-                  <td>{exam.room || "—"}</td>
-                  <td>
-                    <span
-                      className={`badge text-bg-${isFinished(exam.date) ? "success" : "primary"}`}
-                    >
-                      {isFinished(exam.date) ? "Finished" : "Upcoming"}
-                    </span>
-                  </td>
-                  <td className="pe-3 text-end">
-                    <Link
-                      className="btn btn-outline-primary btn-sm"
-                      to={`/professor/exams/${exam.id}/registrations`}
-                    >
-                      Registrations
-                    </Link>
-                  </td>
-                </tr>
-              ))}
+              {exams.map((exam) => {
+                const examStatus = getExamStatus(exam.date, exam.ends_at, now);
+                return (
+                  <tr key={exam.id}>
+                    <td className="ps-3">
+                      <strong>{exam.course_code}</strong>
+                      <br />
+                      <span className="text-body-secondary">
+                        {exam.course_name}
+                      </span>
+                    </td>
+                    <td>{formatDate(exam.date)}</td>
+                    <td>{exam.room || "—"}</td>
+                    <td>
+                      <span
+                        className={`badge text-bg-${examStatusColors[examStatus]}`}
+                      >
+                        {examStatus}
+                      </span>
+                    </td>
+                    <td className="pe-3 text-end">
+                      <Link
+                        className="btn btn-outline-primary btn-sm"
+                        to={`/professor/exams/${exam.id}/registrations`}
+                      >
+                        Registrations
+                      </Link>
+                    </td>
+                  </tr>
+                );
+              })}
             </tbody>
           </table>
         </div>

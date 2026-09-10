@@ -8,7 +8,7 @@ import {
   LoadingState,
   SuccessNotification,
 } from "../components/PageStates";
-import { formatDate, isFinished } from "../utils/date";
+import { formatDate, getExamStatus, examStatusColors } from "../utils/date";
 
 const gradeOptions = [5, 6, 7, 8, 9, 10];
 
@@ -27,6 +27,20 @@ async function fetchExam(examId) {
 }
 
 function ProfessorExamRegistrationsPage() {
+  const [now, setNow] = useState(() => Date.now());
+
+  useEffect(() => {
+    function updateTime() {
+      setNow(Date.now());
+    }
+
+    const interval = setInterval(updateTime, 30000);
+
+    return function cleanup() {
+      clearInterval(interval);
+    };
+  }, []);
+
   const { examId } = useParams();
   const [exam, setExam] = useState(null);
   const [registrations, setRegistrations] = useState(null);
@@ -67,7 +81,20 @@ function ProfessorExamRegistrationsPage() {
     };
   }, [examId]);
 
+  let examStatus = "Unavailable";
+  let examEnd = "Unavailable";
+  if (exam) {
+    examStatus = getExamStatus(exam.date, exam.ends_at, now);
+    if (examStatus !== "Unavailable") {
+      examEnd = formatDate(exam.ends_at);
+    }
+  }
+  const canGrade = examStatus === "Finished";
+
   const openGradeModal = (registration) => {
+    if (!canGrade) {
+      return;
+    }
     setRegistrationToGrade(registration);
     setGrade(registration.grade ?? 5);
     setGradeError("");
@@ -80,7 +107,9 @@ function ProfessorExamRegistrationsPage() {
 
   const handleGrade = async (event) => {
     event.preventDefault();
-    if (!registrationToGrade) return;
+    if (!registrationToGrade || !canGrade) {
+      return;
+    }
 
     setGradeError("");
     setIsSaving(true);
@@ -103,8 +132,6 @@ function ProfessorExamRegistrationsPage() {
       setIsSaving(false);
     }
   };
-
-  const canGrade = exam && isFinished(exam.date);
 
   return (
     <main className="container py-5">
@@ -131,14 +158,16 @@ function ProfessorExamRegistrationsPage() {
               <dl className="row mb-0">
                 <dt className="col-sm-3">Exam date</dt>
                 <dd className="col-sm-9 mb-2">{formatDate(exam.date)}</dd>
+                <dt className="col-sm-3">Exam end</dt>
+                <dd className="col-sm-9 mb-2">{examEnd}</dd>
                 <dt className="col-sm-3">Room</dt>
                 <dd className="col-sm-9 mb-2">{exam.room || "—"}</dd>
                 <dt className="col-sm-3">Status</dt>
                 <dd className="col-sm-9 mb-0">
                   <span
-                    className={`badge text-bg-${canGrade ? "success" : "primary"}`}
+                    className={`badge text-bg-${examStatusColors[examStatus]}`}
                   >
-                    {canGrade ? "Finished" : "Upcoming"}
+                    {examStatus}
                   </span>
                 </dd>
               </dl>
@@ -262,7 +291,7 @@ function ProfessorExamRegistrationsPage() {
                   </button>
                   <button
                     className="btn btn-primary"
-                    disabled={isSaving}
+                    disabled={isSaving || !canGrade}
                     type="submit"
                   >
                     {isSaving ? "Saving…" : "Save grade"}
