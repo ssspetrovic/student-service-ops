@@ -70,7 +70,12 @@ class ExamRegistration(models.Model):
                 condition=(models.Q(grade__gte=5) & models.Q(grade__lte=10))
                 | models.Q(grade__isnull=True),
                 name="exam_registration_grade_valid",
-            )
+            ),
+            models.UniqueConstraint(
+                fields=["student", "exam"],
+                condition=~models.Q(status=ExamRegistrationStatus.CANCELED),
+                name="uq_exam_reg_non_canceled",
+            ),
         ]
 
     def __str__(self):
