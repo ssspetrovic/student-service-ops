@@ -189,13 +189,7 @@ function AvailableExamsPage() {
       />
 
       {examToRegister && (
-        <div
-          aria-labelledby="register-exam-title"
-          aria-modal="true"
-          className="modal d-block"
-          role="dialog"
-          tabIndex="-1"
-        >
+        <div className="modal d-block" role="dialog" tabIndex="-1">
           <div className="modal-dialog modal-dialog-centered">
             <div className="modal-content">
               <div className="modal-header">
@@ -203,7 +197,6 @@ function AvailableExamsPage() {
                   Confirm exam registration
                 </h2>
                 <button
-                  aria-label="Close"
                   className="btn-close"
                   disabled={isRegistering}
                   onClick={closeRegistrationConfirmation}
@@ -271,10 +264,7 @@ function AvailableExamsPage() {
                 >
                   {isRegistering ? (
                     <>
-                      <span
-                        aria-hidden="true"
-                        className="spinner-border spinner-border-sm me-2"
-                      />
+                      <span className="spinner-border spinner-border-sm me-2" />
                       Registering
                     </>
                   ) : (

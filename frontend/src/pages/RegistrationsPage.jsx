@@ -169,13 +169,7 @@ function RegistrationsPage() {
       />
 
       {registrationToCancel && (
-        <div
-          aria-labelledby="cancel-registration-title"
-          aria-modal="true"
-          className="modal d-block"
-          role="dialog"
-          tabIndex="-1"
-        >
+        <div className="modal d-block" role="dialog" tabIndex="-1">
           <div className="modal-dialog modal-dialog-centered">
             <div className="modal-content">
               <div className="modal-header">
@@ -183,7 +177,6 @@ function RegistrationsPage() {
                   Cancel exam registration?
                 </h2>
                 <button
-                  aria-label="Close"
                   className="btn-close"
                   disabled={isCancelling}
                   onClick={() => setRegistrationToCancel(null)}
@@ -214,10 +207,7 @@ function RegistrationsPage() {
                 >
                   {isCancelling ? (
                     <>
-                      <span
-                        aria-hidden="true"
-                        className="spinner-border spinner-border-sm me-2"
-                      />
+                      <span className="spinner-border spinner-border-sm me-2" />
                       Canceling
                     </>
                   ) : (

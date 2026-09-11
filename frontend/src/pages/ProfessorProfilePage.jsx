@@ -55,7 +55,7 @@ function ProfessorProfilePage() {
               <dd className="col-sm-8">{profile.employee_no}</dd>
             </dl>
           </div>
-          <section aria-labelledby="courses-title">
+          <section>
             <h2 className="h4 mb-3" id="courses-title">
               My courses
             </h2>
