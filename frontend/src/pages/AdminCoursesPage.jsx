@@ -252,7 +252,7 @@ function AdminCoursesPage() {
                 <th>Course</th>
                 <th>ESPB</th>
                 <th>Professor</th>
-                <th className="pe-3" aria-label="Save" />
+                <th className="pe-3" />
               </tr>
             </thead>
             <tbody>

@@ -201,13 +201,7 @@ function StudentRegistrationPage() {
       </div>
       {isSuccessModalOpen && (
         <>
-          <div
-            aria-labelledby="registration-success-title"
-            aria-modal="true"
-            className="modal d-block"
-            role="dialog"
-            tabIndex="-1"
-          >
+          <div className="modal d-block" role="dialog" tabIndex="-1">
             <div className="modal-dialog modal-dialog-centered">
               <div className="modal-content">
                 <div className="modal-header">

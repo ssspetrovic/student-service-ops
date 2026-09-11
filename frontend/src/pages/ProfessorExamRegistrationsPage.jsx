@@ -147,10 +147,7 @@ function ProfessorExamRegistrationsPage() {
       )}
       {exam && registrations && (
         <>
-          <section
-            aria-labelledby="selected-exam-title"
-            className="card shadow-sm mb-4"
-          >
+          <section className="card shadow-sm mb-4">
             <div className="card-body">
               <h2 className="h4" id="selected-exam-title">
                 {exam.course_code} — {exam.course_name}
@@ -228,13 +225,7 @@ function ProfessorExamRegistrationsPage() {
 
       {registrationToGrade && exam && <div className="modal-backdrop show" />}
       {registrationToGrade && exam && (
-        <div
-          aria-labelledby="grade-registration-title"
-          aria-modal="true"
-          className="modal d-block"
-          role="dialog"
-          tabIndex="-1"
-        >
+        <div className="modal d-block" role="dialog" tabIndex="-1">
           <div className="modal-dialog modal-dialog-centered">
             <div className="modal-content">
               <div className="modal-header">
@@ -242,7 +233,6 @@ function ProfessorExamRegistrationsPage() {
                   Grade {registrationToGrade.student_name}
                 </h2>
                 <button
-                  aria-label="Close"
                   className="btn-close"
                   disabled={isSaving}
                   onClick={closeGradeModal}

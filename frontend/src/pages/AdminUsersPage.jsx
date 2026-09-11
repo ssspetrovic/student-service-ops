@@ -78,7 +78,6 @@ function AdminUsersPage() {
         <div className="col-sm-4">
           <select
             className="form-select"
-            aria-label="Filter by role"
             value={role}
             onChange={(event) => setRole(event.target.value)}
           >
@@ -91,7 +90,6 @@ function AdminUsersPage() {
         <div className="col-sm-4">
           <select
             className="form-select"
-            aria-label="Filter by status"
             value={status}
             onChange={(event) => setStatus(event.target.value)}
           >
@@ -114,7 +112,7 @@ function AdminUsersPage() {
                 <th>Email</th>
                 <th>Role</th>
                 <th>Status</th>
-                <th className="pe-3" aria-label="Actions" />
+                <th className="pe-3" />
               </tr>
             </thead>
             <tbody>
@@ -166,7 +164,7 @@ function AdminUsersPage() {
       {userToDeactivate && (
         <>
           <div className="modal-backdrop fade show" />
-          <div className="modal d-block" role="dialog" aria-modal="true">
+          <div className="modal d-block" role="dialog">
             <div className="modal-dialog modal-dialog-centered">
               <div className="modal-content">
                 <div className="modal-header">

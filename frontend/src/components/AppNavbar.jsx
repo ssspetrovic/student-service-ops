@@ -90,9 +90,6 @@ function AppNavbar({ theme, onToggleTheme }) {
           Student Service
         </Link>
         <button
-          aria-controls="main-navigation"
-          aria-expanded={isOpen}
-          aria-label="Toggle navigation"
           className="navbar-toggler"
           onClick={() => {
             setIsOpen((open) => !open);
@@ -135,8 +132,6 @@ function AppNavbar({ theme, onToggleTheme }) {
           {user && (
             <div className="dropdown ms-lg-3" ref={accountMenuRef}>
               <button
-                aria-expanded={isAccountMenuOpen}
-                aria-haspopup="true"
                 className="btn btn-link nav-link dropdown-toggle text-white"
                 onClick={() => setIsAccountMenuOpen((open) => !open)}
                 type="button"

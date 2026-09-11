@@ -47,12 +47,7 @@ export function SuccessNotification({ message, onDismiss }) {
       role="status"
     >
       {message}
-      <button
-        aria-label="Close"
-        className="btn-close small"
-        onClick={onDismiss}
-        type="button"
-      />
+      <button className="btn-close small" onClick={onDismiss} type="button" />
     </div>
   );
 }

@@ -136,10 +136,7 @@ function WalletPage() {
                   >
                     {isDepositing ? (
                       <>
-                        <span
-                          aria-hidden="true"
-                          className="spinner-border spinner-border-sm me-2"
-                        />
+                        <span className="spinner-border spinner-border-sm me-2" />
                         Depositing funds
                       </>
                     ) : (
