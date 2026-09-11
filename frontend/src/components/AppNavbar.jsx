@@ -40,7 +40,7 @@ const brandPathByRole = {
   admin: "/admin",
 };
 
-function AppNavbar() {
+function AppNavbar({ theme, onToggleTheme }) {
   const { user, logout } = useAuth();
   const navigate = useNavigate();
   const [isOpen, setIsOpen] = useState(false);
@@ -132,8 +132,19 @@ function AppNavbar() {
               </Link>
             </div>
           )}
+          <button
+            className="btn btn-outline-light my-2 ms-lg-3 my-lg-0"
+            onClick={onToggleTheme}
+            type="button"
+          >
+            <i
+              className={
+                theme === "light" ? "bi bi-moon-fill" : "bi bi-sun-fill"
+              }
+            />
+          </button>
           {user && (
-            <div className="dropdown ms-lg-auto" ref={accountMenuRef}>
+            <div className="dropdown ms-lg-3" ref={accountMenuRef}>
               <button
                 aria-expanded={isAccountMenuOpen}
                 aria-haspopup="true"
