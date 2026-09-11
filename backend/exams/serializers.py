@@ -87,7 +87,7 @@ class ProfessorExamRegistrationSerializer(ExamRegistrationSerializer):
     student_name = serializers.SerializerMethodField()
 
     class Meta(ExamRegistrationSerializer.Meta):
-        fields = [*ExamRegistrationSerializer.Meta.fields, "student_name"]
+        fields = ExamRegistrationSerializer.Meta.fields + ["student_name"]
 
     def get_student_name(self, registration):
         return registration.student.user.get_full_name()
