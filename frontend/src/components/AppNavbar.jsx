@@ -132,17 +132,6 @@ function AppNavbar({ theme, onToggleTheme }) {
               </Link>
             </div>
           )}
-          <button
-            className="btn btn-outline-light my-2 ms-lg-3 my-lg-0"
-            onClick={onToggleTheme}
-            type="button"
-          >
-            <i
-              className={
-                theme === "light" ? "bi bi-moon-fill" : "bi bi-sun-fill"
-              }
-            />
-          </button>
           {user && (
             <div className="dropdown ms-lg-3" ref={accountMenuRef}>
               <button
@@ -176,6 +165,17 @@ function AppNavbar({ theme, onToggleTheme }) {
               </div>
             </div>
           )}
+          <button
+            className="btn btn-outline-light my-2 ms-lg-3 my-lg-0"
+            onClick={onToggleTheme}
+            type="button"
+          >
+            <i
+              className={
+                theme === "light" ? "bi bi-moon-fill" : "bi bi-sun-fill"
+              }
+            />
+          </button>
         </div>
       </div>
     </nav>
