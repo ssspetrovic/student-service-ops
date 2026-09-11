@@ -1,3 +1,4 @@
+import { useEffect, useState } from "react";
 import { Navigate, Route, Routes } from "react-router-dom";
 import AppNavbar from "./components/AppNavbar";
 import ProtectedRoute from "./components/ProtectedRoute";
@@ -23,9 +24,25 @@ import StudentRegistrationPage from "./pages/StudentRegistrationPage";
 import WalletPage from "./pages/WalletPage";
 
 function App() {
+  const savedTheme = localStorage.getItem("student-service-theme");
+  const [theme, setTheme] = useState(savedTheme === "dark" ? "dark" : "light");
+
+  useEffect(() => {
+    document.documentElement.setAttribute("data-bs-theme", theme);
+    localStorage.setItem("student-service-theme", theme);
+  }, [theme]);
+
+  const toggleTheme = () => {
+    if (theme === "light") {
+      setTheme("dark");
+    } else {
+      setTheme("light");
+    }
+  };
+
   return (
     <>
-      <AppNavbar />
+      <AppNavbar onToggleTheme={toggleTheme} theme={theme} />
       <Routes>
         <Route path="/" element={<HomePage />} />
         <Route path="/login" element={<LoginPage />} />
