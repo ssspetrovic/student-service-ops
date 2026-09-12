@@ -66,9 +66,11 @@ api.interceptors.response.use(
     request._retried = true;
 
     try {
-      refreshRequest ??= axios.post("/api/auth/token/refresh/", {
-        refresh: getRefreshToken(),
-      });
+      if (!refreshRequest) {
+        refreshRequest = axios.post("/api/auth/token/refresh/", {
+          refresh: getRefreshToken(),
+        });
+      }
       const { access } = (await refreshRequest).data;
 
       localStorage.setItem(ACCESS_TOKEN_KEY, access);

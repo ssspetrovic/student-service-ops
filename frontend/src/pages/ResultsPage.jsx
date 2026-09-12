@@ -11,17 +11,20 @@ function ResultsPage() {
   useEffect(() => {
     let isCurrent = true;
 
-    api
-      .get("/exams/results/")
-      .then((response) => {
+    async function loadResults() {
+      try {
+        const response = await api.get("/exams/results/");
+
         if (isCurrent) setResultData(response.data);
-      })
-      .catch((requestError) => {
+      } catch (requestError) {
         if (isCurrent)
           setError(
             getErrorMessage(requestError, "Unable to load your results."),
           );
-      });
+      }
+    }
+
+    loadResults();
 
     return () => {
       isCurrent = false;

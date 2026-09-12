@@ -54,8 +54,11 @@ function ProfessorExamRegistrationsPage() {
   useEffect(() => {
     let isCurrent = true;
 
-    fetchExam(examId)
-      .then(({ exam: selectedExam, registrations: loadedRegistrations }) => {
+    async function loadExam() {
+      try {
+        const { exam: selectedExam, registrations: loadedRegistrations } =
+          await fetchExam(examId);
+
         if (!isCurrent) return;
         if (!selectedExam) {
           setError("This exam is not available for grading.");
@@ -64,8 +67,7 @@ function ProfessorExamRegistrationsPage() {
 
         setExam(selectedExam);
         setRegistrations(loadedRegistrations);
-      })
-      .catch((requestError) => {
+      } catch (requestError) {
         if (isCurrent) {
           setError(
             getErrorMessage(
@@ -74,7 +76,10 @@ function ProfessorExamRegistrationsPage() {
             ),
           );
         }
-      });
+      }
+    }
+
+    loadExam();
 
     return () => {
       isCurrent = false;

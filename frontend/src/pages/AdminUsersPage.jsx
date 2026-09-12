@@ -30,17 +30,35 @@ function AdminUsersPage() {
   const location = useLocation();
   const [success, setSuccess] = useState(location.state?.success ?? "");
 
-  const loadUsers = () => {
-    api
-      .get("/admin/users/")
-      .then((response) => setUsers(response.data))
-      .catch((requestError) =>
-        setError(getErrorMessage(requestError, "Unable to load users.")),
-      );
+  const loadUsers = async () => {
+    try {
+      const response = await api.get("/admin/users/");
+      setUsers(response.data);
+    } catch (requestError) {
+      setError(getErrorMessage(requestError, "Unable to load users."));
+    }
   };
 
   useEffect(() => {
-    loadUsers();
+    let isCurrent = true;
+
+    async function loadInitialUsers() {
+      try {
+        const response = await api.get("/admin/users/");
+
+        if (isCurrent) setUsers(response.data);
+      } catch (requestError) {
+        if (isCurrent) {
+          setError(getErrorMessage(requestError, "Unable to load users."));
+        }
+      }
+    }
+
+    loadInitialUsers();
+
+    return () => {
+      isCurrent = false;
+    };
   }, []);
 
   const visibleUsers = [];

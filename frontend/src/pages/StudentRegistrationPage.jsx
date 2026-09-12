@@ -16,16 +16,19 @@ function StudentRegistrationPage() {
   useEffect(() => {
     let isCurrent = true;
 
-    api
-      .get("/academics/curricula/")
-      .then((response) => {
+    async function loadCurricula() {
+      try {
+        const response = await api.get("/academics/curricula/");
+
         if (isCurrent) setCurricula(response.data);
-      })
-      .catch((requestError) => {
+      } catch (requestError) {
         if (isCurrent) {
           setError(getErrorMessage(requestError, "Unable to load curricula."));
         }
-      });
+      }
+    }
+
+    loadCurricula();
 
     return () => {
       isCurrent = false;

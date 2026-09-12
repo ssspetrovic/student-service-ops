@@ -10,17 +10,20 @@ function EnrollmentsPage() {
   useEffect(() => {
     let isCurrent = true;
 
-    api
-      .get("/academics/enrollments/")
-      .then((response) => {
+    async function loadEnrollments() {
+      try {
+        const response = await api.get("/academics/enrollments/");
+
         if (isCurrent) setEnrollments(response.data);
-      })
-      .catch((requestError) => {
+      } catch (requestError) {
         if (isCurrent)
           setError(
             getErrorMessage(requestError, "Unable to load your enrollments."),
           );
-      });
+      }
+    }
+
+    loadEnrollments();
 
     return () => {
       isCurrent = false;

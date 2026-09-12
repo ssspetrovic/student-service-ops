@@ -11,17 +11,20 @@ function CurriculumPage() {
   useEffect(() => {
     let isCurrent = true;
 
-    api
-      .get("/academics/my-curriculum/")
-      .then((response) => {
+    async function loadCurriculum() {
+      try {
+        const response = await api.get("/academics/my-curriculum/");
+
         if (isCurrent) setCurriculum(response.data);
-      })
-      .catch((requestError) => {
+      } catch (requestError) {
         if (isCurrent)
           setError(
             getErrorMessage(requestError, "Unable to load your curriculum."),
           );
-      });
+      }
+    }
+
+    loadCurriculum();
 
     return () => {
       isCurrent = false;

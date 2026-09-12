@@ -12,7 +12,7 @@ import { formatDate } from "../utils/date";
 function RegistrationsPage() {
   const [registrations, setRegistrations] = useState(null);
   const [cancellableRegistrationIds, setCancellableRegistrationIds] = useState(
-    new Set(),
+    [],
   );
   const [error, setError] = useState("");
   const [cancellationError, setCancellationError] = useState("");
@@ -30,9 +30,7 @@ function RegistrationsPage() {
       ]);
       setRegistrations(registrationResponse.data);
       setCancellableRegistrationIds(
-        new Set(
-          cancellableResponse.data.map((registration) => registration.id),
-        ),
+        cancellableResponse.data.map((registration) => registration.id),
       );
     } catch (requestError) {
       setError(
@@ -47,21 +45,20 @@ function RegistrationsPage() {
   useEffect(() => {
     let isCurrent = true;
 
-    Promise.all([
-      api.get("/exams/registrations/"),
-      api.get("/exams/registrations/cancellable/"),
-    ])
-      .then(([registrationResponse, cancellableResponse]) => {
+    async function loadInitialRegistrations() {
+      try {
+        const [registrationResponse, cancellableResponse] = await Promise.all([
+          api.get("/exams/registrations/"),
+          api.get("/exams/registrations/cancellable/"),
+        ]);
+
         if (isCurrent) {
           setRegistrations(registrationResponse.data);
           setCancellableRegistrationIds(
-            new Set(
-              cancellableResponse.data.map((registration) => registration.id),
-            ),
+            cancellableResponse.data.map((registration) => registration.id),
           );
         }
-      })
-      .catch((requestError) => {
+      } catch (requestError) {
         if (isCurrent) {
           setError(
             getErrorMessage(
@@ -70,7 +67,10 @@ function RegistrationsPage() {
             ),
           );
         }
-      });
+      }
+    }
+
+    loadInitialRegistrations();
 
     return () => {
       isCurrent = false;
@@ -142,7 +142,7 @@ function RegistrationsPage() {
                   <td className="text-capitalize">{registration.status}</td>
                   <td>{registration.grade ?? "—"}</td>
                   <td className="pe-3 text-end">
-                    {cancellableRegistrationIds.has(registration.id) && (
+                    {cancellableRegistrationIds.includes(registration.id) && (
                       <button
                         className="btn btn-outline-danger btn-sm"
                         disabled={isCancelling}

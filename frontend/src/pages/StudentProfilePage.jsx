@@ -10,17 +10,20 @@ function StudentProfilePage() {
   useEffect(() => {
     let isCurrent = true;
 
-    api
-      .get("/accounts/student-profile/")
-      .then((response) => {
+    async function loadProfile() {
+      try {
+        const response = await api.get("/accounts/student-profile/");
+
         if (isCurrent) setProfile(response.data);
-      })
-      .catch((requestError) => {
+      } catch (requestError) {
         if (isCurrent)
           setError(
             getErrorMessage(requestError, "Unable to load your profile."),
           );
-      });
+      }
+    }
+
+    loadProfile();
 
     return () => {
       isCurrent = false;

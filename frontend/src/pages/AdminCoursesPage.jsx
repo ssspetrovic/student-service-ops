@@ -18,27 +18,6 @@ const initialCourseForm = {
   is_mandatory: true,
 };
 
-const courseFields = [
-  { column: "col-md-4", label: "Course code", name: "code" },
-  { column: "col-md-8", label: "Course name", name: "name" },
-  {
-    column: "col-md-3",
-    label: "ESPB",
-    max: "60",
-    min: "1",
-    name: "espb",
-    type: "number",
-  },
-  {
-    column: "col-md-3",
-    label: "Semester",
-    max: "12",
-    min: "1",
-    name: "semester",
-    type: "number",
-  },
-];
-
 function AdminCoursesPage() {
   const [courses, setCourses] = useState(null);
   const [professors, setProfessors] = useState(null);
@@ -51,13 +30,42 @@ function AdminCoursesPage() {
   const [creating, setCreating] = useState(false);
   const [isCreateFormValid, setIsCreateFormValid] = useState(false);
 
-  const load = () =>
-    Promise.all([
-      api.get("/admin/courses/"),
-      api.get("/admin/professors/"),
-      api.get("/admin/programs/"),
-    ])
-      .then(([courseResponse, professorResponse, curriculumResponse]) => {
+  const load = async () => {
+    try {
+      const [courseResponse, professorResponse, curriculumResponse] =
+        await Promise.all([
+          api.get("/admin/courses/"),
+          api.get("/admin/professors/"),
+          api.get("/admin/programs/"),
+        ]);
+
+      setCourses(courseResponse.data);
+      setProfessors(professorResponse.data);
+      setCurricula(curriculumResponse.data);
+      const selectedProfessors = {};
+      for (const course of courseResponse.data) {
+        selectedProfessors[course.id] = String(course.professor_id);
+      }
+      setSelected(selectedProfessors);
+    } catch (requestError) {
+      setError(getErrorMessage(requestError, "Unable to load courses."));
+    }
+  };
+
+  useEffect(() => {
+    let isCurrent = true;
+
+    async function loadInitialCourses() {
+      try {
+        const [courseResponse, professorResponse, curriculumResponse] =
+          await Promise.all([
+            api.get("/admin/courses/"),
+            api.get("/admin/professors/"),
+            api.get("/admin/programs/"),
+          ]);
+
+        if (!isCurrent) return;
+
         setCourses(courseResponse.data);
         setProfessors(professorResponse.data);
         setCurricula(curriculumResponse.data);
@@ -66,13 +74,18 @@ function AdminCoursesPage() {
           selectedProfessors[course.id] = String(course.professor_id);
         }
         setSelected(selectedProfessors);
-      })
-      .catch((requestError) =>
-        setError(getErrorMessage(requestError, "Unable to load courses.")),
-      );
+      } catch (requestError) {
+        if (isCurrent) {
+          setError(getErrorMessage(requestError, "Unable to load courses."));
+        }
+      }
+    }
 
-  useEffect(() => {
-    load();
+    loadInitialCourses();
+
+    return () => {
+      isCurrent = false;
+    };
   }, []);
 
   const save = async (course) => {
@@ -140,24 +153,48 @@ function AdminCoursesPage() {
           onSubmit={createCourse}
         >
           <div className="card-body row g-3">
-            {courseFields
-              .slice(0, 3)
-              .map(({ column, label, name, ...input }) => (
-                <div className={column} key={name}>
-                  <label className="form-label" htmlFor={`course-${name}`}>
-                    {label}
-                  </label>
-                  <input
-                    {...input}
-                    className="form-control"
-                    id={`course-${name}`}
-                    name={name}
-                    onChange={changeForm}
-                    required
-                    value={form[name]}
-                  />
-                </div>
-              ))}
+            <div className="col-md-4">
+              <label className="form-label" htmlFor="course-code">
+                Course code
+              </label>
+              <input
+                className="form-control"
+                id="course-code"
+                name="code"
+                onChange={changeForm}
+                required
+                value={form.code}
+              />
+            </div>
+            <div className="col-md-8">
+              <label className="form-label" htmlFor="course-name">
+                Course name
+              </label>
+              <input
+                className="form-control"
+                id="course-name"
+                name="name"
+                onChange={changeForm}
+                required
+                value={form.name}
+              />
+            </div>
+            <div className="col-md-3">
+              <label className="form-label" htmlFor="course-espb">
+                ESPB
+              </label>
+              <input
+                className="form-control"
+                id="course-espb"
+                max="60"
+                min="1"
+                name="espb"
+                onChange={changeForm}
+                required
+                type="number"
+                value={form.espb}
+              />
+            </div>
             <div className="col-md-5">
               <label className="form-label" htmlFor="course-professor">
                 Professor
@@ -199,22 +236,22 @@ function AdminCoursesPage() {
                 ))}
               </select>
             </div>
-            {courseFields.slice(3).map(({ column, label, name, ...input }) => (
-              <div className={column} key={name}>
-                <label className="form-label" htmlFor={`course-${name}`}>
-                  {label}
-                </label>
-                <input
-                  {...input}
-                  className="form-control"
-                  id={`course-${name}`}
-                  name={name}
-                  onChange={changeForm}
-                  required
-                  value={form[name]}
-                />
-              </div>
-            ))}
+            <div className="col-md-3">
+              <label className="form-label" htmlFor="course-semester">
+                Semester
+              </label>
+              <input
+                className="form-control"
+                id="course-semester"
+                max="12"
+                min="1"
+                name="semester"
+                onChange={changeForm}
+                required
+                type="number"
+                value={form.semester}
+              />
+            </div>
             <div className="col-md-4 d-flex align-items-end">
               <div className="form-check mb-2">
                 <input

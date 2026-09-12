@@ -15,16 +15,35 @@ function AdminProgramsPage() {
   const [submitting, setSubmitting] = useState(false);
   const [isFormValid, setIsFormValid] = useState(false);
 
-  const load = () =>
-    api
-      .get("/admin/programs/")
-      .then((response) => setPrograms(response.data))
-      .catch((requestError) =>
-        setError(getErrorMessage(requestError, "Unable to load curricula.")),
-      );
+  const load = async () => {
+    try {
+      const response = await api.get("/admin/programs/");
+      setPrograms(response.data);
+    } catch (requestError) {
+      setError(getErrorMessage(requestError, "Unable to load curricula."));
+    }
+  };
 
   useEffect(() => {
-    load();
+    let isCurrent = true;
+
+    async function loadInitialPrograms() {
+      try {
+        const response = await api.get("/admin/programs/");
+
+        if (isCurrent) setPrograms(response.data);
+      } catch (requestError) {
+        if (isCurrent) {
+          setError(getErrorMessage(requestError, "Unable to load curricula."));
+        }
+      }
+    }
+
+    loadInitialPrograms();
+
+    return () => {
+      isCurrent = false;
+    };
   }, []);
 
   const submit = async (event) => {

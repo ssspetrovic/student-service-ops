@@ -20,12 +20,12 @@ function ProfessorExamCreatePage() {
   useEffect(() => {
     let isCurrent = true;
 
-    api
-      .get("/academics/my-courses/")
-      .then((response) => {
+    async function loadCourses() {
+      try {
+        const response = await api.get("/academics/my-courses/");
+
         if (isCurrent) setCourses(response.data);
-      })
-      .catch((requestError) => {
+      } catch (requestError) {
         if (isCurrent)
           setError(
             getErrorMessage(
@@ -33,7 +33,10 @@ function ProfessorExamCreatePage() {
               "Unable to load your assigned courses.",
             ),
           );
-      });
+      }
+    }
+
+    loadCourses();
 
     return () => {
       isCurrent = false;
