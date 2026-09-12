@@ -12,22 +12,26 @@ function ProfessorProfilePage() {
   useEffect(() => {
     let isCurrent = true;
 
-    Promise.all([
-      api.get("/accounts/professor-profile/"),
-      api.get("/academics/my-courses/"),
-    ])
-      .then(([profileResponse, coursesResponse]) => {
+    async function loadProfile() {
+      try {
+        const [profileResponse, coursesResponse] = await Promise.all([
+          api.get("/accounts/professor-profile/"),
+          api.get("/academics/my-courses/"),
+        ]);
+
         if (!isCurrent) return;
         setProfile(profileResponse.data);
         setCourses(coursesResponse.data);
-      })
-      .catch((requestError) => {
+      } catch (requestError) {
         if (isCurrent) {
           setError(
             getErrorMessage(requestError, "Unable to load your profile."),
           );
         }
-      });
+      }
+    }
+
+    loadProfile();
 
     return () => {
       isCurrent = false;

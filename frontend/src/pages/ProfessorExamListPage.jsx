@@ -42,15 +42,18 @@ function ProfessorExamListPage() {
   useEffect(() => {
     let isCurrent = true;
 
-    api
-      .get("/exams/mine/")
-      .then((response) => {
+    async function loadExams() {
+      try {
+        const response = await api.get("/exams/mine/");
+
         if (isCurrent) setExams(response.data);
-      })
-      .catch((requestError) => {
+      } catch (requestError) {
         if (isCurrent)
           setError(getErrorMessage(requestError, "Unable to load your exams."));
-      });
+      }
+    }
+
+    loadExams();
 
     return () => {
       isCurrent = false;

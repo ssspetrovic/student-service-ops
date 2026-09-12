@@ -42,21 +42,23 @@ function AvailableExamsPage() {
   useEffect(() => {
     let isCurrent = true;
 
-    api
-      .get("/exams/available/")
-      .then((response) => {
+    async function loadInitialExams() {
+      try {
+        const response = await api.get("/exams/available/");
+
         if (isCurrent) setExams(response.data);
-      })
-      .catch((requestError) => {
+      } catch (requestError) {
         if (isCurrent) {
           setError(
             getErrorMessage(requestError, "Unable to load available exams."),
           );
         }
-      })
-      .finally(() => {
+      } finally {
         if (isCurrent) setIsLoading(false);
-      });
+      }
+    }
+
+    loadInitialExams();
 
     return () => {
       isCurrent = false;

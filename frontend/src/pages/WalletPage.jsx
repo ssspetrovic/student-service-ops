@@ -41,22 +41,26 @@ function WalletPage() {
   useEffect(() => {
     let isCurrent = true;
 
-    Promise.all([
-      api.get("/finance/wallet/"),
-      api.get("/finance/transactions/"),
-    ])
-      .then(([walletResponse, transactionResponse]) => {
+    async function loadInitialWallet() {
+      try {
+        const [walletResponse, transactionResponse] = await Promise.all([
+          api.get("/finance/wallet/"),
+          api.get("/finance/transactions/"),
+        ]);
+
         if (isCurrent) {
           setWallet(walletResponse.data);
           setTransactions(transactionResponse.data);
         }
-      })
-      .catch((requestError) => {
+      } catch (requestError) {
         if (isCurrent)
           setError(
             getErrorMessage(requestError, "Unable to load your wallet."),
           );
-      });
+      }
+    }
+
+    loadInitialWallet();
 
     return () => {
       isCurrent = false;
