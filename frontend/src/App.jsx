@@ -4,8 +4,8 @@ import AppNavbar from "./components/AppNavbar";
 import ProtectedRoute from "./components/ProtectedRoute";
 import AvailableExamsPage from "./pages/AvailableExamsPage";
 import AdminCoursesPage from "./pages/AdminCoursesPage";
+import AdminCurriculaPage from "./pages/AdminCurriculaPage";
 import AdminDashboardPage from "./pages/AdminDashboardPage";
-import AdminProgramsPage from "./pages/AdminProgramsPage";
 import AdminUserFormPage from "./pages/AdminUserFormPage";
 import AdminUsersPage from "./pages/AdminUsersPage";
 import CurriculumPage from "./pages/CurriculumPage";
@@ -81,10 +81,10 @@ function App() {
           }
         />
         <Route
-          path="/admin/programs"
+          path="/admin/curricula"
           element={
             <ProtectedRoute allowedRoles={["admin"]}>
-              <AdminProgramsPage />
+              <AdminCurriculaPage />
             </ProtectedRoute>
           }
         />

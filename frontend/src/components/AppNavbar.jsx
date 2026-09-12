@@ -19,7 +19,7 @@ const professorLinks = [
 const adminLinks = [
   ["/admin", "Dashboard"],
   ["/admin/users", "Users"],
-  ["/admin/programs", "Curricula"],
+  ["/admin/curricula", "Curricula"],
   ["/admin/courses", "Courses"],
 ];
 

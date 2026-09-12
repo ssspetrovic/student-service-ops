@@ -8,8 +8,8 @@ import {
   SuccessNotification,
 } from "../components/PageStates";
 
-function AdminProgramsPage() {
-  const [programs, setPrograms] = useState(null);
+function AdminCurriculaPage() {
+  const [curricula, setCurricula] = useState(null);
   const [error, setError] = useState("");
   const [success, setSuccess] = useState("");
   const [submitting, setSubmitting] = useState(false);
@@ -17,8 +17,8 @@ function AdminProgramsPage() {
 
   const load = async () => {
     try {
-      const response = await api.get("/admin/programs/");
-      setPrograms(response.data);
+      const response = await api.get("/admin/curricula/");
+      setCurricula(response.data);
     } catch (requestError) {
       setError(getErrorMessage(requestError, "Unable to load curricula."));
     }
@@ -27,11 +27,11 @@ function AdminProgramsPage() {
   useEffect(() => {
     let isCurrent = true;
 
-    async function loadInitialPrograms() {
+    async function loadInitialCurricula() {
       try {
-        const response = await api.get("/admin/programs/");
+        const response = await api.get("/admin/curricula/");
 
-        if (isCurrent) setPrograms(response.data);
+        if (isCurrent) setCurricula(response.data);
       } catch (requestError) {
         if (isCurrent) {
           setError(getErrorMessage(requestError, "Unable to load curricula."));
@@ -39,7 +39,7 @@ function AdminProgramsPage() {
       }
     }
 
-    loadInitialPrograms();
+    loadInitialCurricula();
 
     return () => {
       isCurrent = false;
@@ -53,7 +53,7 @@ function AdminProgramsPage() {
     setSubmitting(true);
     try {
       await api.post(
-        "/admin/programs/",
+        "/admin/curricula/",
         Object.fromEntries(new FormData(form)),
       );
       form.reset();
@@ -131,11 +131,11 @@ function AdminProgramsPage() {
           </button>
         </div>
       </form>
-      {!programs && !error && <LoadingState label="curricula" />}
-      {programs?.length === 0 && (
+      {!curricula && !error && <LoadingState label="curricula" />}
+      {curricula?.length === 0 && (
         <EmptyState>No curricula exist yet.</EmptyState>
       )}
-      {programs?.length > 0 && (
+      {curricula?.length > 0 && (
         <div className="table-responsive">
           <table className="table table-striped">
             <thead>
@@ -147,12 +147,14 @@ function AdminProgramsPage() {
               </tr>
             </thead>
             <tbody>
-              {programs.map((program) => (
-                <tr key={program.id}>
-                  <td className="ps-3">{program.code}</td>
-                  <td>{program.name}</td>
-                  <td className="text-capitalize">{program.degree_level}</td>
-                  <td className="pe-3">{program.duration} years</td>
+              {curricula.map((curriculum) => (
+                <tr key={curriculum.id}>
+                  <td className="ps-3">{curriculum.code}</td>
+                  <td>{curriculum.name}</td>
+                  <td className="text-capitalize">
+                    {curriculum.degree_level}
+                  </td>
+                  <td className="pe-3">{curriculum.duration} years</td>
                 </tr>
               ))}
             </tbody>
@@ -163,4 +165,4 @@ function AdminProgramsPage() {
     </main>
   );
 }
-export default AdminProgramsPage;
+export default AdminCurriculaPage;

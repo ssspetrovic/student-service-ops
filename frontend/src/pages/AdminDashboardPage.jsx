@@ -2,7 +2,7 @@ import { Link } from "react-router-dom";
 
 const cards = [
   ["Users", "Manage student and professor accounts", "/admin/users"],
-  ["Curricula", "Manage and review study programmes", "/admin/programs"],
+  ["Curricula", "Manage and review curricula", "/admin/curricula"],
   ["Courses", "Manage courses and assign professors", "/admin/courses"],
 ];
 

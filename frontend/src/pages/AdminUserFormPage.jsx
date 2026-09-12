@@ -29,8 +29,8 @@ function AdminUserFormPage() {
   useEffect(() => {
     const loadForm = async () => {
       try {
-        const programs = await api.get("/admin/programs/");
-        setCurricula(programs.data);
+        const curriculaResponse = await api.get("/admin/curricula/");
+        setCurricula(curriculaResponse.data);
 
         if (!isEdit) {
           return;
@@ -198,9 +198,9 @@ function AdminUserFormPage() {
                   value={form.curriculum_code ?? ""}
                 >
                   <option value="">Select a curriculum</option>
-                  {curricula?.map((program) => (
-                    <option key={program.code} value={program.code}>
-                      {program.code} — {program.name}
+                  {curricula?.map((curriculum) => (
+                    <option key={curriculum.code} value={curriculum.code}>
+                      {curriculum.code} — {curriculum.name}
                     </option>
                   ))}
                 </select>

@@ -36,7 +36,7 @@ function AdminCoursesPage() {
         await Promise.all([
           api.get("/admin/courses/"),
           api.get("/admin/professors/"),
-          api.get("/admin/programs/"),
+          api.get("/admin/curricula/"),
         ]);
 
       setCourses(courseResponse.data);
@@ -61,7 +61,7 @@ function AdminCoursesPage() {
           await Promise.all([
             api.get("/admin/courses/"),
             api.get("/admin/professors/"),
-            api.get("/admin/programs/"),
+            api.get("/admin/curricula/"),
           ]);
 
         if (!isCurrent) return;
