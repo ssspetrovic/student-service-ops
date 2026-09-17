@@ -8,6 +8,19 @@ import {
   LoadingState,
   SuccessNotification,
 } from "../components/PageStates";
+import { AdminUserForm } from "./AdminUserFormPage";
+
+const emptyUserForm = {
+  role: "student",
+  email: "",
+  password: "",
+  first_name: "",
+  last_name: "",
+  index_no: "",
+  curriculum_code: "",
+  current_year_of_study: 1,
+  employee_no: "",
+};
 
 function roleBadgeClass(role) {
   if (role === "student") {
@@ -23,7 +36,12 @@ function roleBadgeClass(role) {
 
 function AdminUsersPage() {
   const [users, setUsers] = useState(null);
+  const [curricula, setCurricula] = useState(null);
+  const [form, setForm] = useState(emptyUserForm);
   const [error, setError] = useState("");
+  const [curriculaError, setCurriculaError] = useState("");
+  const [creating, setCreating] = useState(false);
+  const [isCreateFormValid, setIsCreateFormValid] = useState(false);
   const [role, setRole] = useState("");
   const [status, setStatus] = useState("");
   const [userToDeactivate, setUserToDeactivate] = useState(null);
@@ -56,10 +74,70 @@ function AdminUsersPage() {
 
     loadInitialUsers();
 
+    async function loadCurricula() {
+      try {
+        const response = await api.get("/admin/curricula/");
+        if (isCurrent) setCurricula(response.data);
+      } catch (requestError) {
+        if (isCurrent) {
+          setCurriculaError(
+            getErrorMessage(requestError, "Unable to load curricula."),
+          );
+        }
+      }
+    }
+
+    loadCurricula();
+
     return () => {
       isCurrent = false;
     };
   }, []);
+
+  const changeForm = (event) => {
+    setForm((current) => ({
+      ...current,
+      [event.target.name]: event.target.value,
+    }));
+  };
+
+  const updateCreateFormValidity = (event) => {
+    setIsCreateFormValid(event.currentTarget.checkValidity());
+  };
+
+  const createUser = async (event) => {
+    event.preventDefault();
+    setError("");
+    setCreating(true);
+
+    const payload = {
+      email: form.email,
+      first_name: form.first_name,
+      last_name: form.last_name,
+      role: form.role,
+      password: form.password,
+    };
+
+    if (form.role === "student") {
+      payload.index_no = form.index_no;
+      payload.curriculum_code = form.curriculum_code;
+      payload.current_year_of_study = Number(form.current_year_of_study);
+    } else {
+      payload.employee_no = form.employee_no;
+    }
+
+    try {
+      await api.post("/admin/users/", payload);
+      setForm(emptyUserForm);
+      setIsCreateFormValid(false);
+      setSuccess("User created.");
+      loadUsers();
+    } catch (requestError) {
+      setError(getErrorMessage(requestError, "Unable to create the user."));
+    } finally {
+      setCreating(false);
+    }
+  };
 
   const visibleUsers = [];
 
@@ -85,13 +163,23 @@ function AdminUsersPage() {
 
   return (
     <main className="container py-5">
-      <div className="d-flex align-items-center justify-content-between mb-4">
-        <h1 className="h2 mb-0">Users</h1>
-        <Link className="btn btn-primary" to="/admin/users/new">
-          New user
-        </Link>
-      </div>
+      <h1 className="h2 mb-4">Users</h1>
       {error && <ErrorState message={error} />}
+      {curriculaError && <ErrorState message={curriculaError} />}
+      {!curricula && !curriculaError && <LoadingState label="the user form" />}
+      {curricula && (
+        <AdminUserForm
+          className="card shadow-sm mb-4"
+          curricula={curricula}
+          form={form}
+          isCreateFormValid={isCreateFormValid}
+          isEdit={false}
+          onChange={changeForm}
+          onSubmit={createUser}
+          onValidityChange={updateCreateFormValidity}
+          submitting={creating}
+        />
+      )}
       <div className="row g-3 mb-3">
         <div className="col-sm-4">
           <select

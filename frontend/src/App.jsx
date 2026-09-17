@@ -65,14 +65,6 @@ function App() {
           }
         />
         <Route
-          path="/admin/users/new"
-          element={
-            <ProtectedRoute allowedRoles={["admin"]}>
-              <AdminUserFormPage />
-            </ProtectedRoute>
-          }
-        />
-        <Route
           path="/admin/users/:id/edit"
           element={
             <ProtectedRoute allowedRoles={["admin"]}>
