@@ -4,37 +4,165 @@ import api from "../api/client";
 import { getErrorMessage } from "../api/errorMessage";
 import { ErrorState, LoadingState } from "../components/PageStates";
 
-const blankForm = {
-  role: "student",
-  email: "",
-  password: "",
-  first_name: "",
-  last_name: "",
-  index_no: "",
-  curriculum_code: "",
-  current_year_of_study: 1,
-  employee_no: "",
-};
+export function AdminUserForm({
+  form,
+  curricula,
+  isEdit,
+  submitting,
+  isCreateFormValid,
+  onChange,
+  onSubmit,
+  onValidityChange,
+  className = "card shadow-sm",
+}) {
+  let buttonLabel = isEdit ? "Save user" : "Create user";
+  if (submitting) {
+    buttonLabel = isEdit ? "Saving…" : "Creating…";
+  }
+
+  return (
+    <form className={className} onChange={onValidityChange} onSubmit={onSubmit}>
+      <div className="card-body row g-3">
+        <div className="col-md-6">
+          <label className="form-label">First name</label>
+          <input
+            className="form-control"
+            name="first_name"
+            onChange={onChange}
+            required
+            value={form.first_name}
+          />
+        </div>
+        <div className="col-md-6">
+          <label className="form-label">Last name</label>
+          <input
+            className="form-control"
+            name="last_name"
+            onChange={onChange}
+            required
+            value={form.last_name}
+          />
+        </div>
+        <div className="col-md-6">
+          <label className="form-label">Email</label>
+          <input
+            className="form-control"
+            name="email"
+            onChange={onChange}
+            required
+            type="email"
+            value={form.email}
+          />
+        </div>
+        {!isEdit && (
+          <>
+            <div className="col-md-6">
+              <label className="form-label">Password</label>
+              <input
+                className="form-control"
+                name="password"
+                onChange={onChange}
+                required
+                type="password"
+                value={form.password}
+              />
+            </div>
+            <div className="col-md-6">
+              <label className="form-label">Role</label>
+              <select
+                className="form-select"
+                name="role"
+                onChange={onChange}
+                value={form.role}
+              >
+                <option value="student">Student</option>
+                <option value="professor">Professor</option>
+              </select>
+            </div>
+          </>
+        )}
+        {form.role === "student" ? (
+          <>
+            <div className="col-md-6">
+              <label className="form-label">Index number</label>
+              <input
+                className="form-control"
+                name="index_no"
+                onChange={onChange}
+                required
+                value={form.index_no ?? ""}
+              />
+            </div>
+            <div className="col-md-6">
+              <label className="form-label">Curriculum</label>
+              <select
+                className="form-select"
+                name="curriculum_code"
+                onChange={onChange}
+                required
+                value={form.curriculum_code ?? ""}
+              >
+                <option value="">Select a curriculum</option>
+                {curricula?.map((curriculum) => (
+                  <option key={curriculum.code} value={curriculum.code}>
+                    {curriculum.code} — {curriculum.name}
+                  </option>
+                ))}
+              </select>
+            </div>
+            <div className="col-md-6">
+              <label className="form-label">Study year</label>
+              <input
+                className="form-control"
+                max="8"
+                min="1"
+                name="current_year_of_study"
+                onChange={onChange}
+                required
+                type="number"
+                value={form.current_year_of_study ?? 1}
+              />
+            </div>
+          </>
+        ) : (
+          <div className="col-md-6">
+            <label className="form-label">Employee number</label>
+            <input
+              className="form-control"
+              name="employee_no"
+              onChange={onChange}
+              required
+              value={form.employee_no ?? ""}
+            />
+          </div>
+        )}
+      </div>
+      <div className="card-footer bg-transparent text-end">
+        <button
+          className="btn btn-primary"
+          disabled={submitting || (!isEdit && !isCreateFormValid)}
+          type="submit"
+        >
+          {buttonLabel}
+        </button>
+      </div>
+    </form>
+  );
+}
 
 function AdminUserFormPage() {
   const { id } = useParams();
-  const isEdit = Boolean(id);
   const navigate = useNavigate();
-  const [form, setForm] = useState(blankForm);
+  const [form, setForm] = useState(null);
   const [curricula, setCurricula] = useState(null);
   const [error, setError] = useState("");
   const [submitting, setSubmitting] = useState(false);
-  const [isCreateFormValid, setIsCreateFormValid] = useState(false);
 
   useEffect(() => {
     const loadForm = async () => {
       try {
         const curriculaResponse = await api.get("/admin/curricula/");
         setCurricula(curriculaResponse.data);
-
-        if (!isEdit) {
-          return;
-        }
 
         const users = await api.get("/admin/users/");
         const user = users.data.find((entry) => entry.id === Number(id));
@@ -43,26 +171,20 @@ function AdminUserFormPage() {
           return;
         }
 
-        setForm({ ...blankForm, ...user, password: "" });
+        setForm(user);
       } catch (requestError) {
         setError(getErrorMessage(requestError, "Unable to load the form."));
       }
     };
 
     loadForm();
-  }, [id, isEdit]);
+  }, [id]);
 
   const change = (event) => {
     setForm((current) => ({
       ...current,
       [event.target.name]: event.target.value,
     }));
-  };
-
-  const updateCreateFormValidity = (event) => {
-    if (!isEdit) {
-      setIsCreateFormValid(event.currentTarget.checkValidity());
-    }
   };
 
   const submit = async (event) => {
@@ -84,13 +206,7 @@ function AdminUserFormPage() {
     }
 
     try {
-      if (isEdit) {
-        await api.patch(`/admin/users/${id}/`, payload);
-      } else {
-        payload.role = form.role;
-        payload.password = form.password;
-        await api.post("/admin/users/", payload);
-      }
+      await api.patch(`/admin/users/${id}/`, payload);
       navigate("/admin/users", { state: { success: "User saved." } });
     } catch (requestError) {
       setError(getErrorMessage(requestError, "Unable to save the user."));
@@ -99,149 +215,29 @@ function AdminUserFormPage() {
     }
   };
 
-  if (!curricula && !error) {
+  if ((!curricula || !form) && !error) {
     return <LoadingState label="the user form" />;
   }
 
   return (
     <main className="container py-5">
       <div className="d-flex justify-content-between mb-4">
-        <h1 className="h2 mb-0">{isEdit ? "Edit user" : "New user"}</h1>
+        <h1 className="h2 mb-0">Edit user</h1>
         <Link className="btn btn-outline-secondary" to="/admin/users">
           Back to users
         </Link>
       </div>
       {error && <ErrorState message={error} />}
-      <form
-        className="card shadow-sm"
-        onChange={updateCreateFormValidity}
-        onSubmit={submit}
-      >
-        <div className="card-body row g-3">
-          <div className="col-md-6">
-            <label className="form-label">First name</label>
-            <input
-              className="form-control"
-              name="first_name"
-              onChange={change}
-              required
-              value={form.first_name}
-            />
-          </div>
-          <div className="col-md-6">
-            <label className="form-label">Last name</label>
-            <input
-              className="form-control"
-              name="last_name"
-              onChange={change}
-              required
-              value={form.last_name}
-            />
-          </div>
-          <div className="col-md-6">
-            <label className="form-label">Email</label>
-            <input
-              className="form-control"
-              name="email"
-              onChange={change}
-              required
-              type="email"
-              value={form.email}
-            />
-          </div>
-          {!isEdit && (
-            <>
-              <div className="col-md-6">
-                <label className="form-label">Password</label>
-                <input
-                  className="form-control"
-                  name="password"
-                  onChange={change}
-                  required
-                  type="password"
-                  value={form.password}
-                />
-              </div>
-              <div className="col-md-6">
-                <label className="form-label">Role</label>
-                <select
-                  className="form-select"
-                  name="role"
-                  onChange={change}
-                  value={form.role}
-                >
-                  <option value="student">Student</option>
-                  <option value="professor">Professor</option>
-                </select>
-              </div>
-            </>
-          )}
-          {form.role === "student" ? (
-            <>
-              <div className="col-md-6">
-                <label className="form-label">Index number</label>
-                <input
-                  className="form-control"
-                  name="index_no"
-                  onChange={change}
-                  required
-                  value={form.index_no ?? ""}
-                />
-              </div>
-              <div className="col-md-6">
-                <label className="form-label">Curriculum</label>
-                <select
-                  className="form-select"
-                  name="curriculum_code"
-                  onChange={change}
-                  required
-                  value={form.curriculum_code ?? ""}
-                >
-                  <option value="">Select a curriculum</option>
-                  {curricula?.map((curriculum) => (
-                    <option key={curriculum.code} value={curriculum.code}>
-                      {curriculum.code} — {curriculum.name}
-                    </option>
-                  ))}
-                </select>
-              </div>
-              <div className="col-md-6">
-                <label className="form-label">Study year</label>
-                <input
-                  className="form-control"
-                  max="8"
-                  min="1"
-                  name="current_year_of_study"
-                  onChange={change}
-                  required
-                  type="number"
-                  value={form.current_year_of_study ?? 1}
-                />
-              </div>
-            </>
-          ) : (
-            <div className="col-md-6">
-              <label className="form-label">Employee number</label>
-              <input
-                className="form-control"
-                name="employee_no"
-                onChange={change}
-                required
-                value={form.employee_no ?? ""}
-              />
-            </div>
-          )}
-        </div>
-        <div className="card-footer bg-transparent text-end">
-          <button
-            className="btn btn-primary"
-            disabled={submitting || (!isEdit && !isCreateFormValid)}
-            type="submit"
-          >
-            {submitting ? "Saving…" : "Save user"}
-          </button>
-        </div>
-      </form>
+      {curricula && form && (
+        <AdminUserForm
+          curricula={curricula}
+          form={form}
+          isEdit
+          onChange={change}
+          onSubmit={submit}
+          submitting={submitting}
+        />
+      )}
     </main>
   );
 }
