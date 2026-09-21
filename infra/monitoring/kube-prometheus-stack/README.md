@@ -19,9 +19,14 @@ Grafana admin credentials are stored in a SOPS-encrypted secred.
 Prometheus is currently configured to retain the metrics for 24 hours in the ephemeral storage.
 Metrics can get lost if a pods gets restarted due to ephemeral storage nature.
 
+## Student Service metrics
+
+Prometheus collects private Django and nginx metrics through ServiceMonitors.
+
 ## Check sttae
 
 ```bash
 kubectl get pods -n monitoring
 kubectl get pods -n monitoring-node-exporter
+kubectl -n student-service get servicemonitor
 ```

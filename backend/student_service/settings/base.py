@@ -34,6 +34,7 @@ CSRF_TRUSTED_ORIGINS = env.list(
 
 INSTALLED_APPS = [
     "corsheaders",
+    "django_prometheus",
     "django.contrib.auth",
     "django.contrib.contenttypes",
     "django.contrib.sessions",
@@ -47,6 +48,7 @@ INSTALLED_APPS = [
 ]
 
 MIDDLEWARE = [
+    "django_prometheus.middleware.PrometheusBeforeMiddleware",
     "django.middleware.security.SecurityMiddleware",
     "corsheaders.middleware.CorsMiddleware",
     "django.contrib.sessions.middleware.SessionMiddleware",
@@ -54,6 +56,7 @@ MIDDLEWARE = [
     "django.middleware.csrf.CsrfViewMiddleware",
     "django.contrib.auth.middleware.AuthenticationMiddleware",
     "django.middleware.clickjacking.XFrameOptionsMiddleware",
+    "django_prometheus.middleware.PrometheusAfterMiddleware",
 ]
 
 ROOT_URLCONF = "student_service.urls"
@@ -75,6 +78,10 @@ TEMPLATES = [
 WSGI_APPLICATION = "student_service.wsgi.application"
 
 DATABASES = {"default": env.db("DATABASE_URL")}
+DATABASES["default"]["ENGINE"] = DATABASES["default"]["ENGINE"].replace(
+    "django.db.backends",
+    "django_prometheus.db.backends",
+)
 
 AUTH_PASSWORD_VALIDATORS = [
     {

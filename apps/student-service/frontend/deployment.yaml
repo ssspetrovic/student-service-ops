@@ -77,6 +77,26 @@ spec:
             readOnlyRootFilesystem: true
             capabilities:
               drop: ["ALL"]
+        - name: metrics
+          # yamllint disable-line rule:line-length
+          image: nginx/nginx-prometheus-exporter:1.5.3@sha256:85666e7fde7e253f1c6d978f9a961245df4c9cdb7677e1866d9bb28e8f9ee41d
+          args:
+            - --nginx.scrape-uri=http://127.0.0.1:8080/stub_status
+          ports:
+            - name: metrics
+              containerPort: 9113
+          resources:
+            requests:
+              cpu: 10m
+              memory: 16Mi
+            limits:
+              cpu: 50m
+              memory: 64Mi
+          securityContext:
+            allowPrivilegeEscalation: false
+            readOnlyRootFilesystem: true
+            capabilities:
+              drop: ["ALL"]
       volumes:
         - name: tls
           secret:
