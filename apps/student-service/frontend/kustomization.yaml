@@ -3,4 +3,5 @@ kind: Kustomization
 resources:
   - certificate.yaml
   - deployment.yaml
+  - metrics-service.yaml
   - service.yaml
