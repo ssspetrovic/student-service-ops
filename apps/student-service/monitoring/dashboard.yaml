@@ -1,0 +1,97 @@
+# yamllint disable rule:line-length
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: student-service-load-dashboard
+  namespace: monitoring
+  labels:
+    grafana_dashboard: "1"
+data:
+  student-service-load.json: |-
+    {
+      "annotations": {"list": []},
+      "editable": true,
+      "panels": [
+        {
+          "datasource": {"type": "prometheus", "uid": "prometheus"},
+          "fieldConfig": {"defaults": {"unit": "reqps"}},
+          "gridPos": {"h": 8, "w": 24, "x": 0, "y": 0},
+          "id": 1,
+          "targets": [{"expr": "sum by (pod) (rate(nginx_http_requests_total{namespace=\"student-service\"}[1m]))", "legendFormat": "{{pod}}", "refId": "A"}],
+          "title": "Frontend requests by pod",
+          "type": "timeseries"
+        },
+        {
+          "datasource": {"type": "prometheus", "uid": "prometheus"},
+          "fieldConfig": {"defaults": {"unit": "reqps"}},
+          "gridPos": {"h": 8, "w": 24, "x": 0, "y": 8},
+          "id": 2,
+          "targets": [{"expr": "sum by (pod) (rate(django_http_responses_total_by_status_total{namespace=\"student-service\"}[1m]))", "legendFormat": "{{pod}}", "refId": "A"}],
+          "title": "Backend requests by pod",
+          "type": "timeseries"
+        },
+        {
+          "datasource": {"type": "prometheus", "uid": "prometheus"},
+          "fieldConfig": {"defaults": {"unit": "short"}},
+          "gridPos": {"h": 8, "w": 12, "x": 0, "y": 16},
+          "id": 7,
+          "options": {"displayLabels": ["percent"], "legend": {"displayMode": "table", "placement": "right", "showLegend": true, "values": ["percent"]}, "pieType": "pie", "reduceOptions": {"calcs": ["lastNotNull"], "fields": "", "values": false}},
+          "targets": [{"expr": "sum by (pod) (increase(nginx_http_requests_total{namespace=\"student-service\"}[$__range]))", "instant": true, "legendFormat": "{{pod}}", "refId": "A"}],
+          "title": "Frontend request share by pod",
+          "type": "piechart"
+        },
+        {
+          "datasource": {"type": "prometheus", "uid": "prometheus"},
+          "fieldConfig": {"defaults": {"unit": "short"}},
+          "gridPos": {"h": 8, "w": 12, "x": 12, "y": 16},
+          "id": 8,
+          "options": {"displayLabels": ["percent"], "legend": {"displayMode": "table", "placement": "right", "showLegend": true, "values": ["percent"]}, "pieType": "pie", "reduceOptions": {"calcs": ["lastNotNull"], "fields": "", "values": false}},
+          "targets": [{"expr": "sum by (pod) (increase(django_http_responses_total_by_status_total{namespace=\"student-service\"}[$__range]))", "instant": true, "legendFormat": "{{pod}}", "refId": "A"}],
+          "title": "Backend request share by pod",
+          "type": "piechart"
+        },
+        {
+          "datasource": {"type": "prometheus", "uid": "prometheus"},
+          "fieldConfig": {"defaults": {"unit": "cores"}},
+          "gridPos": {"h": 8, "w": 24, "x": 0, "y": 24},
+          "id": 3,
+          "targets": [{"expr": "sum by (pod) (rate(container_cpu_usage_seconds_total{namespace=\"student-service\", pod=~\"student-service-frontend-.*\", container!=\"\", image!=\"\"}[1m]))", "legendFormat": "{{pod}}", "refId": "A"}],
+          "title": "Frontend CPU by pod",
+          "type": "timeseries"
+        },
+        {
+          "datasource": {"type": "prometheus", "uid": "prometheus"},
+          "fieldConfig": {"defaults": {"unit": "cores"}},
+          "gridPos": {"h": 8, "w": 24, "x": 0, "y": 32},
+          "id": 4,
+          "targets": [{"expr": "sum by (pod) (rate(container_cpu_usage_seconds_total{namespace=\"student-service\", pod=~\"student-service-backend-.*\", container!=\"\", image!=\"\"}[1m]))", "legendFormat": "{{pod}}", "refId": "A"}],
+          "title": "Backend CPU by pod",
+          "type": "timeseries"
+        },
+        {
+          "datasource": {"type": "prometheus", "uid": "prometheus"},
+          "fieldConfig": {"defaults": {"unit": "bytes"}},
+          "gridPos": {"h": 8, "w": 24, "x": 0, "y": 40},
+          "id": 5,
+          "targets": [{"expr": "sum by (pod) (container_memory_working_set_bytes{namespace=\"student-service\", pod=~\"student-service-frontend-.*\", container!=\"\", image!=\"\"})", "legendFormat": "{{pod}}", "refId": "A"}],
+          "title": "Frontend memory by pod",
+          "type": "timeseries"
+        },
+        {
+          "datasource": {"type": "prometheus", "uid": "prometheus"},
+          "fieldConfig": {"defaults": {"unit": "bytes"}},
+          "gridPos": {"h": 8, "w": 24, "x": 0, "y": 48},
+          "id": 6,
+          "targets": [{"expr": "sum by (pod) (container_memory_working_set_bytes{namespace=\"student-service\", pod=~\"student-service-backend-.*\", container!=\"\", image!=\"\"})", "legendFormat": "{{pod}}", "refId": "A"}],
+          "title": "Backend memory by pod",
+          "type": "timeseries"
+        }
+      ],
+      "refresh": "10s",
+      "schemaVersion": 41,
+      "tags": ["student-service", "load-testing"],
+      "time": {"from": "now-15m", "to": "now"},
+      "title": "Student Service Load",
+      "uid": "student-service-load",
+      "version": 1
+    }
