@@ -23,3 +23,6 @@ talenv.yaml
 # Local mise overrides and machine-specific lockfiles.
 mise.local.toml
 mise.local.lock
+
+# Generated load-test results.
+load-results/

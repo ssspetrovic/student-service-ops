@@ -170,6 +170,45 @@ checksum = "sha256:23cb60a1354eed6bcc8d9b9735e8c7b388cd1fdcb75726b93bc299ef22dd9
 url = "https://github.com/jqlang/jq/releases/download/jq-1.8.1/jq-windows-amd64.exe"
 provenance = "github-attestations"
 
+[[tools.k6]]
+version = "2.2.0"
+backend = "aqua:grafana/k6"
+
+[tools.k6."platforms.linux-arm64"]
+checksum = "sha256:4ecd64cadcc792402d16293836115480419c4447c032858f564852d98f1bf54c"
+url = "https://github.com/grafana/k6/releases/download/v2.2.0/k6-v2.2.0-linux-arm64.tar.gz"
+url_api = "https://api.github.com/repos/grafana/k6/releases/assets/508824463"
+
+[tools.k6."platforms.linux-arm64-musl"]
+checksum = "sha256:4ecd64cadcc792402d16293836115480419c4447c032858f564852d98f1bf54c"
+url = "https://github.com/grafana/k6/releases/download/v2.2.0/k6-v2.2.0-linux-arm64.tar.gz"
+url_api = "https://api.github.com/repos/grafana/k6/releases/assets/508824463"
+
+[tools.k6."platforms.linux-x64"]
+checksum = "sha256:b5a8003c86f35f5cd5ceef1490312c48e587696c94d998cefc6d7b3b4cb1597d"
+url = "https://github.com/grafana/k6/releases/download/v2.2.0/k6-v2.2.0-linux-amd64.tar.gz"
+url_api = "https://api.github.com/repos/grafana/k6/releases/assets/508824467"
+
+[tools.k6."platforms.linux-x64-musl"]
+checksum = "sha256:b5a8003c86f35f5cd5ceef1490312c48e587696c94d998cefc6d7b3b4cb1597d"
+url = "https://github.com/grafana/k6/releases/download/v2.2.0/k6-v2.2.0-linux-amd64.tar.gz"
+url_api = "https://api.github.com/repos/grafana/k6/releases/assets/508824467"
+
+[tools.k6."platforms.macos-arm64"]
+checksum = "sha256:37a028506bf13578de66c906296803775df28cc2504b1a8c5d786b2803e757c7"
+url = "https://github.com/grafana/k6/releases/download/v2.2.0/k6-v2.2.0-macos-arm64.zip"
+url_api = "https://api.github.com/repos/grafana/k6/releases/assets/508824492"
+
+[tools.k6."platforms.macos-x64"]
+checksum = "sha256:45a08590511c8a6a9c6331645e60c41624924e848e29472e87c60ac956d50372"
+url = "https://github.com/grafana/k6/releases/download/v2.2.0/k6-v2.2.0-macos-amd64.zip"
+url_api = "https://api.github.com/repos/grafana/k6/releases/assets/508824471"
+
+[tools.k6."platforms.windows-x64"]
+checksum = "sha256:ceb2b1e1cf9dbe1303c6c33ec83ffda86dda5c610b4def92064d3c7ebae8d9f4"
+url = "https://github.com/grafana/k6/releases/download/v2.2.0/k6-v2.2.0-windows-amd64.zip"
+url_api = "https://api.github.com/repos/grafana/k6/releases/assets/508824505"
+
 [[tools.kubectl]]
 version = "1.36.0"
 backend = "aqua:kubernetes/kubernetes/kubectl"
