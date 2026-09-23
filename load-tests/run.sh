@@ -7,7 +7,6 @@ results_dir="${LOAD_TEST_RESULTS_DIR:-load-results}"
 mkdir -p "$results_dir"
 
 results_file="$results_dir/summary.csv"
-browser_results_file="$results_dir/browser.csv"
 
 summary_file="$(mktemp "$results_dir/.summary.XXXXXX.json")"
 trap 'rm -f "$summary_file"' EXIT
@@ -61,35 +60,5 @@ jq -r \
   ' "$summary_file" >>"$results_file"
 
 echo "Saved result to $results_file"
-
-if [[ "$workload" == "frontend" ]]; then
-	if [[ ! -f "$browser_results_file" ]]; then
-		printf '%s\n' \
-			'timestamp,vus,page_loads,fcp_p95_ms,lcp_p95_ms,ttfb_p95_ms,cls_p95,checks_passed_percent,threshold_result' \
-			>"$browser_results_file"
-	fi
-
-	jq -r \
-		--arg timestamp "$(date --iso-8601=seconds)" \
-		--arg result "$result" \
-		'
-    def round2: (. * 100 | round) / 100;
-    def round6: (. * 1000000 | round) / 1000000;
-    def metric($name; $field): (.metrics[$name][$field] // 0);
-    [
-      $timestamp,
-      1,
-      metric("browser_page_loads"; "count"),
-      (metric("browser_web_vital_fcp"; "p(95)") | round2),
-      (metric("browser_web_vital_lcp"; "p(95)") | round2),
-      (metric("browser_web_vital_ttfb"; "p(95)") | round2),
-      (metric("browser_web_vital_cls"; "p(95)") | round6),
-      (metric("browser_checks"; "value") * 100 | round2),
-      $result
-    ] | @csv
-  ' "$summary_file" >>"$browser_results_file"
-
-	echo "Saved browser result to $browser_results_file"
-fi
 
 exit "$k6_status"

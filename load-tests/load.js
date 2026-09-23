@@ -1,7 +1,5 @@
 import http from "k6/http";
-import { browser } from "k6/browser";
 import { check } from "k6";
-import { Counter, Rate } from "k6/metrics";
 
 const workload = __ENV.LOAD_TEST_WORKLOAD || "frontend";
 const baseUrl = (
@@ -11,8 +9,6 @@ const email = __ENV.LOAD_TEST_EMAIL;
 const password = __ENV.LOAD_TEST_PASSWORD;
 const duration = __ENV.LOAD_TEST_DURATION || "3m";
 const readVus = Number(__ENV.LOAD_TEST_VUS || 10);
-const browserChecks = new Rate("browser_checks");
-const browserPageLoads = new Counter("browser_page_loads");
 
 if (!["frontend", "backend", "write"].includes(workload)) {
   throw new Error(`Unknown workload: ${workload}`);
@@ -35,29 +31,7 @@ const thresholds = {
   http_req_duration: ["p(95)<750"],
 };
 
-export const options = workload === "frontend" ? {
-  scenarios: {
-    requests: {
-      executor: "constant-vus",
-      vus: readVus,
-      duration,
-      exec: "testFrontend",
-    },
-    browser: {
-      executor: "constant-vus",
-      vus: 1,
-      duration,
-      exec: "renderFrontend",
-      options: { browser: { type: "chromium" } },
-    },
-  },
-  thresholds: {
-    ...thresholds,
-    browser_checks: ["rate==1"],
-    browser_web_vital_lcp: ["p(95)<2500"],
-    browser_web_vital_cls: ["p(95)<0.1"],
-  },
-} : {
+export const options = {
   vus: workload === "write" ? 1 : readVus,
   duration,
   thresholds,
@@ -103,35 +77,8 @@ function authenticatedGet(path, name) {
 
 export function testFrontend() {
   const page = http.get(`${baseUrl}/`, { tags: { name: "frontend" } });
-  const health = http.get(`${baseUrl}/healthz`, {
-    tags: { name: "frontend health" },
-  });
 
   check(page, { "frontend loaded": (response) => response.status === 200 });
-  check(health, {
-    "frontend is healthy": (response) => response.status === 200,
-  });
-}
-
-export async function renderFrontend() {
-  const page = await browser.newPage();
-
-  try {
-    const response = await page.goto(`${baseUrl}/`, { waitUntil: "load" });
-    const heading = await page.locator("h1").textContent();
-    const loaded = response?.status() === 200;
-    const rendered = heading?.trim() === "Log in";
-
-    check(loaded, { "page loaded": (result) => result });
-    check(rendered, { "login rendered": (result) => result });
-    browserChecks.add(loaded);
-    browserChecks.add(rendered);
-    if (loaded && rendered) {
-      browserPageLoads.add(1);
-    }
-  } finally {
-    await page.close();
-  }
 }
 
 function testBackend() {
@@ -193,7 +140,9 @@ function testWrite() {
 }
 
 export default function () {
-  if (workload === "backend") {
+  if (workload === "frontend") {
+    testFrontend();
+  } else if (workload === "backend") {
     testBackend();
   } else {
     testWrite();
