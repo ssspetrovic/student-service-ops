@@ -50,6 +50,8 @@ spec:
             - secretRef:
                 name: student-service-backend
           env:
+            - name: GUNICORN_CMD_ARGS
+              value: "--workers 1 --worker-class gthread --threads 4"
             - name: DATABASE_URL
               valueFrom:
                 secretKeyRef:
