@@ -130,19 +130,15 @@ mise run lint:fix
 
 ## Load testing
 
-Tests run against <https://student-service.internal> for three minutes. Frontend and backend use 10 HTTP users;
-write uses one. Frontend requests `/`, while backend performs authenticated read-only API requests.
+Load the credentials in env first, run a small test, then run the full test:
 
 ```bash
-mise run load:frontend
-mise run load:backend
-LOAD_TEST_ALLOW_WRITES=true mise run load:backend-write
+LOAD_TEST_PHASE=smoke mise run load:test
+mise run load:full
 ```
 
-Backend tests require `LOAD_TEST_EMAIL` and `LOAD_TEST_PASSWORD`. The write test also requires enough balance
-and an available exam.
-
-Each run adds a CSV row under `load-results/`.
+The full test uses 10, 100 and 200 virtual users, with a warm-up, three runs and rests at each level.
+Results appear in the terminal and are saved as CSV files.
 
 ## Creating the cluster
 
