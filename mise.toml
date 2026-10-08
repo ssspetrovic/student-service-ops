@@ -154,14 +154,10 @@ description = "Build frontend assets"
 tools.node = "{{ env.NODE_VERSION }}"
 run = "cd frontend && npm run build --if-present"
 
-[tasks."load:frontend"]
-description = "Load test frontend delivery"
-run = "./load-tests/run.sh frontend"
+[tasks."load:test"]
+description = "Run HTTP load for already logged-in students"
+run = "k6 run --summary-mode=full load-tests/test.js"
 
-[tasks."load:backend"]
-description = "Load test authenticated backend reads"
-run = "./load-tests/run.sh backend"
-
-[tasks."load:backend-write"]
-description = "Load test exam registration and cancellation"
-run = "./load-tests/run.sh write"
+[tasks."load:full"]
+description = "Run warm-ups and three measurements at 10, 100 and 200 VU with CSV output"
+run = "bash load-tests/run.sh"

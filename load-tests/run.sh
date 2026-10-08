@@ -1,64 +1,64 @@
 #!/usr/bin/env bash
-set -euo pipefail
 
-workload="${1:?Usage: $0 frontend|backend|write}"
+trap 'exit 130' INT
+trap 'exit 143' TERM
 
-results_dir="${LOAD_TEST_RESULTS_DIR:-load-results}"
-mkdir -p "$results_dir"
+results_dir="load-results/full-$(date -u +%Y%m%dT%H%M%SZ)"
+mkdir -p load-results || exit 1
+mkdir "$results_dir" || exit 1
+echo "Results folder: $results_dir"
 
-results_file="$results_dir/summary.csv"
+unset K6_OUT K6_SUMMARY_EXPORT
+export LOAD_TEST_PAUSE_SECONDS=1
 
-summary_file="$(mktemp "$results_dir/.summary.XXXXXX.json")"
-trap 'rm -f "$summary_file"' EXIT
+for vus in 10 100 200; do
+	level_dir="$results_dir/$vus-vu"
+	mkdir "$level_dir" || exit 1
+	export LOAD_TEST_VUS="$vus"
+	level_failed=false
 
-k6_status=0
-k6 run \
-	--summary-export "$summary_file" \
-	-e LOAD_TEST_WORKLOAD="$workload" \
-	load-tests/load.js || k6_status=$?
+	echo "$(date -u +%FT%TZ) Starting warm-up with $vus HTTP users."
+	export LOAD_TEST_PHASE=warmup
+	export LOAD_TEST_DURATION_SECONDS=30
+	if k6 run --summary-mode=full --out "csv=$level_dir/warmup.csv" load-tests/test.js; then
+		echo "Warm-up done. Waiting 60 seconds."
+	else
+		status=$?
+		echo "Warm-up failed (code $status). Stopping tests."
+		exit "$status"
+	fi
+	sleep 60 || exit 1
 
-if [[ ! -s "$summary_file" ]]; then
-	echo "k6 did not produce a summary" >&2
-	exit 1
-fi
+	export LOAD_TEST_PHASE=measured
+	export LOAD_TEST_DURATION_SECONDS=180
+	for repetition in 01 02 03; do
+		echo "$(date -u +%FT%TZ) Starting test $repetition with $vus HTTP users."
+		if k6 run --summary-mode=full --out "csv=$level_dir/run-$repetition.csv" load-tests/test.js; then
+			echo "$(date -u +%FT%TZ) Test $repetition passed the checks."
+		else
+			status=$?
+			if [ "$status" -eq 99 ]; then
+				level_failed=true
+				echo "$(date -u +%FT%TZ) Some checks failed. Finishing the tests with $vus HTTP users."
+			else
+				echo "Test stopped (code $status). Stopping all tests."
+				exit "$status"
+			fi
+		fi
+		if [ "$repetition" != 03 ]; then
+			echo "Waiting 60 seconds."
+			sleep 60 || exit 1
+		fi
+	done
 
-if [[ ! -f "$results_file" ]]; then
-	printf '%s\n' \
-		'timestamp,workload,vus,requests,requests_per_second,failed_percent,average_ms,p95_ms,checks_passed_percent,threshold_result' \
-		>"$results_file"
-fi
+	if [ "$level_failed" = true ]; then
+		echo "Checks failed with $vus HTTP users. Stopping before adding more users."
+		exit 99
+	fi
+	if [ "$vus" -ne 200 ]; then
+		echo "Waiting 60 seconds before adding more users."
+		sleep 60 || exit 1
+	fi
+done
 
-result="PASS"
-if ((k6_status != 0)); then
-	result="FAIL"
-fi
-
-protocol_vus="${LOAD_TEST_VUS:-10}"
-if [[ "$workload" == "write" ]]; then
-	protocol_vus=1
-fi
-
-jq -r \
-	--arg timestamp "$(date --iso-8601=seconds)" \
-	--arg workload "$workload" \
-	--arg vus "$protocol_vus" \
-	--arg result "$result" \
-	'
-    def round2: (. * 100 | round) / 100;
-    [
-      $timestamp,
-      $workload,
-      ($vus | tonumber),
-      .metrics.http_reqs.count,
-      (.metrics.http_reqs.rate | round2),
-      (.metrics.http_req_failed.value * 100 | round2),
-      (.metrics.http_req_duration.avg | round2),
-      (.metrics.http_req_duration["p(95)"] | round2),
-      (.metrics.checks.value * 100 | round2),
-      $result
-    ] | @csv
-  ' "$summary_file" >>"$results_file"
-
-echo "Saved result to $results_file"
-
-exit "$k6_status"
+echo "$(date -u +%FT%TZ) Tests finished. Check the saved results and system health."
