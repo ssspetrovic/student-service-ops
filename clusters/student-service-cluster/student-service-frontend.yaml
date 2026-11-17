@@ -13,11 +13,6 @@ spec:
   prune: true
   wait: true
   timeout: 10m
-  healthChecks:
-    - apiVersion: apps/v1
-      kind: Deployment
-      name: student-service-frontend
-      namespace: student-service
   sourceRef:
     kind: GitRepository
     name: flux-system
