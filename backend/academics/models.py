@@ -47,14 +47,14 @@ class Curriculum(models.Model):
     name = models.CharField(max_length=100)
     degree_level = models.CharField(max_length=30, choices=DegreeLevel.choices)
     duration = models.PositiveSmallIntegerField(
-        validators=[MinValueValidator(1), MaxValueValidator(6)]
+        validators=[MinValueValidator(1), MaxValueValidator(8)]
     )
 
     class Meta:
         constraints = [
             models.CheckConstraint(
-                condition=models.Q(duration__gte=1) & models.Q(duration__lte=6),
-                name="curriculum_duration_between_1_and_6",
+                condition=models.Q(duration__gte=1) & models.Q(duration__lte=8),
+                name="curriculum_duration_between_1_and_8",
             )
         ]
 
@@ -74,7 +74,7 @@ class CurriculumCourse(models.Model):
         related_name="curriculum_courses",
     )
     semester = models.PositiveSmallIntegerField(
-        validators=[MinValueValidator(1), MaxValueValidator(12)]
+        validators=[MinValueValidator(1), MaxValueValidator(16)]
     )
     is_mandatory = models.BooleanField(default=True)
 
@@ -85,8 +85,8 @@ class CurriculumCourse(models.Model):
                 name="uq_curriculum_course",
             ),
             models.CheckConstraint(
-                condition=models.Q(semester__gte=1) & models.Q(semester__lte=12),
-                name="curriculum_course_semester_between_1_and_12",
+                condition=models.Q(semester__gte=1) & models.Q(semester__lte=16),
+                name="curriculum_course_semester_between_1_and_16",
             ),
         ]
 
@@ -113,7 +113,7 @@ class Enrollment(models.Model):
     )
     school_year = models.CharField(max_length=9, validators=[school_year_validator])
     semester = models.PositiveSmallIntegerField(
-        validators=[MinValueValidator(1), MaxValueValidator(12)]
+        validators=[MinValueValidator(1), MaxValueValidator(16)]
     )
     status = models.CharField(
         max_length=40,
@@ -129,8 +129,8 @@ class Enrollment(models.Model):
                 name="uq_student_course_school_year",
             ),
             models.CheckConstraint(
-                condition=models.Q(semester__gte=1) & models.Q(semester__lte=12),
-                name="enrollment_semester_between_1_and_12",
+                condition=models.Q(semester__gte=1) & models.Q(semester__lte=16),
+                name="enrollment_semester_between_1_and_16",
             ),
         ]
 

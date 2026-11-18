@@ -333,7 +333,7 @@ class AdminCourseCreateSerializer(serializers.ModelSerializer):
     curriculum_code = serializers.SlugRelatedField(
         slug_field="code", queryset=Curriculum.objects.all(), source="curriculum"
     )
-    semester = serializers.IntegerField(min_value=1, max_value=12)
+    semester = serializers.IntegerField(min_value=1, max_value=16)
     is_mandatory = serializers.BooleanField(default=True)
 
     class Meta:

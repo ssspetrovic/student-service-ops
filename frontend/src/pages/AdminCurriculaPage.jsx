@@ -113,7 +113,7 @@ function AdminCurriculaPage() {
             <label className="form-label">Duration</label>
             <input
               className="form-control"
-              max="6"
+              max="8"
               min="1"
               name="duration"
               required
