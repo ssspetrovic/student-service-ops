@@ -91,6 +91,7 @@ data:
       "schemaVersion": 41,
       "tags": ["student-service", "load-testing"],
       "time": {"from": "now-15m", "to": "now"},
+      "timezone": "utc",
       "title": "Student Service Load",
       "uid": "student-service-load",
       "version": 1

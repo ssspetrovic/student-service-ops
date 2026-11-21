@@ -16,11 +16,6 @@ spec:
   prune: true
   wait: true
   timeout: 15m
-  healthChecks:
-    - apiVersion: postgresql.cnpg.io/v1
-      kind: Cluster
-      name: student-service-db
-      namespace: student-service-database
   sourceRef:
     kind: GitRepository
     name: flux-system
