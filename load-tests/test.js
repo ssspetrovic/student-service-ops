@@ -57,15 +57,28 @@ for (const name of ["profile", "enrollments", "exams", "wallet", "transactions"]
   thresholds[name + "_requests"] = ["count>=" + minimumSamples];
 }
 
-const scenarios = {
-  student: {
-    exec: "testStudent",
-    executor: "constant-vus",
-    vus,
-    duration,
-    gracefulStop: "10s",
-  },
+let student = {
+  exec: "testStudent",
+  executor: "constant-vus",
+  vus,
+  duration,
+  gracefulStop: "10s",
 };
+if (phase === "warmup") {
+  const rampSeconds = Math.ceil(durationSeconds / 2);
+  student = {
+    exec: "testStudent",
+    executor: "ramping-vus",
+    startVUs: 0,
+    stages: [
+      { duration: rampSeconds + "s", target: vus },
+      { duration: durationSeconds - rampSeconds + "s", target: vus },
+    ],
+    gracefulRampDown: "10s",
+    gracefulStop: "10s",
+  };
+}
+const scenarios = { student };
 
 export const options = {
   scenarios,
