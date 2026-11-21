@@ -243,7 +243,7 @@ function AdminCoursesPage() {
               <input
                 className="form-control"
                 id="course-semester"
-                max="12"
+                max="16"
                 min="1"
                 name="semester"
                 onChange={changeForm}
