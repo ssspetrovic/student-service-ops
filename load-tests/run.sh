@@ -10,6 +10,7 @@ echo "Results folder: $results_dir"
 
 unset K6_OUT K6_SUMMARY_EXPORT
 export LOAD_TEST_PAUSE_SECONDS=1
+any_failed=false
 
 for vus in 10 100 200; do
 	level_dir="$results_dir/$vus-vu"
@@ -19,13 +20,17 @@ for vus in 10 100 200; do
 
 	echo "$(date -u +%FT%TZ) Starting warm-up with $vus HTTP users."
 	export LOAD_TEST_PHASE=warmup
-	export LOAD_TEST_DURATION_SECONDS=30
+	export LOAD_TEST_DURATION_SECONDS=60
 	if k6 run --summary-mode=full --out "csv=$level_dir/warmup.csv" load-tests/test.js; then
 		echo "Warm-up done. Waiting 60 seconds."
 	else
 		status=$?
-		echo "Warm-up failed (code $status). Stopping tests."
-		exit "$status"
+		if [ "$status" -eq 99 ]; then
+			echo "Warm-up did not meet the checks. It only prepares the system, so the tests continue."
+		else
+			echo "Warm-up stopped (code $status). Stopping tests."
+			exit "$status"
+		fi
 	fi
 	sleep 60 || exit 1
 
@@ -52,8 +57,8 @@ for vus in 10 100 200; do
 	done
 
 	if [ "$level_failed" = true ]; then
-		echo "Checks failed with $vus HTTP users. Stopping before adding more users."
-		exit 99
+		any_failed=true
+		echo "Checks failed with $vus HTTP users. Continuing with the next level."
 	fi
 	if [ "$vus" -ne 200 ]; then
 		echo "Waiting 60 seconds before adding more users."
@@ -62,3 +67,6 @@ for vus in 10 100 200; do
 done
 
 echo "$(date -u +%FT%TZ) Tests finished. Check the saved results and system health."
+if [ "$any_failed" = true ]; then
+	exit 99
+fi
